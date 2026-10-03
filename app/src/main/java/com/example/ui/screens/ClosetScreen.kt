@@ -10,7 +10,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,33 +23,31 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
-import androidx.compose.material.icons.filled.Opacity
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Security
-import androidx.compose.material.icons.filled.UnfoldMore
+import androidx.compose.material.icons.filled.TableRows
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -67,18 +68,17 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.data.model.GarmentEntity
-import com.example.data.model.JunctionEntity
+import com.example.data.model.*
+import com.example.ui.dialogs.InlineFieldDictionarySection
 import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.drilldown.GarmentStats
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandPurple
-import com.example.ui.theme.BrandPurpleLight
-import com.example.ui.theme.BrandRose
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate400
@@ -88,6 +88,8 @@ import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import com.example.util.ImageUtils
+import java.text.NumberFormat
+import java.util.Locale
 
 enum class GarmentSortOption(val label: String) {
     TOTAL_WASHES("Total Washed Count"),
@@ -99,8 +101,37 @@ enum class GarmentSortOption(val label: String) {
 
 data class CategoryTab(val id: String, val label: String, val count: Int)
 
-data class PresetOption(val id: String, val label: String, val icon: String? = null)
+data class PresetOption(val id: String, val label: String)
 
+private fun deriveComfortRating(g: GarmentEntity): Int {
+    if (g.NotComfortable.contains("not", ignoreCase = true) && !g.NotComfortable.contains("comfortable", ignoreCase = true)) return 3
+    if (g.beautiful.contains("beautiful", ignoreCase = true)) return 5
+    return 5
+}
+
+private fun deriveBreathabilityRating(g: GarmentEntity): Int {
+    if (g.hotAtNoon.contains("Not hot", ignoreCase = true)) return 5
+    if (g.hotAtNoon.contains("Hot", ignoreCase = true)) return 3
+    if (g.wet.contains("dry", ignoreCase = true)) return 4
+    return 4
+}
+
+private fun deriveProtectionRating(g: GarmentEntity): Int {
+    if (g.sitBreast.contains("ok", ignoreCase = true) || g.StandBreast.contains("ok", ignoreCase = true)) return 5
+    if (g.antiSeeThrough.isNotBlank() && !g.antiSeeThrough.contains("transparent", ignoreCase = true)) return 4
+    return 3
+}
+
+private fun deriveDurabilityRating(g: GarmentEntity): Int {
+    val totalWashes = g.wearingFrequency + g.trackedAppWashes
+    return when {
+        totalWashes >= 10 -> 5
+        totalWashes >= 4 -> 5
+        else -> 4
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ClosetScreen(
     clothes: List<GarmentEntity>,
@@ -118,482 +149,629 @@ fun ClosetScreen(
     var selectedPreset by remember { mutableStateOf("all") }
     var currentSort by remember { mutableStateOf(GarmentSortOption.TOTAL_WASHES) }
     var isSortMenuOpen by remember { mutableStateOf(false) }
-    var showFieldDictionaryModal by remember { mutableStateOf(false) }
     var closetViewMode by remember { mutableStateOf("cards") } // "cards", "grid", "table"
+
+    // Precompute stats per garment
+    val statsById = remember(clothes, junctions) {
+        clothes.associate { g -> g.id to DrilldownUtils.calculateGarmentStats(g.id, junctions) }
+    }
+
+    // Rank map by total washed count
+    val washRankById = remember(clothes) {
+        clothes
+            .sortedByDescending { it.wearingFrequency + it.trackedAppWashes }
+            .mapIndexed { index, g -> g.id to (index + 1) }
+            .toMap()
+    }
 
     // Dynamic Category tabs computed from real clothes data
     val categoryTabs = remember(clothes) {
-        val groups = clothes.groupBy { it.clothesType.ifBlank { "Other" } }
-        val list = mutableListOf(CategoryTab("All", "All Items", clothes.size))
-        // Prioritize common types
-        val sortedKeys = groups.keys.sortedWith(compareByDescending<String> { groups[it]?.size ?: 0 }.thenBy { it })
-        sortedKeys.forEach { key ->
-            list.add(CategoryTab(key, key, groups[key]?.size ?: 0))
-        }
+        val grouped = clothes.groupBy { it.clothesType.ifBlank { "Uncategorized" } }
+        val list = mutableListOf(CategoryTab("All", "All", clothes.size))
+        grouped.entries
+            .sortedByDescending { it.value.size }
+            .forEach { (type, items) ->
+                list.add(CategoryTab(type, type, items.size))
+            }
         list
     }
 
-    // Quick Presets matching web app ClosetView & IMG_9732.png
-    val presets = listOf(
-        PresetOption("all", "All Items"),
-        PresetOption("not-hot", "Hot at noon: Not hot", "☀️"),
-        PresetOption("favorites", "Beautiful Only", "✨"),
-        PresetOption("need-wash", "Needs Wash", "⚠️"),
-        PresetOption("chiffon", "material: chiffon", "🪶"),
-        PresetOption("sit-ok", "sit breast ok", "💺")
-    )
+    val presets = remember {
+        listOf(
+            PresetOption("all", "All Items"),
+            PresetOption("dirty", "Dirty / Need Wash"),
+            PresetOption("protection_4", "High Protection >=4"),
+            PresetOption("breathability_4", "High Breathability >=4"),
+            PresetOption("best_value", "Best Value <=\$10/w")
+        )
+    }
 
-    // Filter & Sort
-    val filteredGarments by remember(clothes, junctions, selectedCategory, selectedPreset, searchQuery, currentSort) {
+    // Filtered & Sorted Garments
+    val filteredGarments by remember(clothes, junctions, selectedCategory, selectedPreset, searchQuery, currentSort, statsById) {
         derivedStateOf {
             clothes.filter { g ->
-                // Category match
-                val matchesCategory = if (selectedCategory == "All") true
-                else g.clothesType.equals(selectedCategory, ignoreCase = true)
+                val gStats = statsById[g.id]
+                val catMatch = if (selectedCategory == "All") {
+                    true
+                } else {
+                    g.clothesType.ifBlank { "Uncategorized" }.equals(selectedCategory, ignoreCase = true)
+                }
 
-                // Search query match
-                val q = searchQuery.trim().lowercase()
-                val matchesSearch = q.isBlank() ||
-                        g.name.lowercase().contains(q) ||
-                        g.material.lowercase().contains(q) ||
-                        g.thickClothes.lowercase().contains(q) ||
-                        g.clothesType.lowercase().contains(q)
+                val totalWashes = (g.wearingFrequency + g.trackedAppWashes).coerceAtLeast(gStats?.totalWears ?: 0)
+                val cpw = if (g.price > 0 && totalWashes > 0) g.price / totalWashes else Double.MAX_VALUE
 
-                // Preset match
-                val stats = DrilldownUtils.calculateGarmentStats(g.id, junctions)
-                val matchesPreset = when (selectedPreset) {
-                    "not-hot" -> g.hotAtNoon.contains("not", ignoreCase = true)
-                    "need-wash" -> stats.needWash
-                    "sit-ok" -> g.sitBreast.contains("ok", ignoreCase = true)
-                    "chiffon" -> g.material.contains("chiffon", ignoreCase = true)
-                    "favorites" -> g.beautiful.contains("beautiful", ignoreCase = true) && !g.beautiful.contains("not", ignoreCase = true)
+                val presetMatch = when (selectedPreset) {
+                    "dirty" -> gStats?.needWash == true
+                    "protection_4" -> deriveProtectionRating(g) >= 4
+                    "breathability_4" -> deriveBreathabilityRating(g) >= 4
+                    "best_value" -> cpw <= 10.0
                     else -> true
                 }
 
-                matchesCategory && matchesSearch && matchesPreset
-            }.sortedWith { a, b ->
-                val totalWashesA = a.wearingFrequency + a.trackedAppWashes
-                val totalWashesB = b.wearingFrequency + b.trackedAppWashes
+                val q = searchQuery.trim().lowercase(Locale.US)
+                val searchMatch = if (q.isEmpty()) {
+                    true
+                } else {
+                    g.name.lowercase(Locale.US).contains(q) ||
+                        g.material.lowercase(Locale.US).contains(q) ||
+                        g.thickClothes.lowercase(Locale.US).contains(q) ||
+                        g.clothesType.lowercase(Locale.US).contains(q) ||
+                        g.impression.lowercase(Locale.US).contains(q)
+                }
+
+                catMatch && presetMatch && searchMatch
+            }.let { list ->
                 when (currentSort) {
-                    GarmentSortOption.TOTAL_WASHES -> totalWashesB.compareTo(totalWashesA)
-                    GarmentSortOption.PRICE_LOW_HIGH -> {
-                        val pA = if (a.price > 0) a.price else Double.MAX_VALUE
-                        val pB = if (b.price > 0) b.price else Double.MAX_VALUE
-                        pA.compareTo(pB)
+                    GarmentSortOption.TOTAL_WASHES -> list.sortedByDescending { it.wearingFrequency + it.trackedAppWashes }
+                    GarmentSortOption.PRICE_LOW_HIGH -> list.sortedBy { if (it.price > 0) it.price else Double.MAX_VALUE }
+                    GarmentSortOption.PRICE_HIGH_LOW -> list.sortedByDescending { it.price }
+                    GarmentSortOption.COST_PER_WEAR -> list.sortedBy {
+                        val washes = it.wearingFrequency + it.trackedAppWashes
+                        if (it.price > 0 && washes > 0) it.price / washes else Double.MAX_VALUE
                     }
-                    GarmentSortOption.PRICE_HIGH_LOW -> b.price.compareTo(a.price)
-                    GarmentSortOption.COST_PER_WEAR -> {
-                        val statsA = DrilldownUtils.calculateGarmentStats(a.id, junctions)
-                        val statsB = DrilldownUtils.calculateGarmentStats(b.id, junctions)
-                        val wearsA = if (totalWashesA > 0) totalWashesA else statsA.totalWears
-                        val wearsB = if (totalWashesB > 0) totalWashesB else statsB.totalWears
-                        val cpwA = if (a.price > 0 && wearsA > 0) a.price / wearsA else Double.MAX_VALUE
-                        val cpwB = if (b.price > 0 && wearsB > 0) b.price / wearsB else Double.MAX_VALUE
-                        cpwA.compareTo(cpwB)
-                    }
-                    GarmentSortOption.NAME -> a.name.compareTo(b.name, ignoreCase = true)
+                    GarmentSortOption.NAME -> list.sortedBy { it.name.lowercase(Locale.US) }
                 }
             }
         }
     }
 
-    if (showFieldDictionaryModal) {
-        com.example.ui.dialogs.FieldDictionaryModal(
-            onDismiss = { showFieldDictionaryModal = false }
-        )
+    val totalValueFormatted = remember(clothes) {
+        val sum = clothes.sumOf { it.price }.toInt()
+        NumberFormat.getIntegerInstance(Locale.US).format(sum)
     }
 
-    LazyColumn(
+    val dirtyCount = remember(statsById) {
+        statsById.values.count { it.needWash }
+    }
+
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC)),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        contentAlignment = Alignment.TopCenter
     ) {
-        // TOP CONTROL CARD (Compact layout for mobile screens)
-        item {
-            Surface(
-                shape = RoundedCornerShape(20.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                shadowElevation = 0.dp,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(9.dp)
-                ) {
-                    // Row 1: Horizontal scroll of category tabs: All Items (52), Dress (44), Tops (6)...
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        categoryTabs.forEach { tab ->
-                            val isSelected = selectedCategory == tab.id
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = if (isSelected) BrandPurple else Color(0xFFF1F5F9),
-                                modifier = Modifier.clickable { selectedCategory = tab.id }
-                            ) {
-                                Text(
-                                    text = "${tab.label} (${tab.count})",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (isSelected) Color.White else Slate700,
-                                    maxLines = 1,
-                                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 5.dp)
-                                )
-                            }
-                        }
-                    }
+        val screenWidth = maxWidth
+        val isTablet = screenWidth >= 600.dp && screenWidth < 960.dp
+        val isLaptop = screenWidth >= 960.dp
+        val isWide = isTablet || isLaptop
 
-                    // Row 2: Compact Manage Fields + Add Clothes + Sort selector on a single row
+        // Calculate responsive column counts for Cards and Grid modes
+        val cardsColumns = when {
+            screenWidth >= 1100.dp -> 3
+            screenWidth >= 680.dp -> 2
+            else -> 1
+        }
+        val gridColumns = when {
+            screenWidth >= 1200.dp -> 5
+            screenWidth >= 960.dp -> 4
+            screenWidth >= 600.dp -> 3
+            else -> 2
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .widthIn(max = 1440.dp)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(
+                horizontal = if (isWide) 24.dp else 14.dp,
+                vertical = 16.dp
+            ),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
+        ) {
+            // 1. HEADER ROW: Title + Stats on Left, [Cards | Grid | Table] Switcher on Right (Screenshot 222706)
+            item {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Top
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Color.White,
-                            border = BorderStroke(1.dp, Slate200),
-                            modifier = Modifier
-                                .height(34.dp)
-                                .clickable { showFieldDictionaryModal = true }
-                                .testTag("manage_fields_button")
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                modifier = Modifier.padding(horizontal = 10.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.FilterList,
-                                    contentDescription = null,
-                                    tint = Slate700,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Text(
-                                    text = "Manage Fields",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate800,
-                                    maxLines = 1
-                                )
-                            }
-                        }
-
-                        Button(
-                            onClick = onAddGarmentClick,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
-                            shape = RoundedCornerShape(12.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
-                            modifier = Modifier
-                                .height(34.dp)
-                                .testTag("add_clothes_button")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Add Clothes",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White,
-                                maxLines = 1
+                                text = "Garment Inventory",
+                                fontSize = if (isWide) 24.sp else 20.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Slate900
                             )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        // Compact Sort Selector
-                        Box {
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFF8FAFC),
-                                border = BorderStroke(1.dp, Slate200),
-                                modifier = Modifier
-                                    .height(34.dp)
-                                    .clickable { isSortMenuOpen = true }
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(horizontal = 9.dp)
-                                ) {
-                                    Text(
-                                        text = currentSort.label,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Slate800,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.UnfoldMore,
-                                        contentDescription = null,
-                                        tint = Slate600,
-                                        modifier = Modifier.size(13.dp)
-                                    )
-                                }
-                            }
-
-                            DropdownMenu(
-                                expanded = isSortMenuOpen,
-                                onDismissRequest = { isSortMenuOpen = false }
-                            ) {
-                                GarmentSortOption.values().forEach { option ->
-                                    DropdownMenuItem(
-                                        text = {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(option.label, fontSize = 12.sp)
-                                                if (currentSort == option) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Check,
-                                                        contentDescription = null,
-                                                        tint = BrandPurple,
-                                                        modifier = Modifier.size(14.dp)
-                                                    )
-                                                }
-                                            }
-                                        },
-                                        onClick = {
-                                            currentSort = option
-                                            isSortMenuOpen = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Row 3: Presets row (PRESETS: All Items | ☀️ Hot at noon: Not hot)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.FilterList,
-                                contentDescription = null,
-                                tint = Slate400,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = "PRESETS:",
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate400
-                            )
-                        }
-
-                        presets.forEach { preset ->
-                            val isSelected = selectedPreset == preset.id
-                            Surface(
-                                shape = RoundedCornerShape(10.dp),
-                                color = if (isSelected) Color(0xFFF3E8FF) else Color(0xFFF8FAFC),
-                                border = BorderStroke(1.dp, if (isSelected) Color(0xFFDDD6FE) else Color(0xFFE2E8F0)),
-                                modifier = Modifier.clickable { selectedPreset = preset.id }
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                ) {
-                                    if (preset.icon != null) {
-                                        Text(text = preset.icon, fontSize = 10.sp)
-                                    }
-                                    Text(
-                                        text = preset.label,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSelected) Color(0xFF581C87) else Slate600,
-                                        maxLines = 1
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    // Row 4: Search bar + Compact [Cards | Grid | Table] Switcher
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = onSearchChanged,
-                            placeholder = {
                                 Text(
-                                    text = "Search by Name, material, thick clothes...",
-                                    fontSize = 11.sp,
-                                    color = Slate400,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
+                                    text = "${filteredGarments.size} of ${clothes.size} items displayed · Total Value: $$totalValueFormatted",
+                                    fontSize = 12.sp,
+                                    color = Slate600
                                 )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search",
-                                    tint = Slate400,
-                                    modifier = Modifier.size(15.dp)
-                                )
-                            },
-                            singleLine = true,
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(42.dp)
-                                .testTag("search_by_name_input"),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedContainerColor = Color(0xFFF8FAFC),
-                                focusedContainerColor = Color.White,
-                                unfocusedBorderColor = Slate200,
-                                focusedBorderColor = BrandPurple
-                            )
-                        )
-
-                        // View Mode Switcher: Cards | Grid | Table
-                        Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFFF1F5F9),
-                            border = BorderStroke(1.dp, Slate200)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(2.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(2.dp)
-                            ) {
-                                listOf(
-                                    "cards" to "Cards",
-                                    "grid" to "Grid",
-                                    "table" to "Table"
-                                ).forEach { (mode, label) ->
-                                    val isSelected = closetViewMode == mode
+                                if (dirtyCount > 0) {
                                     Surface(
-                                        shape = RoundedCornerShape(8.dp),
-                                        color = if (isSelected) Color.White else Color.Transparent,
-                                        shadowElevation = if (isSelected) 1.dp else 0.dp,
-                                        modifier = Modifier
-                                            .clickable { closetViewMode = mode }
-                                            .testTag("closet_view_$mode")
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = Color(0xFFFEF3C7)
                                     ) {
                                         Text(
-                                            text = label,
-                                            fontSize = 10.sp,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                            color = if (isSelected) BrandPurple else Slate600,
-                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp)
+                                            text = "$dirtyCount items need washing",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFB45309),
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                                         )
                                     }
                                 }
                             }
                         }
+
+                        // Top-Right View Mode Switcher: Cards | Grid | Table (Screenshot 222706)
+                        ClosetViewModeSwitcher(
+                            closetViewMode = closetViewMode,
+                            onModeChange = { closetViewMode = it }
+                        )
+                    }
+
+                    // 2. INLINE COLLAPSIBLE FIELD DICTIONARY (Screenshot 222706)
+                    InlineFieldDictionarySection(
+                        highlightScope = "clothes",
+                        defaultExpanded = false
+                    )
+                }
+            }
+
+            // 3. FILTER & SORT CONTROLS CARD (Screenshot 222706)
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Slate200),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        if (isLaptop) {
+                            // On Laptop/Big screen: Category Tabs + Search Bar side by side
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CategoryPillsFlow(
+                                    categoryTabs = categoryTabs,
+                                    selectedCategory = selectedCategory,
+                                    onSelect = { selectedCategory = it },
+                                    modifier = Modifier.weight(1.4f)
+                                )
+                                ClosetSearchField(
+                                    searchQuery = searchQuery,
+                                    onSearchChanged = onSearchChanged,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        } else {
+                            // Mobile & Tablet: Category Tabs on top, Search Bar below
+                            CategoryPillsFlow(
+                                categoryTabs = categoryTabs,
+                                selectedCategory = selectedCategory,
+                                onSelect = { selectedCategory = it },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            ClosetSearchField(
+                                searchQuery = searchQuery,
+                                onSearchChanged = onSearchChanged,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+
+                        HorizontalDivider(color = Slate100)
+
+                        // Smart Filter Presets + Sort By Dropdown Row (Screenshot 222706)
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            // Left: SMART FILTER pills
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(end = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.FilterAlt,
+                                        contentDescription = null,
+                                        tint = Slate400,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Text(
+                                        text = "SMART FILTER:",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Slate500
+                                    )
+                                }
+
+                                presets.forEach { preset ->
+                                    val isSelected = selectedPreset == preset.id
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = if (isSelected) Color(0xFF059669) else Slate100,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(8.dp))
+                                            .clickable { selectedPreset = preset.id }
+                                    ) {
+                                        Text(
+                                            text = preset.label,
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSelected) Color.White else Slate700,
+                                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Right: Sort by Dropdown
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Text(
+                                    text = "Sort by:",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Slate500
+                                )
+                                Box {
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color(0xFFF8FAFC),
+                                        border = BorderStroke(1.dp, Slate200),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .clickable { isSortMenuOpen = true }
+                                            .testTag("closet_sort_dropdown")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                        ) {
+                                            Text(
+                                                text = currentSort.label,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate800
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.KeyboardArrowDown,
+                                                contentDescription = null,
+                                                tint = Slate500,
+                                                modifier = Modifier.size(15.dp)
+                                            )
+                                        }
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = isSortMenuOpen,
+                                        onDismissRequest = { isSortMenuOpen = false },
+                                        modifier = Modifier.background(Color.White)
+                                    ) {
+                                        GarmentSortOption.entries.forEach { option ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Text(option.label, fontSize = 12.sp)
+                                                        if (currentSort == option) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Check,
+                                                                contentDescription = null,
+                                                                tint = BrandEmerald,
+                                                                modifier = Modifier.size(14.dp)
+                                                            )
+                                                        }
+                                                    }
+                                                },
+                                                onClick = {
+                                                    currentSort = option
+                                                    isSortMenuOpen = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        // GARMENT DISPLAY MODES: Cards (1-col), Grid (2-col), or Table
-        when (closetViewMode) {
-            "grid" -> {
-                items(filteredGarments.chunked(2), key = { pair -> pair.first().id }) { rowItems ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        rowItems.forEach { garment ->
-                            val stats = remember(garment.id, junctions) {
-                                DrilldownUtils.calculateGarmentStats(garment.id, junctions)
+            // 4. GARMENT DISPLAY MODES: Responsive Cards (1/2/3-col), Grid (2/3/4/5-col), or Table
+            when (closetViewMode) {
+                "grid" -> {
+                    items(
+                        filteredGarments.chunked(gridColumns),
+                        key = { row -> "grid_row_${row.first().id}" }
+                    ) { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            rowItems.forEach { garment ->
+                                GarmentCompactGridCard(
+                                    garment = garment,
+                                    stats = statsById[garment.id],
+                                    washRank = washRankById[garment.id],
+                                    onClick = { onGarmentClick(garment) },
+                                    onUploadPhoto = { uriStr ->
+                                        onUpdateGarmentPhoto?.invoke(garment, uriStr)
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
                             }
-                            GarmentCompactGridCard(
+                            repeat(gridColumns - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
+                        }
+                    }
+                }
+
+                "table" -> {
+                    item {
+                        GarmentClosetTable(
+                            garments = filteredGarments,
+                            statsById = statsById,
+                            minTableWidth = if (isWide) (screenWidth - 48.dp).coerceAtLeast(860.dp) else 860.dp,
+                            onGarmentClick = onGarmentClick
+                        )
+                    }
+                }
+
+                else -> {
+                    if (cardsColumns == 1) {
+                        items(filteredGarments, key = { it.id }) { garment ->
+                            GarmentStudioCard(
                                 garment = garment,
-                                stats = stats,
+                                stats = statsById[garment.id],
+                                washRank = washRankById[garment.id],
                                 onClick = { onGarmentClick(garment) },
                                 onUploadPhoto = { uriStr ->
                                     onUpdateGarmentPhoto?.invoke(garment, uriStr)
-                                },
-                                modifier = Modifier.weight(1f)
+                                }
                             )
                         }
-                        if (rowItems.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
+                    } else {
+                        items(
+                            filteredGarments.chunked(cardsColumns),
+                            key = { row -> "card_row_${row.first().id}" }
+                        ) { rowItems ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(14.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                rowItems.forEach { garment ->
+                                    GarmentStudioCard(
+                                        garment = garment,
+                                        stats = statsById[garment.id],
+                                        washRank = washRankById[garment.id],
+                                        onClick = { onGarmentClick(garment) },
+                                        onUploadPhoto = { uriStr ->
+                                            onUpdateGarmentPhoto?.invoke(garment, uriStr)
+                                        },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                repeat(cardsColumns - rowItems.size) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
                         }
                     }
                 }
             }
-            "table" -> {
-                item {
-                    GarmentClosetTable(
-                        garments = filteredGarments,
-                        junctions = junctions,
-                        onGarmentClick = onGarmentClick
-                    )
-                }
-            }
-            else -> {
-                items(filteredGarments, key = { it.id }) { garment ->
-                    val stats = remember(garment.id, junctions) {
-                        DrilldownUtils.calculateGarmentStats(garment.id, junctions)
-                    }
-                    GarmentStudioCard(
-                        garment = garment,
-                        stats = stats,
-                        onClick = { onGarmentClick(garment) },
-                        onUploadPhoto = { uriStr ->
-                            onUpdateGarmentPhoto?.invoke(garment, uriStr)
-                        }
-                    )
-                }
-            }
-        }
 
-        item {
-            Spacer(modifier = Modifier.height(30.dp))
+            item {
+                Spacer(modifier = Modifier.height(30.dp))
+            }
         }
     }
 }
 
+@Composable
+private fun ClosetViewModeSwitcher(
+    closetViewMode: String,
+    onModeChange: (String) -> Unit
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, Slate200)
+    ) {
+        Row(
+            modifier = Modifier.padding(3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            val modes = listOf(
+                Triple("cards", "Cards", Icons.Default.GridView),
+                Triple("grid", "Grid", Icons.Default.Apps),
+                Triple("table", "Table", Icons.Default.TableRows)
+            )
+            modes.forEach { (mode, label, icon) ->
+                val isSelected = closetViewMode == mode
+                Surface(
+                    shape = RoundedCornerShape(9.dp),
+                    color = if (isSelected) Slate900 else Color.Transparent,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(9.dp))
+                        .clickable { onModeChange(mode) }
+                        .testTag("closet_view_$mode")
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = label,
+                            tint = if (isSelected) Color.White else Slate600,
+                            modifier = Modifier.size(13.dp)
+                        )
+                        Text(
+                            text = label,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) Color.White else Slate600
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CategoryPillsFlow(
+    categoryTabs: List<CategoryTab>,
+    selectedCategory: String,
+    onSelect: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        categoryTabs.forEach { tab ->
+            val isSelected = selectedCategory == tab.id
+            Surface(
+                shape = RoundedCornerShape(10.dp),
+                color = if (isSelected) Slate900 else Slate100,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable { onSelect(tab.id) }
+                    .testTag("category_tab_${tab.id}")
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                ) {
+                    Text(
+                        text = tab.label,
+                        fontSize = 12.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                        color = if (isSelected) Color.White else Slate700
+                    )
+                    Surface(
+                        shape = RoundedCornerShape(999.dp),
+                        color = if (isSelected) Color.White.copy(alpha = 0.2f) else Color.White
+                    ) {
+                        Text(
+                            text = "${tab.count}",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isSelected) Color.White else Slate600,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp)
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClosetSearchField(
+    searchQuery: String,
+    onSearchChanged: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    OutlinedTextField(
+        value = searchQuery,
+        onValueChange = onSearchChanged,
+        placeholder = {
+            Text(
+                text = "Search name, material, occasion, or notes...",
+                fontSize = 12.sp,
+                color = Slate400,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        leadingIcon = {
+            Icon(
+                imageVector = Icons.Default.Search,
+                contentDescription = "Search",
+                tint = Slate400,
+                modifier = Modifier.size(16.dp)
+            )
+        },
+        singleLine = true,
+        modifier = modifier
+            .height(44.dp)
+            .testTag("search_by_name_input"),
+        shape = RoundedCornerShape(12.dp),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = Color(0xFFF8FAFC),
+            focusedContainerColor = Color.White,
+            unfocusedBorderColor = Slate200,
+            focusedBorderColor = BrandEmerald
+        )
+    )
+}
+
 /**
- * Replicates the exact Garment Card shown in screenshot IMG_9638.PNG:
- * - Top-left badge: ⚠️ need wash (5.0h) or 💧 Clean
- * - Top-right badge: Dress (soft pink pill)
- * - Missing image dashed area with:
- *     - Amber slashed image icon
- *     - Garment title: "white marry old"
- *     - Subtitle: "Original S3 link expired"
- *     - Purple button: "📷 Upload Local Photo"
- *     - Bottom-left sparkle ribbon: "✨ Beautiful"
- * - Info section:
- *     - Bold title: "white marry old"
- *     - Material & thickness: "lace · 03 thick clothes"
- *     - Pills row: 🌡 Hot | not diao dai | 🛡 sit breast shape ok | 💧 dry
- *     - Footer metrics: 🕒 161 washes ... $44 ($0.27/w)
+ * Matches Screenshot_20261001-222706.png Garment Card:
+ * - Upper image area with:
+ *   - Top-Left: #1 Most Washed (16x) dark trophy pill (for top 3)
+ *   - Top-Right: Clean (emerald) or Dirty (8.0h) (amber) pill
+ *   - Bottom-Left: $85 dark pill + CPW: $5.31/wash white pill
+ *   - Bottom-Right: Category pill
+ * - Lower body with:
+ *   - Title + Total Washed (16x) on right
+ *   - Material · thickClothes / seasonsubtitle
+ *   - 2x2 Attribute Grid (COMFORT, BREATHABILITY, PROTECTION, DURABILITY)
+ *   - Footer: Last washed date + App logged wears (hours)
  */
 @Composable
 fun GarmentStudioCard(
     garment: GarmentEntity,
     junction: JunctionEntity? = null,
     stats: GarmentStats? = null,
+    washRank: Int? = null,
     onClick: () -> Unit,
     onUploadPhoto: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -602,14 +780,13 @@ fun GarmentStudioCard(
     val totalWashedCount = garment.wearingFrequency + garment.trackedAppWashes
     val effectiveWears = if (totalWashedCount > 0) totalWashedCount else (stats?.totalWears ?: 0)
     val cpw = if (garment.price > 0 && effectiveWears > 0) {
-        String.format(java.util.Locale.US, "%.2f", garment.price / effectiveWears)
+        String.format(Locale.US, "%.2f", garment.price / effectiveWears)
     } else null
 
     val resolvedPhotoModel = ImageUtils.resolveFirstValidPhoto(garment.pictures, context)?.let {
         ImageUtils.resolveImageModel(it, context)
     }
 
-    // Local image upload launcher
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
@@ -618,80 +795,65 @@ fun GarmentStudioCard(
         }
     }
 
-    // Determine need wash status & wear hours from GarmentStats (matching web app getGarmentStats)
     val isNeedWash = stats?.needWash ?: (junction?.washStated?.equals("need wash", ignoreCase = true) == true)
     val unwashedHours = stats?.unwashedHours ?: if (junction != null && junction.duration > 0) {
-        String.format(java.util.Locale.US, "%.1f", junction.duration / 3600.0)
+        String.format(Locale.US, "%.1f", junction.duration / 3600.0)
     } else "0.0"
+
+    val comfort = deriveComfortRating(garment)
+    val breathability = deriveBreathabilityRating(garment)
+    val protection = deriveProtectionRating(garment)
+    val durability = deriveDurabilityRating(garment)
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .testTag("garment_studio_card_${garment.id}"),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        border = BorderStroke(1.dp, Slate200),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            // Upper Box: Image Area or S3 Expired Fallback Box (Matching screenshot)
+            // Upper Image Box
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFFF8FAFC))
-                    .border(
-                        BorderStroke(1.dp, Color(0xFFE2E8F0)),
-                        RoundedCornerShape(20.dp)
-                    )
+                    .height(220.dp)
+                    .background(Color(0xFFF1F5F9))
             ) {
-                // If real local image exists and is valid
                 if (resolvedPhotoModel != null) {
                     AsyncImage(
                         model = resolvedPhotoModel,
                         contentDescription = garment.name,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
+                        modifier = Modifier.fillMaxSize()
                     )
                 } else {
-                    // S3 Expired / Missing photo dashed card (Matching screenshot exactly)
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 24.dp, horizontal = 16.dp),
+                            .fillMaxSize()
+                            .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.ImageNotSupported,
                             contentDescription = null,
-                            tint = Color(0xFFF59E0B), // amber-500
-                            modifier = Modifier.size(38.dp)
+                            tint = Color(0xFFF59E0B),
+                            modifier = Modifier.size(36.dp)
                         )
-
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = garment.name,
                             fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium,
+                            fontWeight = FontWeight.SemiBold,
                             color = Slate700
                         )
-
-                        Text(
-                            text = "Original S3 link expired",
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
-                            color = Slate600
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        // Purple [Upload Local Photo] button
+                        Spacer(modifier = Modifier.height(6.dp))
                         Surface(
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(10.dp),
                             color = BrandPurple,
                             modifier = Modifier.clickable { photoPickerLauncher.launch("image/*") }
                         ) {
@@ -707,7 +869,7 @@ fun GarmentStudioCard(
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
-                                    text = "Upload Local Photo",
+                                    text = "Upload Photo",
                                     fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color.White
@@ -717,258 +879,262 @@ fun GarmentStudioCard(
                     }
                 }
 
-                // Top Left Overlay: Wash status badge (⚠️ need wash (5.0h) / Clean)
+                // Top-Left: Rank Badge (#1 Most Washed (16x))
+                if (washRank != null && washRank <= 3 && totalWashedCount > 0) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Slate900.copy(alpha = 0.85f),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(10.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EmojiEvents,
+                                contentDescription = null,
+                                tint = Color(0xFFFBBF24),
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Text(
+                                text = "#$washRank Most Washed (${totalWashedCount}x)",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+
+                // Top-Right: Clean / Dirty (8.0h) Badge
                 Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF059669),
+                    shape = RoundedCornerShape(999.dp),
+                    color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF10B981),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(8.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(10.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
                     ) {
                         Icon(
-                            imageVector = if (isNeedWash) Icons.Default.Warning else Icons.Default.Check,
+                            imageVector = if (isNeedWash) Icons.Default.Warning else Icons.Default.CheckCircle,
                             contentDescription = null,
                             tint = Color.White,
                             modifier = Modifier.size(11.dp)
                         )
                         Text(
-                            text = if (isNeedWash) "need wash (${unwashedHours}h)" else "Clean",
-                            fontSize = 11.sp,
+                            text = if (isNeedWash) "Dirty (${unwashedHours}h)" else "Clean",
+                            fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
                         )
                     }
                 }
 
-                // Top Right Overlay: Garment Type badge (e.g., Dress soft pink pill)
-                val type = garment.clothesType.ifBlank { "Garment" }
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFFFF1F2), // rose-50
-                    border = BorderStroke(1.dp, Color(0xFFFFE4E6)),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = type,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFE11D48), // rose-600
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                    )
-                }
-
-                // Bottom Left Overlay: ✨ Beautiful ribbon if marked beautiful
-                if (garment.beautiful.contains("beautiful", ignoreCase = true)) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFFFFBEB), // amber-50
-                        border = BorderStroke(1.dp, Color(0xFFFEF3C7)),
-                        modifier = Modifier
-                            .align(Alignment.BottomStart)
-                            .padding(8.dp)
-                    ) {
-                        Text(
-                            text = "✨ Beautiful",
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFB45309), // amber-700
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                        )
-                    }
-                }
-            }
-
-            // Lower Section: Details & Ergonomics Chips (Matching screenshot)
-            Column(
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Title
-                Text(
-                    text = garment.name,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900
-                )
-
-                // Subtitle: material · thick clothes
-                val materialText = garment.material.ifBlank { "fabric" }
-                val thickText = garment.thickClothes.ifBlank { "01 normal" }
-                Text(
-                    text = "$materialText · $thickText",
-                    fontSize = 12.sp,
-                    color = Slate600
-                )
-
-                // Ergonomic Pills Row matching screenshot
+                // Bottom-Left: Price + CPW Pills
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
+                        .align(Alignment.BottomStart)
+                        .padding(10.dp),
                     horizontalArrangement = Arrangement.spacedBy(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Hot at noon pill (e.g. 🌡 Hot / Not hot)
-                    if (garment.hotAtNoon.isNotBlank()) {
-                        val isHot = garment.hotAtNoon.contains("Hot", ignoreCase = true) && !garment.hotAtNoon.contains("Not hot", ignoreCase = true)
+                    if (garment.price > 0) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = if (isHot) Color(0xFFFFF7ED) else Color(0xFFF0FDF4),
-                            border = BorderStroke(1.dp, if (isHot) Color(0xFFFFEDD5) else Color(0xFFDCFCE7))
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Text(
-                                    text = if (isHot) "🌡️ Hot" else "🌤️ Cool",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = if (isHot) Color(0xFFC2410C) else Color(0xFF15803D)
-                                )
-                            }
-                        }
-                    }
-
-                    // diao dai pill
-                    if (garment.diaoDai.isNotBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFF8FAFC),
-                            border = BorderStroke(1.dp, Slate200)
+                            color = Slate900.copy(alpha = 0.85f)
                         ) {
                             Text(
-                                text = garment.diaoDai,
+                                text = "$${garment.price.toInt()}",
                                 fontSize = 11.sp,
-                                color = Slate700,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
                     }
-
-                    // sit breast ok pill
-                    if (garment.sitBreast.isNotBlank()) {
+                    if (cpw != null) {
                         Surface(
                             shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFFAF5FF),
-                            border = BorderStroke(1.dp, Color(0xFFF3E8FF))
+                            color = Color.White.copy(alpha = 0.92f)
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Security,
-                                    contentDescription = null,
-                                    tint = BrandPurple,
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Text(
-                                    text = garment.sitBreast,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color(0xFF6B21A8)
-                                )
-                            }
-                        }
-                    }
-
-                    // wet pill (e.g. 💧 dry / wet)
-                    if (garment.wet.isNotBlank()) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Color(0xFFEFF6FF),
-                            border = BorderStroke(1.dp, Color(0xFFDBEAFE))
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Opacity,
-                                    contentDescription = null,
-                                    tint = Color(0xFF2563EB),
-                                    modifier = Modifier.size(11.dp)
-                                )
-                                Text(
-                                    text = garment.wet,
-                                    fontSize = 11.sp,
-                                    color = Color(0xFF1D4ED8)
-                                )
-                            }
+                            Text(
+                                text = "CPW: $$cpw/wash",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate800,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(2.dp))
+                // Bottom-Right: Category Pill
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color.White.copy(alpha = 0.92f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = garment.clothesType.ifBlank { "Garment" },
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate700,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
 
-                // Footer Metrics: 🕒 161 washes ... $44 ($0.27/w)
+            // Lower Card Body (Screenshot 222706)
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // Title + Total Washed Count on Right
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = garment.name,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Slate900,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        val mat = garment.material.ifBlank { "100% Cotton" }
+                        val thick = garment.thickClothes.ifBlank { "Year-round" }
+                        val extra = listOfNotNull(
+                            garment.hotAtNoon.takeIf { it.isNotBlank() },
+                            garment.sitBreast.takeIf { it.isNotBlank() }
+                        ).joinToString(", ")
+                        Text(
+                            text = if (extra.isNotBlank()) "$mat · $thick · $extra" else "$mat · $thick",
+                            fontSize = 11.sp,
+                            color = Slate500,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(
+                            text = "${totalWashedCount}x",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Black,
+                            color = Color(0xFF059669)
+                        )
+                        Text(
+                            text = "Total Washed",
+                            fontSize = 9.sp,
+                            color = Slate400
+                        )
+                    }
+                }
+
+                // 2x2 Attribute Grid: COMFORT | BREATHABILITY / PROTECTION | DURABILITY
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        AttributeMetricBox(
+                            label = "COMFORT",
+                            value = "$comfort/5",
+                            modifier = Modifier.weight(1f)
+                        )
+                        AttributeMetricBox(
+                            label = "BREATHABILITY",
+                            value = "$breathability/5",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        AttributeMetricBox(
+                            label = "PROTECTION",
+                            value = "$protection/5",
+                            modifier = Modifier.weight(1f)
+                        )
+                        AttributeMetricBox(
+                            label = "DURABILITY",
+                            value = "$durability/5",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
+
+                HorizontalDivider(color = Slate100)
+
+                // Footer: Last washed & App logged wears
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Schedule,
-                            contentDescription = null,
-                            tint = Slate400,
-                            modifier = Modifier.size(13.dp)
-                        )
-                        Text(
-                            text = "$totalWashedCount washes",
-                            fontSize = 11.sp,
-                            color = Slate500
-                        )
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        if (garment.price > 0) {
-                            val priceDisplay = if (garment.price % 1.0 == 0.0) {
-                                "$${garment.price.toInt()}"
-                            } else {
-                                String.format(java.util.Locale.US, "$%.2f", garment.price)
-                            }
-                            Text(
-                                text = priceDisplay,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate900
-                            )
-                            if (cpw != null) {
-                                Text(
-                                    text = "($$cpw/w)",
-                                    fontSize = 11.sp,
-                                    color = Slate500
-                                )
-                            }
-                        } else {
-                            Text(
-                                text = "price: No data",
-                                fontSize = 11.sp,
-                                fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
-                                color = Slate400
-                            )
-                        }
-                    }
+                    val lastWashedDisplay = stats?.latestWashDate
+                        ?: garment.lastWashed.ifBlank { "—" }
+                    Text(
+                        text = "Last washed: $lastWashedDisplay",
+                        fontSize = 11.sp,
+                        color = Slate500
+                    )
+                    val appWears = stats?.totalWears ?: 0
+                    val appHours = stats?.totalHours ?: "0.0"
+                    Text(
+                        text = "App logged: $appWears wears (${appHours}h)",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Slate600
+                    )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AttributeMetricBox(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(8.dp),
+        color = Color(0xFFF8FAFC),
+        border = BorderStroke(1.dp, Slate100),
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                color = Slate400
+            )
+            Text(
+                text = value,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Slate800
+            )
         }
     }
 }
@@ -995,21 +1161,36 @@ fun Badge(
     }
 }
 
+/**
+ * Matches Screenshot_20261001-224201.png 2-Column (and Tablet/Laptop multi-column) Grid Card:
+ * - Square/portrait photo area with:
+ *   - Top-Left: #1 Washed dark badge (for top 3)
+ *   - Top-Right: Clean (green) or Dirty (amber) pill
+ *   - Bottom-Left: $85 dark pill
+ * - Compact Footer:
+ *   - Garment Name (bold)
+ *   - Category on left | "16x  $5.31/w" on right
+ */
 @Composable
 fun GarmentCompactGridCard(
     garment: GarmentEntity,
     stats: GarmentStats? = null,
+    washRank: Int? = null,
     onClick: () -> Unit,
     onUploadPhoto: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val totalWashedCount = garment.wearingFrequency + garment.trackedAppWashes
+    val effectiveWears = if (totalWashedCount > 0) totalWashedCount else (stats?.totalWears ?: 0)
+    val cpw = if (garment.price > 0 && effectiveWears > 0) {
+        String.format(Locale.US, "%.2f", garment.price / effectiveWears)
+    } else null
+
     val resolvedPhotoModel = ImageUtils.resolveFirstValidPhoto(garment.pictures, context)?.let {
         ImageUtils.resolveImageModel(it, context)
     }
     val isNeedWash = stats?.needWash ?: false
-    val unwashedHours = stats?.unwashedHours ?: "0.0"
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -1032,11 +1213,8 @@ fun GarmentCompactGridCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(110.dp)
-                    .padding(6.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF8FAFC))
-                    .border(BorderStroke(1.dp, Slate200), RoundedCornerShape(12.dp))
+                    .height(155.dp)
+                    .background(Color(0xFFF1F5F9))
             ) {
                 if (resolvedPhotoModel != null) {
                     AsyncImage(
@@ -1049,7 +1227,7 @@ fun GarmentCompactGridCard(
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(6.dp),
+                            .padding(8.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
@@ -1057,7 +1235,7 @@ fun GarmentCompactGridCard(
                             imageVector = Icons.Default.ImageNotSupported,
                             contentDescription = null,
                             tint = Color(0xFFF59E0B),
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Surface(
@@ -1076,21 +1254,59 @@ fun GarmentCompactGridCard(
                     }
                 }
 
-                // Top-left wash pill
+                // Top-left: #1 Washed dark badge
+                if (washRank != null && washRank <= 3 && totalWashedCount > 0) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Slate900.copy(alpha = 0.85f),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(6.dp)
+                    ) {
+                        Text(
+                            text = "#$washRank Washed",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
+                }
+
+                // Top-right: Clean / Dirty pill
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = if (isNeedWash) Color(0xFFFEF3C7) else Color(0xFFECFDF5),
+                    color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF10B981),
                     modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(5.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
                 ) {
                     Text(
-                        text = if (isNeedWash) "Need wash (${unwashedHours}h)" else "Clean",
-                        fontSize = 8.sp,
+                        text = if (isNeedWash) "Dirty" else "Clean",
+                        fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (isNeedWash) Color(0xFFB45309) else Color(0xFF047857),
-                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
+                }
+
+                // Bottom-left: $85 dark pill
+                if (garment.price > 0) {
+                    Surface(
+                        shape = RoundedCornerShape(6.dp),
+                        color = Slate900.copy(alpha = 0.8f),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(6.dp)
+                    ) {
+                        Text(
+                            text = "$${garment.price.toInt()}",
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                        )
+                    }
                 }
             }
 
@@ -1108,45 +1324,60 @@ fun GarmentCompactGridCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Text(
-                    text = "${garment.clothesType.ifBlank { "Item" }} · ${garment.material.ifBlank { "No mat" }}",
-                    fontSize = 10.sp,
-                    color = Slate500,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "$totalWashedCount w",
+                        text = garment.clothesType.ifBlank { "Item" },
                         fontSize = 10.sp,
-                        color = Slate500
+                        color = Slate500,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = if (garment.price > 0) "$${garment.price.toInt()}" else "No $",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate800
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${totalWashedCount}x",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF059669)
+                        )
+                        if (cpw != null) {
+                            Text(
+                                text = "$$cpw/w",
+                                fontSize = 10.sp,
+                                color = Slate400
+                            )
+                        }
+                    }
                 }
             }
         }
     }
 }
 
+/**
+ * Matches Screenshot_20261001-224404.png Table View:
+ * Columns: ITEM | CATEGORY | STATUS | WASHED | PRICE | CPW ($/W) | COMFORT / DURABILITY | PROTECTION
+ */
 @Composable
 fun GarmentClosetTable(
     garments: List<GarmentEntity>,
-    junctions: List<JunctionEntity>,
+    statsById: Map<String, GarmentStats>,
+    minTableWidth: Dp = 860.dp,
     onGarmentClick: (GarmentEntity) -> Unit
 ) {
+    val context = LocalContext.current
     val hScroll = rememberScrollState()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Slate200),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -1159,81 +1390,170 @@ fun GarmentClosetTable(
             // Header Row
             Row(
                 modifier = Modifier
+                    .width(minTableWidth)
                     .background(Color(0xFFF8FAFC))
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("GARMENT", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(130.dp))
-                Text("TYPE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(65.dp))
-                Text("STATUS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(85.dp))
-                Text("MATERIAL", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(85.dp))
-                Text("WASHES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(60.dp))
-                Text("PRICE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate500, modifier = Modifier.width(55.dp))
+                Text("ITEM", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(2.2f))
+                Text("CATEGORY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
+                Text("STATUS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.1f))
+                Text("WASHED", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(0.9f))
+                Text("PRICE", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(0.7f))
+                Text("CPW ($/W)", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(0.9f))
+                Text("COMFORT / DURABILITY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.4f))
+                Text("PROTECTION", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(0.9f))
             }
             HorizontalDivider(color = Slate200)
 
             garments.forEach { garment ->
-                val stats = remember(garment.id, junctions) {
-                    DrilldownUtils.calculateGarmentStats(garment.id, junctions)
-                }
+                val stats = statsById[garment.id]
                 val totalWashes = garment.wearingFrequency + garment.trackedAppWashes
+                val effectiveWears = if (totalWashes > 0) totalWashes else (stats?.totalWears ?: 0)
+                val cpw = if (garment.price > 0 && effectiveWears > 0) {
+                    String.format(Locale.US, "$%.2f", garment.price / effectiveWears)
+                } else "—"
+                val resolvedPhotoModel = ImageUtils.resolveFirstValidPhoto(garment.pictures, context)?.let {
+                    ImageUtils.resolveImageModel(it, context)
+                }
+                val isDirty = stats?.needWash == true
+
                 Row(
                     modifier = Modifier
+                        .width(minTableWidth)
                         .clickable { onGarmentClick(garment) }
-                        .padding(horizontal = 12.dp, vertical = 9.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = garment.name,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate900,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.width(130.dp)
-                    )
-                    Text(
-                        text = garment.clothesType.ifBlank { "—" },
-                        fontSize = 11.sp,
-                        color = Slate700,
-                        maxLines = 1,
-                        modifier = Modifier.width(65.dp)
-                    )
-                    Box(modifier = Modifier.width(85.dp)) {
-                        Surface(
-                            shape = RoundedCornerShape(6.dp),
-                            color = if (stats.needWash) Color(0xFFFEF3C7) else Color(0xFFECFDF5)
+                    // ITEM (Avatar + Name + Material)
+                    Row(
+                        modifier = Modifier.weight(2.2f).padding(end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Slate100),
+                            contentAlignment = Alignment.Center
                         ) {
+                            if (resolvedPhotoModel != null) {
+                                AsyncImage(
+                                    model = resolvedPhotoModel,
+                                    contentDescription = garment.name,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Checkroom,
+                                    contentDescription = null,
+                                    tint = Slate400,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                        Column {
                             Text(
-                                text = if (stats.needWash) "Need wash" else "Clean",
-                                fontSize = 9.sp,
+                                text = garment.name,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (stats.needWash) Color(0xFFB45309) else Color(0xFF047857),
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                color = Slate900,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                            Text(
+                                text = "${garment.material.ifBlank { "Cotton" }} · ${garment.thickClothes.ifBlank { "Normal" }}",
+                                fontSize = 10.sp,
+                                color = Slate500,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }
-                    Text(
-                        text = garment.material.ifBlank { "—" },
-                        fontSize = 11.sp,
-                        color = Slate600,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.width(85.dp)
-                    )
-                    Text(
-                        text = "$totalWashes",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Slate700,
-                        modifier = Modifier.width(60.dp)
-                    )
+
+                    // CATEGORY
+                    Box(modifier = Modifier.weight(1.0f)) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Slate100
+                        ) {
+                            Text(
+                                text = garment.clothesType.ifBlank { "Garment" },
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Slate700,
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    // STATUS
+                    Box(modifier = Modifier.weight(1.1f)) {
+                        Surface(
+                            shape = RoundedCornerShape(999.dp),
+                            color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFD1FAE5)
+                        ) {
+                            Text(
+                                text = if (isDirty) "Dirty (${stats?.unwashedHours ?: "0.0"}h)" else "Clean",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    // WASHED
+                    Column(modifier = Modifier.weight(0.9f)) {
+                        Text(
+                            text = "${totalWashes}x",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF059669)
+                        )
+                        Text(
+                            text = "${stats?.totalWears ?: 0} app logs",
+                            fontSize = 9.sp,
+                            color = Slate400
+                        )
+                    }
+
+                    // PRICE
                     Text(
                         text = if (garment.price > 0) "$${garment.price.toInt()}" else "—",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate800,
+                        modifier = Modifier.weight(0.7f)
+                    )
+
+                    // CPW ($/W)
+                    Text(
+                        text = cpw,
+                        fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Slate600,
+                        modifier = Modifier.weight(0.9f)
+                    )
+
+                    // COMFORT / DURABILITY
+                    Text(
+                        text = "C:${deriveComfortRating(garment)}/5 · D:${deriveDurabilityRating(garment)}/5",
+                        fontSize = 11.sp,
+                        color = Slate700,
+                        modifier = Modifier.weight(1.4f)
+                    )
+
+                    // PROTECTION
+                    Text(
+                        text = "${deriveProtectionRating(garment)}/5",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate900,
-                        modifier = Modifier.width(55.dp)
+                        color = Slate800,
+                        modifier = Modifier.weight(0.9f)
                     )
                 }
                 HorizontalDivider(color = Slate100)

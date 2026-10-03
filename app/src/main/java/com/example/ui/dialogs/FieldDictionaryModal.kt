@@ -514,15 +514,38 @@ class FieldDictionaryService(context: Context) {
  */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
+fun InlineFieldDictionarySection(
+    initialCategory: String = "all",
+    highlightScope: String = initialCategory,
+    defaultExpanded: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val service = remember { FieldDictionaryService(context) }
+    var fields by remember { mutableStateOf(service.getFields()) }
+    InlineFieldDictionaryCard(
+        dictionaryService = service,
+        fields = fields,
+        onFieldsUpdated = { fields = it },
+        initialCategory = highlightScope,
+        defaultExpanded = defaultExpanded,
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
 fun InlineFieldDictionaryCard(
     dictionaryService: FieldDictionaryService,
     fields: List<DictionaryFieldItem>,
     onFieldsUpdated: (List<DictionaryFieldItem>) -> Unit,
+    initialCategory: String = "all",
+    defaultExpanded: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    var isExpanded by remember { mutableStateOf(false) }
-    var selectedTab by remember { mutableStateOf("all") } // "all", "clothes", "wearing_report", "junction"
+    var isExpanded by remember { mutableStateOf(defaultExpanded) }
+    var selectedTab by remember(initialCategory) { mutableStateOf(initialCategory) } // "all", "clothes", "wearing_report", "junction"
 
     var editingItem by remember { mutableStateOf<DictionaryFieldItem?>(null) }
     var isAddingNew by remember { mutableStateOf(false) }

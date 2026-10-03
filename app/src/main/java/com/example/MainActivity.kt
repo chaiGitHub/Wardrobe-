@@ -101,7 +101,12 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Column {
-                AppHeader()
+                AppHeader(
+                    onLogWearClick = { showAddReportDialog = true },
+                    onAddItemClick = { showAddGarmentDialog = true },
+                    clothesCount = clothes.size,
+                    reportsCount = reports.size
+                )
                 TopNavigationBar(
                     activeTab = activeTab,
                     clothesCount = clothes.size,

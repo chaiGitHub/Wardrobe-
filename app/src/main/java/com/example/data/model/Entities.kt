@@ -74,3 +74,50 @@ data class JunctionEntity(
     val wearDate: String = "",
     val aiJunctionAnalysis: String = ""
 )
+
+val GarmentEntity.StandBreast: String
+    get() = standBreast
+
+val GarmentEntity.NotComfortable: String
+    get() = try {
+        org.json.JSONObject(customFields).optString("Not comfortable", "")
+    } catch (_: Exception) {
+        ""
+    }
+
+val GarmentEntity.antiSeeThrough: String
+    get() = try {
+        org.json.JSONObject(customFields).optString("anti see through", "")
+    } catch (_: Exception) {
+        ""
+    }
+
+val GarmentEntity.impression: String
+    get() = descriptions2.ifBlank {
+        try {
+            org.json.JSONObject(customFields).optString("impression", "")
+        } catch (_: Exception) {
+            ""
+        }
+    }
+
+val ReportEntity.dateCreated: String
+    get() = created.ifBlank { wearDate }
+
+val ReportEntity.TurnBody: String
+    get() = try {
+        org.json.JSONObject(customFields).optString("Turn body", "")
+    } catch (_: Exception) {
+        ""
+    }
+
+val ReportEntity.liftHand: String
+    get() = try {
+        org.json.JSONObject(customFields).optString("lift hand", "")
+    } catch (_: Exception) {
+        ""
+    }
+
+val JunctionEntity.dateCreated: String
+    get() = wearDate.ifBlank { washDate }
+

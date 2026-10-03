@@ -11,6 +11,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -214,14 +216,21 @@ fun AdvisorScreen(
         result
     }
 
-    Column(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
-            .verticalScroll(mainScrollState)
-            .padding(horizontal = 14.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .background(Color(0xFFF8FAFC)),
+        contentAlignment = Alignment.TopCenter
     ) {
+        val isWide = maxWidth >= 800.dp
+        Column(
+            modifier = Modifier
+                .widthIn(max = 1440.dp)
+                .fillMaxSize()
+                .verticalScroll(mainScrollState)
+                .padding(horizontal = if (isWide) 28.dp else 14.dp, vertical = if (isWide) 20.dp else 12.dp),
+            verticalArrangement = Arrangement.spacedBy(if (isWide) 16.dp else 12.dp)
+        ) {
         // 1. HEADER CARD (Matching Screenshots 13-19)
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -1745,6 +1754,7 @@ fun AdvisorScreen(
                     }
                 }
             }
+        }
         }
     }
 

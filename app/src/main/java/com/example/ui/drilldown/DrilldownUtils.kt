@@ -16,7 +16,10 @@ data class GarmentStats(
     val unwashedSeconds: Long,
     val unwashedHours: String,
     val totalWears: Int,
-    val totalDurationHours: Long
+    val totalDurationHours: Long,
+    val totalDurationSeconds: Long = totalDurationHours * 3600L,
+    val totalHours: String = String.format(Locale.US, "%.1f", totalDurationHours.toDouble()),
+    val latestWashDate: String = ""
 )
 
 object DrilldownUtils {
@@ -31,14 +34,22 @@ object DrilldownUtils {
         val unwashedSec = needWashItems.sumOf { it.duration }
         val unwashedHrs = String.format(Locale.US, "%.1f", unwashedSec / 3600.0)
         val totalWears = matches.size
-        val totalDurationHrs = kotlin.math.round(matches.sumOf { it.duration } / 3600.0).toLong()
+        val totalSec = matches.sumOf { it.duration }
+        val totalDurationHrs = kotlin.math.round(totalSec / 3600.0).toLong()
+        val totalHrsStr = String.format(Locale.US, "%.1f", totalSec / 3600.0)
+        val latestWash = matches
+            .mapNotNull { j -> j.washedDate.ifBlank { j.washDate }.takeIf { it.isNotBlank() } }
+            .maxOrNull() ?: ""
 
         return GarmentStats(
             needWash = needWash,
             unwashedSeconds = unwashedSec,
             unwashedHours = unwashedHrs,
             totalWears = totalWears,
-            totalDurationHours = totalDurationHrs
+            totalDurationHours = totalDurationHrs,
+            totalDurationSeconds = totalSec,
+            totalHours = totalHrsStr,
+            latestWashDate = latestWash
         )
     }
 
