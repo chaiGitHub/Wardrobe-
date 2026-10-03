@@ -30,6 +30,7 @@ import com.example.ui.dialogs.AddReportDialog
 import com.example.ui.dialogs.ConfirmModal
 import com.example.ui.dialogs.GarmentDetailDialog
 import com.example.ui.dialogs.JunctionAIModal
+import com.example.ui.dialogs.WashGuardDialog
 import com.example.ui.screens.AdvisorScreen
 import com.example.ui.screens.ClosetScreen
 import com.example.ui.screens.DrilldownScreen
@@ -87,6 +88,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
     var showAddGarmentDialog by remember { mutableStateOf(false) }
     var showAddReportDialog by remember { mutableStateOf(false) }
     var selectedGarmentDetail by remember { mutableStateOf<GarmentEntity?>(null) }
+    var pendingWashGarment by remember { mutableStateOf<GarmentEntity?>(null) }
 
     // Count of distinct garments needing wash (matching web app dirtyClothesCount)
     val dirtyCount = remember(clothes, junctions) {
@@ -101,12 +103,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Column {
-                AppHeader(
-                    onLogWearClick = { showAddReportDialog = true },
-                    onAddItemClick = { showAddGarmentDialog = true },
-                    clothesCount = clothes.size,
-                    reportsCount = reports.size
-                )
+                AppHeader()
                 TopNavigationBar(
                     activeTab = activeTab,
                     clothesCount = clothes.size,
@@ -189,6 +186,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                         onDeleteReportClick = { viewModel.deleteReport(it) },
                         onSelectGarment = { selectedGarmentDetail = it },
                         onUpdateWashStatus = { id, status -> viewModel.markJunctionWashStatus(id, status) },
+                        onMarkGarmentWashed = { gId, wDate -> viewModel.markGarmentWashed(gId, wDate) },
                         onDeduplicateClick = { viewModel.deduplicateReports() },
                         onSaveOrUpdateReport = { report, links, washMap ->
                             viewModel.addWearingReport(report, links, washMap)
@@ -220,7 +218,8 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                         onOpenGarmentDetail = { selectedGarmentDetail = it },
                         savedReports = savedAiReports,
                         onSaveReport = { title, cat, content -> viewModel.saveAiReport(title, cat, content) },
-                        onDeleteSavedReport = { viewModel.deleteSavedAiReport(it) }
+                        onDeleteSavedReport = { viewModel.deleteSavedAiReport(it) },
+                        viewModel = viewModel
                     )
                 }
 
@@ -300,8 +299,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                     selectedGarmentDetail = updated
                 },
                 onMarkWashNow = { g ->
-                    val now = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-                    viewModel.markGarmentWashed(g.id, now)
+                    pendingWashGarment = g
                 }
             )
         }
@@ -317,6 +315,22 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                 onSaveAiReport = { title, content ->
                     viewModel.saveAiReport(title, "Sensory Diagnosis", content)
                 }
+            )
+        }
+
+        // Wash Guard Confirmation Dialog for Garment Detail
+        pendingWashGarment?.let { garment ->
+            val now = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+            WashGuardDialog(
+                garmentName = garment.name,
+                initialWashDate = now,
+                onConfirm = { date ->
+                    viewModel.markGarmentWashed(garment.id, date) {
+                        android.widget.Toast.makeText(context, "Marked \"${garment.name}\" as washed!", android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                    pendingWashGarment = null
+                },
+                onDismiss = { pendingWashGarment = null }
             )
         }
     }

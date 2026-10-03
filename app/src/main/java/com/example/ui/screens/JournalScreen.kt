@@ -1,12 +1,12 @@
 package com.example.ui.screens
 
+import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -19,38 +19,40 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
-import androidx.compose.material.icons.filled.DeleteOutline
-import androidx.compose.material.icons.filled.GridView
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.EventNote
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.TableRows
-import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,21 +60,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
-import com.example.data.model.*
+import com.example.data.model.GarmentEntity
+import com.example.data.model.JunctionEntity
+import com.example.data.model.ReportEntity
 import com.example.ui.dialogs.AddReportDialog
-import com.example.ui.dialogs.InlineFieldDictionarySection
 import com.example.ui.dialogs.SessionDetailModal
-import com.example.ui.theme.BrandEmerald
+import com.example.ui.dialogs.formatReportDate
+import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate400
@@ -81,50 +86,11 @@ import com.example.ui.theme.Slate600
 import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
-import com.example.util.ImageUtils
+import com.example.ui.dialogs.WashGuardDialog
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
-private fun deriveReportComfort(r: ReportEntity): Int {
-    if (r.shoulderFeel.contains("not", ignoreCase = true) || r.sweat.contains("sweat", ignoreCase = true) && !r.sweat.contains("not", ignoreCase = true)) {
-        return 4
-    }
-    return 5
-}
-
-private fun deriveReportFit(r: ReportEntity): Int {
-    if (r.midBreast.contains("not", ignoreCase = true) || r.TurnBody.contains("not", ignoreCase = true)) {
-        return 4
-    }
-    return 5
-}
-
-private fun deriveReportMobility(r: ReportEntity): Int {
-    if (r.legFeel.contains("not", ignoreCase = true) || r.liftHand.contains("not", ignoreCase = true)) {
-        return 4
-    }
-    return 5
-}
-
-private fun deriveReportTemp(r: ReportEntity): String {
-    val detail = r.reportDetail
-    val regex = Regex("(\\d{1,2})\\s*°?C", RegexOption.IGNORE_CASE)
-    val match = regex.find(detail)
-    if (match != null) return "${match.groupValues[1]}°C"
-    return if (r.sweat.contains("sweat", ignoreCase = true) && !r.sweat.contains("not", ignoreCase = true)) "26°C" else "22°C"
-}
-
-private fun deriveReportOccasion(r: ReportEntity): String {
-    val n = r.name.lowercase(Locale.US)
-    return when {
-        n.contains("work") || n.contains("office") -> "Work"
-        n.contains("home") || n.contains("casual") -> "Home"
-        n.contains("out") || n.contains("walk") || n.contains("travel") -> "Outdoor"
-        n.contains("dinner") || n.contains("date") || n.contains("party") -> "Social"
-        else -> "Casual"
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun JournalScreen(
     reports: List<ReportEntity>,
@@ -134,51 +100,35 @@ fun JournalScreen(
     onDeleteReportClick: (String) -> Unit,
     onSelectGarment: ((GarmentEntity) -> Unit)? = null,
     onUpdateWashStatus: ((String, String) -> Unit)? = null,
+    onMarkGarmentWashed: ((String, String) -> Unit)? = null,
     onDeduplicateClick: (() -> Unit)? = null,
     onSaveOrUpdateReport: ((ReportEntity, List<Pair<String, Long>>, Map<String, String>) -> Unit)? = null,
     onUpdateReportOnly: ((ReportEntity) -> Unit)? = null,
     onDeleteJunctionClick: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    var journalViewMode by remember { mutableStateOf("cards") } // "cards", "grid", "table"
+    val context = LocalContext.current
+    var viewMode by remember { mutableStateOf("list") } // "list" or "calendar"
     var searchQuery by remember { mutableStateOf("") }
-    var washFilter by remember { mutableStateOf("all") } // "all", "need_wash", "clean"
+    var groupMode by remember { mutableStateOf("None") } // "None", "Month", "Year", "Clothes"
 
     var selectedReportForModal by remember { mutableStateOf<ReportEntity?>(null) }
     var editingReport by remember { mutableStateOf<ReportEntity?>(null) }
+    var pendingWashTarget by remember { mutableStateOf<Pair<JunctionEntity, String>?>(null) }
 
-    val junctionsByReportId = remember(junctions) {
-        junctions.groupBy { it.wearingReportId }
-    }
-    val clothesById = remember(clothes) {
-        clothes.associateBy { it.id }
-    }
+    // Expanded state for grouped headers (collapsed by default per instructions)
+    val expandedGroups = remember { mutableStateMapOf<String, Boolean>() }
 
-    // Sort reports newest first
-    val sortedReports = remember(reports) {
-        reports.sortedByDescending { it.wearDate }
-    }
-
-    // Filter reports by searchQuery and washFilter
-    val filteredReports = remember(sortedReports, junctionsByReportId, clothesById, searchQuery, washFilter) {
-        sortedReports.filter { r ->
-            val rJunctions = junctionsByReportId[r.id].orEmpty()
-            val hasNeedWash = rJunctions.any { it.washStated.equals("need wash", ignoreCase = true) }
-
-            val filterMatch = when (washFilter) {
-                "need_wash" -> hasNeedWash
-                "clean" -> !hasNeedWash
-                else -> true
-            }
-
-            if (!filterMatch) return@filter false
-
-            if (searchQuery.isBlank()) {
-                true
-            } else {
-                val q = searchQuery.trim().lowercase(Locale.ROOT)
+    // Filter reports by searchQuery
+    val filteredReports = remember(reports, junctions, clothes, searchQuery) {
+        if (searchQuery.isBlank()) {
+            reports
+        } else {
+            val q = searchQuery.trim().lowercase(Locale.ROOT)
+            reports.filter { r ->
+                val rJunctions = junctions.filter { it.wearingReportId == r.id }
                 val matchesClothes = rJunctions.any { j ->
-                    val g = clothesById[j.clothesId]
+                    val g = clothes.find { it.id == j.clothesId }
                     (g?.name ?: j.clothesTitle).lowercase(Locale.ROOT).contains(q) ||
                         (g?.clothesType ?: j.clothesType).lowercase(Locale.ROOT).contains(q)
                 }
@@ -194,348 +144,603 @@ fun JournalScreen(
         }
     }
 
-    BoxWithConstraints(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8FAFC)),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        val screenWidth = maxWidth
-        val isTablet = screenWidth >= 600.dp && screenWidth < 960.dp
-        val isLaptop = screenWidth >= 960.dp
-        val isWide = isTablet || isLaptop
-
-        val cardsColumns = if (isLaptop) 2 else 1
-        val gridColumns = when {
-            screenWidth >= 1100.dp -> 4
-            screenWidth >= 650.dp -> 3
-            else -> 2
-        }
-
-        LazyColumn(
-            modifier = Modifier
-                .widthIn(max = 1440.dp)
-                .fillMaxSize(),
-            contentPadding = PaddingValues(
-                horizontal = if (isWide) 24.dp else 14.dp,
-                vertical = 16.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            // 1. TOP HEADER ROW + INLINE FIELD DICTIONARY (Screenshot 224918)
-            item {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    FlowRow(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(3.dp)
-                        ) {
-                            Text(
-                                text = "Wearing & Sensory Journal",
-                                fontSize = if (isWide) 24.sp else 20.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Slate900
-                            )
-                            Text(
-                                text = "${filteredReports.size} outfit reports · Click any report or garment to inspect details",
-                                fontSize = 12.sp,
-                                color = Slate500
-                            )
+    // Group reports when groupMode != "None"
+    val groupedReports = remember(filteredReports, junctions, clothes, groupMode) {
+        when (groupMode) {
+            "Month" -> {
+                filteredReports.groupBy { r ->
+                    if (r.wearDate.length >= 7) r.wearDate.substring(0, 7) else "Unspecified Month"
+                }
+            }
+            "Year" -> {
+                filteredReports.groupBy { r ->
+                    if (r.wearDate.length >= 4) r.wearDate.substring(0, 4) else "Unspecified Year"
+                }
+            }
+            "Clothes" -> {
+                val map = linkedMapOf<String, MutableList<ReportEntity>>()
+                filteredReports.forEach { r ->
+                    val rJuncs = junctions.filter { it.wearingReportId == r.id }
+                    if (rJuncs.isEmpty()) {
+                        map.getOrPut("Unlinked Sessions") { mutableListOf() }.add(r)
+                    } else {
+                        rJuncs.forEach { j ->
+                            val gName = clothes.find { it.id == j.clothesId }?.name
+                                ?: j.clothesTitle.ifBlank { "Garment" }
+                            map.getOrPut(gName) { mutableListOf() }.add(r)
                         }
+                    }
+                }
+                map
+            }
+            else -> emptyMap()
+        }
+    }
 
-                        // Right Controls: [Cards | Grid | Table] Switcher + [+ New Report] Button
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+    Box(modifier = modifier.fillMaxSize().background(Color(0xFFF8FAFC))) {
+        if (viewMode == "calendar") {
+            Column(modifier = Modifier.fillMaxSize()) {
+                JournalHeaderCard(
+                    viewMode = viewMode,
+                    onViewModeChange = { viewMode = it },
+                    searchQuery = searchQuery,
+                    onSearchChange = { searchQuery = it },
+                    groupMode = groupMode,
+                    onGroupModeChange = { groupMode = it },
+                    onLogOutfitClick = onAddReportClick,
+                    onDeduplicateClick = {
+                        onDeduplicateClick?.invoke()
+                        Toast.makeText(context, "Deduplicated wearing reports", Toast.LENGTH_SHORT).show()
+                    }
+                )
+                WearCalendar(
+                    reports = reports,
+                    junctions = junctions,
+                    clothes = clothes,
+                    onSelectReport = { selectedReportForModal = it },
+                    onSelectGarment = { garment -> onSelectGarment?.invoke(garment) },
+                    onOpenLogModal = { _ -> onAddReportClick() },
+                    onMarkGarmentWashed = onMarkGarmentWashed,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = 90.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                // 1. Top Header Card (IMG_9718)
+                item {
+                    JournalHeaderCard(
+                        viewMode = viewMode,
+                        onViewModeChange = { viewMode = it },
+                        searchQuery = searchQuery,
+                        onSearchChange = { searchQuery = it },
+                        groupMode = groupMode,
+                        onGroupModeChange = { groupMode = it },
+                        onLogOutfitClick = onAddReportClick,
+                        onDeduplicateClick = {
+                            onDeduplicateClick?.invoke()
+                            Toast.makeText(context, "Deduplicated wearing reports", Toast.LENGTH_SHORT).show()
+                        }
+                    )
+                }
+
+                // 2. "All Wearing Reports" + "54 wearing reports" subheader (IMG_9718 & IMG_9719)
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (groupMode == "None") "All Wearing Reports" else "Grouped by $groupMode",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Slate900
+                        )
+                        Text(
+                            text = "${filteredReports.size} wearing reports",
+                            fontSize = 13.sp,
+                            color = Slate500,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+                }
+
+                // 3. Report Cards or Grouped Sections
+                if (filteredReports.isEmpty()) {
+                    item {
+                        Surface(
+                            shape = RoundedCornerShape(22.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
                         ) {
-                            JournalViewModeSwitcher(
-                                viewMode = journalViewMode,
-                                onModeChange = { journalViewMode = it }
-                            )
-
-                            Button(
-                                onClick = onAddReportClick,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF059669),
-                                    contentColor = Color.White
-                                ),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
-                                modifier = Modifier
-                                    .height(38.dp)
-                                    .testTag("btn_log_outfit_header")
+                            Column(
+                                modifier = Modifier.padding(32.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Add,
+                                    imageVector = Icons.Default.EventNote,
                                     contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
+                                    tint = Slate400,
+                                    modifier = Modifier.size(44.dp)
                                 )
-                                Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "New Report",
+                                    text = "No wearing reports found",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 15.sp,
+                                    color = Slate700
+                                )
+                                Text(
+                                    text = "Tap '+ Log Outfit' above to record today's outfit & sensory notes.",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    color = Slate500
                                 )
                             }
                         }
                     }
+                } else if (groupMode == "None") {
+                    items(filteredReports, key = { it.id }) { report ->
+                        val reportJunctions = junctions.filter { it.wearingReportId == report.id }
+                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                            ReportCard(
+                                report = report,
+                                junctions = reportJunctions,
+                                clothes = clothes,
+                                onClick = { selectedReportForModal = report },
+                                onSelectGarment = { g -> onSelectGarment?.invoke(g) },
+                                onWashBadgeClick = { j, gName -> pendingWashTarget = j to gName }
+                            )
+                        }
+                    }
+                } else {
+                    groupedReports.forEach { (groupTitle, groupItems) ->
+                        item(key = "group_$groupTitle") {
+                            val isExpanded = expandedGroups[groupTitle] ?: false
+                            Surface(
+                                shape = RoundedCornerShape(18.dp),
+                                color = Color.White,
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                            ) {
+                                Column {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { expandedGroups[groupTitle] = !isExpanded }
+                                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
+                                                contentDescription = null,
+                                                tint = Color(0xFF4F46E5)
+                                            )
+                                            Text(
+                                                text = groupTitle,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                fontSize = 15.sp,
+                                                color = Slate900
+                                            )
+                                        }
 
-                    // Inline Collapsible Field Dictionary (Screenshot 224918)
-                    InlineFieldDictionarySection(
-                        highlightScope = "wearing_reports",
-                        defaultExpanded = false
+                                        Surface(
+                                            shape = RoundedCornerShape(12.dp),
+                                            color = Color(0xFFEEF2FF)
+                                        ) {
+                                            Text(
+                                                text = "${groupItems.size} reports",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF4F46E5),
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                            )
+                                        }
+                                    }
+
+                                    AnimatedVisibility(visible = isExpanded) {
+                                        Column(
+                                            modifier = Modifier
+                                                .padding(horizontal = 12.dp)
+                                                .padding(bottom = 12.dp),
+                                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                                        ) {
+                                            groupItems.forEach { report ->
+                                                val reportJunctions = junctions.filter { it.wearingReportId == report.id }
+                                                ReportCard(
+                                                    report = report,
+                                                    junctions = reportJunctions,
+                                                    clothes = clothes,
+                                                    onClick = { selectedReportForModal = report },
+                                                    onSelectGarment = { g -> onSelectGarment?.invoke(g) },
+                                                    onWashBadgeClick = { j, gName -> pendingWashTarget = j to gName }
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Floating Action Button
+        FloatingActionButton(
+            onClick = onAddReportClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp)
+                .testTag("add_report_fab"),
+            containerColor = Color(0xFF4F46E5),
+            contentColor = Color.White
+        ) {
+            Icon(imageVector = Icons.Default.Add, contentDescription = "Log Outfit")
+        }
+    }
+
+    // Session Detail Modal (IMG_9720–IMG_9726)
+    selectedReportForModal?.let { currentModalReport ->
+        // Always observe latest version of report from reports list
+        val liveReport = reports.find { it.id == currentModalReport.id } ?: currentModalReport
+        SessionDetailModal(
+            isOpen = true,
+            report = liveReport,
+            junctions = junctions,
+            clothes = clothes,
+            onClose = { selectedReportForModal = null },
+            onSelectGarment = { g ->
+                selectedReportForModal = null
+                onSelectGarment?.invoke(g)
+            },
+            onUpdateWashStatus = { jId, status ->
+                onUpdateWashStatus?.invoke(jId, status)
+            },
+            onDeleteReport = { rId ->
+                onDeleteReportClick(rId)
+                selectedReportForModal = null
+            },
+            onEditReport = { repToEdit ->
+                selectedReportForModal = null
+                editingReport = repToEdit
+            },
+            onUpdateReport = { updated ->
+                onUpdateReportOnly?.invoke(updated)
+            },
+            onDeleteJunction = { jId ->
+                onDeleteJunctionClick?.invoke(jId)
+            }
+        )
+    }
+
+    // Edit Wearing Report Dialog (reuses AddReportDialog with initialReport & initialJunctions)
+    editingReport?.let { rep ->
+        val repJunctions = junctions.filter { it.wearingReportId == rep.id }
+        AddReportDialog(
+            clothes = clothes,
+            existingReports = reports,
+            initialReport = rep,
+            initialJunctions = repJunctions,
+            onDismiss = { editingReport = null },
+            onSave = { updatedRep, links ->
+                onSaveOrUpdateReport?.invoke(updatedRep, links, emptyMap())
+                editingReport = null
+            },
+            onSaveWithWashMap = { updatedRep, links, washMap ->
+                onSaveOrUpdateReport?.invoke(updatedRep, links, washMap)
+                editingReport = null
+            }
+        )
+    }
+
+    // Wash Guard Confirmation Dialog
+    pendingWashTarget?.let { (junc, gName) ->
+        val washDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        WashGuardDialog(
+            garmentName = gName,
+            initialWashDate = washDateStr,
+            onConfirm = { date ->
+                onUpdateWashStatus?.invoke(junc.id, "Clean")
+                pendingWashTarget = null
+            },
+            onDismiss = { pendingWashTarget = null }
+        )
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun JournalHeaderCard(
+    viewMode: String,
+    onViewModeChange: (String) -> Unit,
+    searchQuery: String,
+    onSearchChange: (String) -> Unit,
+    groupMode: String,
+    onGroupModeChange: (String) -> Unit,
+    onLogOutfitClick: () -> Unit,
+    onDeduplicateClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFF3B82F6).copy(alpha = 0.35f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Row 1: Header Icon + Title (Full width so "Wearing Report Journal" is never truncated)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF4F46E5)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "Wearing Report Journal",
+                        tint = Color.White,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "DATABASE RECORD",
+                        fontSize = 9.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF4F46E5),
+                        letterSpacing = 0.6.sp,
+                        maxLines = 1
+                    )
+                    Text(
+                        text = "Wearing Report Journal",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Slate900,
+                        maxLines = 1
                     )
                 }
             }
 
-            // 2. SEARCH & FILTER CARD (Screenshot 224918)
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    border = BorderStroke(1.dp, Slate200),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            // Row 2: Action Buttons Row: [Deduplicate] + [+ Log Outfit]
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedButton(
+                    onClick = onDeduplicateClick,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = Color(0xFFFFFBEB),
+                        contentColor = Color(0xFF92400E)
+                    ),
+                    border = BorderStroke(1.dp, Color(0xFFFDE68A)),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp),
+                    modifier = Modifier.height(34.dp)
                 ) {
-                    if (isWide) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            JournalSearchInput(
-                                searchQuery = searchQuery,
-                                onSearchChange = { searchQuery = it },
-                                modifier = Modifier.weight(1f)
-                            )
-                            JournalWashFilterPills(
-                                washFilter = washFilter,
-                                onFilterChange = { washFilter = it }
-                            )
-                        }
-                    } else {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(14.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            JournalSearchInput(
-                                searchQuery = searchQuery,
-                                onSearchChange = { searchQuery = it },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            JournalWashFilterPills(
-                                washFilter = washFilter,
-                                onFilterChange = { washFilter = it }
-                            )
-                        }
-                    }
-                }
-            }
-
-            // 3. REPORT DISPLAY MODES: Cards (224918), Grid (225021), or Table (225035)
-            when (journalViewMode) {
-                "grid" -> {
-                    items(
-                        filteredReports.chunked(gridColumns),
-                        key = { row -> "journal_grid_${row.first().id}" }
-                    ) { rowReports ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            rowReports.forEach { report ->
-                                val rJunctions = junctionsByReportId[report.id].orEmpty()
-                                JournalCompactGridCard(
-                                    report = report,
-                                    junctions = rJunctions,
-                                    clothesById = clothesById,
-                                    onClick = { selectedReportForModal = report },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                            repeat(gridColumns - rowReports.size) {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = null,
+                        tint = Color(0xFFD97706),
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Deduplicate",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF92400E),
+                        maxLines = 1
+                    )
                 }
 
-                "table" -> {
-                    item {
-                        JournalTableView(
-                            reports = filteredReports,
-                            junctionsByReportId = junctionsByReportId,
-                            clothesById = clothesById,
-                            minTableWidth = if (isWide) (screenWidth - 48.dp).coerceAtLeast(860.dp) else 860.dp,
-                            onReportClick = { selectedReportForModal = it },
-                            onSelectGarment = { g -> onSelectGarment?.invoke(g) }
-                        )
-                    }
-                }
-
-                else -> {
-                    if (cardsColumns == 1) {
-                        items(filteredReports, key = { it.id }) { report ->
-                            val rJunctions = junctionsByReportId[report.id].orEmpty()
-                            JournalFullReportCard(
-                                report = report,
-                                junctions = rJunctions,
-                                clothesById = clothesById,
-                                isWide = isWide,
-                                onClick = { selectedReportForModal = report },
-                                onDeleteClick = { onDeleteReportClick(report.id) },
-                                onSelectGarment = { g -> onSelectGarment?.invoke(g) }
-                            )
-                        }
-                    } else {
-                        items(
-                            filteredReports.chunked(cardsColumns),
-                            key = { row -> "journal_card_row_${row.first().id}" }
-                        ) { rowReports ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(14.dp),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                rowReports.forEach { report ->
-                                    val rJunctions = junctionsByReportId[report.id].orEmpty()
-                                    JournalFullReportCard(
-                                        report = report,
-                                        junctions = rJunctions,
-                                        clothesById = clothesById,
-                                        isWide = false,
-                                        onClick = { selectedReportForModal = report },
-                                        onDeleteClick = { onDeleteReportClick(report.id) },
-                                        onSelectGarment = { g -> onSelectGarment?.invoke(g) },
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                }
-                                repeat(cardsColumns - rowReports.size) {
-                                    Spacer(modifier = Modifier.weight(1f))
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(32.dp))
-            }
-        }
-
-        // Session Detail Modal
-        selectedReportForModal?.let { report ->
-            val currentReport = reports.find { it.id == report.id } ?: report
-            val rJunctions = junctions.filter { it.wearingReportId == currentReport.id }
-            SessionDetailModal(
-                isOpen = true,
-                report = currentReport,
-                junctions = rJunctions,
-                clothes = clothes,
-                onClose = { selectedReportForModal = null },
-                onEditReport = {
-                    editingReport = currentReport
-                    selectedReportForModal = null
-                },
-                onDeleteReport = { id ->
-                    onDeleteReportClick(id)
-                    selectedReportForModal = null
-                },
-                onSelectGarment = { garment ->
-                    selectedReportForModal = null
-                    onSelectGarment?.invoke(garment)
-                },
-                onUpdateWashStatus = { jId, status ->
-                    onUpdateWashStatus?.invoke(jId, status)
-                },
-                onUpdateReport = { updated ->
-                    onUpdateReportOnly?.invoke(updated)
-                },
-                onDeleteJunction = { jId ->
-                    onDeleteJunctionClick?.invoke(jId)
-                }
-            )
-        }
-
-        // Edit Report Dialog
-        editingReport?.let { reportToEdit ->
-            val rJunctions = junctions.filter { it.wearingReportId == reportToEdit.id }
-            AddReportDialog(
-                clothes = clothes,
-                existingReports = reports,
-                initialReport = reportToEdit,
-                initialJunctions = rJunctions,
-                onDismiss = { editingReport = null },
-                onSave = { updatedReport, links ->
-                    onSaveOrUpdateReport?.invoke(updatedReport, links, emptyMap())
-                    editingReport = null
-                },
-                onSaveWithWashMap = { updatedReport, links, washMap ->
-                    onSaveOrUpdateReport?.invoke(updatedReport, links, washMap)
-                    editingReport = null
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun JournalViewModeSwitcher(
-    viewMode: String,
-    onModeChange: (String) -> Unit
-) {
-    Surface(
-        shape = RoundedCornerShape(12.dp),
-        color = Color.White,
-        border = BorderStroke(1.dp, Slate200)
-    ) {
-        Row(
-            modifier = Modifier.padding(3.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            val modes = listOf(
-                Triple("cards", "Cards", Icons.Default.GridView),
-                Triple("grid", "Grid", Icons.Default.Apps),
-                Triple("table", "Table", Icons.Default.TableRows)
-            )
-            modes.forEach { (mode, label, icon) ->
-                val isSelected = viewMode == mode
-                Surface(
-                    shape = RoundedCornerShape(9.dp),
-                    color = if (isSelected) Slate900 else Color.Transparent,
+                Button(
+                    onClick = onLogOutfitClick,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4F46E5)),
+                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
                     modifier = Modifier
-                        .clip(RoundedCornerShape(9.dp))
-                        .clickable { onModeChange(mode) }
-                        .testTag("journal_view_$mode")
+                        .height(34.dp)
+                        .testTag("btn_log_outfit_header")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Log Outfit",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        maxLines = 1
+                    )
+                }
+            }
+
+            // 3. Subtitle text
+            Text(
+                text = if (viewMode == "calendar") {
+                    "Visual calendar displaying wearing reports and wash requirements day-by-day. Tap any day to inspect details in the panel below."
+                } else {
+                    "Wearing reports organized by date or group. Reports are collapsed by default; click any group header to expand."
+                },
+                fontSize = 13.sp,
+                color = Slate600,
+                lineHeight = 19.sp
+            )
+
+            // 4. View Switcher Pill: List vs Calendar (placed below the wearing report text)
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFF1F5F9),
+                border = BorderStroke(1.dp, Slate200)
+            ) {
+                Row(
+                    modifier = Modifier.padding(3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val isList = viewMode == "list"
+                    Surface(
+                        shape = RoundedCornerShape(9.dp),
+                        color = if (isList) Color.White else Color.Transparent,
+                        shadowElevation = if (isList) 1.dp else 0.dp,
+                        modifier = Modifier
+                            .testTag("tab_view_mode_list")
+                            .clickable { onViewModeChange("list") }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Layers,
+                                contentDescription = null,
+                                tint = if (isList) Color(0xFF4F46E5) else Slate600,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "List",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = if (isList) Slate900 else Slate600,
+                                maxLines = 1
+                            )
+                        }
+                    }
+
+                    val isCal = viewMode == "calendar"
+                    Surface(
+                        shape = RoundedCornerShape(9.dp),
+                        color = if (isCal) Color.White else Color.Transparent,
+                        shadowElevation = if (isCal) 1.dp else 0.dp,
+                        modifier = Modifier
+                            .testTag("tab_view_mode_calendar")
+                            .clickable { onViewModeChange("calendar") }
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CalendarMonth,
+                                contentDescription = null,
+                                tint = if (isCal) Color(0xFF4F46E5) else Slate600,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Calendar",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = if (isCal) Slate900 else Slate600,
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 5. Search Bar (IMG_9718)
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = onSearchChange,
+                placeholder = {
+                    Text(
+                        text = "Search report by name, sensory notes, or clothes...",
+                        fontSize = 13.sp,
+                        color = Slate400,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("journal_search_input"),
+                shape = RoundedCornerShape(16.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF4F46E5),
+                    unfocusedBorderColor = Slate200,
+                    focusedContainerColor = Color(0xFFF8FAFC),
+                    unfocusedContainerColor = Color(0xFFF8FAFC)
+                )
+            )
+
+            // 6. GROUP Filter Bar: Only shown when in List mode matching original web app
+            if (viewMode == "list") {
+                Surface(
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color(0xFFF1F5F9),
+                    border = BorderStroke(1.dp, Slate200),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Icon(
-                            imageVector = icon,
-                            contentDescription = label,
-                            tint = if (isSelected) Color.White else Slate600,
-                            modifier = Modifier.size(13.dp)
-                        )
                         Text(
-                            text = label,
+                            text = "▾ GROUP:",
                             fontSize = 11.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else Slate600
+                            fontFamily = FontFamily.Monospace,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate500,
+                            modifier = Modifier.padding(end = 4.dp)
                         )
+
+                        listOf("None", "Month", "Year", "Clothes").forEach { mode ->
+                            val isSelected = groupMode == mode
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (isSelected) Color(0xFF4F46E5) else Color.White,
+                                border = if (isSelected) null else BorderStroke(1.dp, Slate200),
+                                modifier = Modifier.clickable { onGroupModeChange(mode) }
+                            ) {
+                                Text(
+                                    text = mode,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isSelected) Color.White else Slate700,
+                                    modifier = Modifier.padding(horizontal = 11.dp, vertical = 6.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -543,847 +748,301 @@ private fun JournalViewModeSwitcher(
     }
 }
 
-@Composable
-private fun JournalSearchInput(
-    searchQuery: String,
-    onSearchChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    OutlinedTextField(
-        value = searchQuery,
-        onValueChange = onSearchChange,
-        placeholder = {
-            Text(
-                text = "Search by report title, notes, occasion, or garment...",
-                fontSize = 12.sp,
-                color = Slate400,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = Slate400,
-                modifier = Modifier.size(16.dp)
-            )
-        },
-        singleLine = true,
-        modifier = modifier
-            .height(44.dp)
-            .testTag("journal_search_input"),
-        shape = RoundedCornerShape(12.dp),
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = BrandEmerald,
-            unfocusedBorderColor = Slate200,
-            focusedContainerColor = Color.White,
-            unfocusedContainerColor = Color(0xFFF8FAFC)
-        )
-    )
-}
-
-@Composable
-private fun JournalWashFilterPills(
-    washFilter: String,
-    onFilterChange: (String) -> Unit
-) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        listOf(
-            "all" to "All",
-            "need_wash" to "Need Wash",
-            "clean" to "All Clean"
-        ).forEach { (key, label) ->
-            val isSelected = washFilter == key
-            Surface(
-                shape = RoundedCornerShape(10.dp),
-                color = if (isSelected) Slate900 else Slate100,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable { onFilterChange(key) }
-                    .testTag("journal_filter_$key")
-            ) {
-                Text(
-                    text = label,
-                    fontSize = 11.sp,
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
-                    color = if (isSelected) Color.White else Slate700,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
-                )
-            }
-        }
-    }
-}
-
-/**
- * Matches Screenshot_20261001-224918.png Cards View:
- * - Green calendar badge + Date (2026-06-21) + Temp (22°C) + Occasion (Home) + Total: 7.0h
- * - Right side: All Clean (1) or Need Wash badge + Delete button
- * - Title (casual) + notes
- * - Comfort: 5/5 | Fit: 5/5 | Mobility: 5/5 pills
- * - Garments Worn in This Session (1) box with garment row cards
- */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun JournalFullReportCard(
+private fun ReportCard(
     report: ReportEntity,
     junctions: List<JunctionEntity>,
-    clothesById: Map<String, GarmentEntity>,
-    isWide: Boolean,
+    clothes: List<GarmentEntity>,
     onClick: () -> Unit,
-    onDeleteClick: () -> Unit,
     onSelectGarment: (GarmentEntity) -> Unit,
-    modifier: Modifier = Modifier
+    onWashBadgeClick: ((JunctionEntity, String) -> Unit)? = null
 ) {
-    val context = LocalContext.current
-    val totalHours = remember(junctions) {
-        val totalSec = junctions.maxOfOrNull { it.duration } ?: 0L
-        String.format(Locale.US, "%.1fh", totalSec / 3600.0)
+    val formattedDate = remember(report.wearDate) {
+        formatReportDate(report.wearDate, "EEE, MMM d, yyyy")
     }
-    val needWashCount = remember(junctions) {
-        junctions.count { it.washStated.equals("need wash", ignoreCase = true) }
+
+    val totalHrs = remember(junctions) {
+        val maxSec = junctions.maxOfOrNull { it.duration } ?: 0L
+        val sec = if (maxSec > 0) maxSec else 1200L
+        String.format(Locale.US, "%.1f hrs", sec / 3600.0)
     }
-    val tempStr = remember(report) { deriveReportTemp(report) }
-    val occasionStr = remember(report) { deriveReportOccasion(report) }
-    val comfort = remember(report) { deriveReportComfort(report) }
-    val fit = remember(report) { deriveReportFit(report) }
-    val mobility = remember(report) { deriveReportMobility(report) }
 
     Card(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .testTag("report_card_${report.id}")
             .clickable { onClick() },
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Slate200),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Top Row: Calendar icon + Date & Meta on Left, Wash Badge + Delete on Right
+            // 1. Header: Calendar icon + Formatted Date + Duration pill + Eye button (IMG_9719)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color(0xFFECFDF5)),
-                        contentAlignment = Alignment.Center
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.CalendarToday,
                             contentDescription = null,
-                            tint = Color(0xFF059669),
-                            modifier = Modifier.size(18.dp)
+                            tint = Color(0xFF4F46E5),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = formattedDate,
+                            fontWeight = FontWeight.ExtraBold,
+                            fontSize = 16.sp,
+                            color = Slate900
                         )
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = report.name.ifBlank { "Wearing Report" },
+                        fontSize = 13.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = Slate500
+                    )
+                }
 
-                    Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = report.wearDate.ifBlank { "—" },
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Slate900
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Slate100
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Thermostat,
-                                        contentDescription = null,
-                                        tint = Slate500,
-                                        modifier = Modifier.size(11.dp)
-                                    )
-                                    Text(
-                                        text = tempStr,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Slate700
-                                    )
-                                }
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Slate100
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.LocationOn,
-                                        contentDescription = null,
-                                        tint = Slate500,
-                                        modifier = Modifier.size(11.dp)
-                                    )
-                                    Text(
-                                        text = occasionStr,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Slate700
-                                    )
-                                }
-                            }
-                        }
-
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Duration badge (e.g. "0.3 hrs")
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = Color(0xFFEEF2FF),
+                        border = BorderStroke(1.dp, Color(0xFFC7D2FE))
+                    ) {
                         Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Schedule,
                                 contentDescription = null,
-                                tint = Slate400,
-                                modifier = Modifier.size(12.dp)
+                                tint = Color(0xFF4F46E5),
+                                modifier = Modifier.size(13.dp)
                             )
                             Text(
-                                text = "Total: $totalHours",
-                                fontSize = 11.sp,
-                                color = Slate500
-                            )
-                        }
-                    }
-                }
-
-                // Right side: All Clean / Need Wash badge + Delete icon
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    val isDirty = needWashCount > 0
-                    Surface(
-                        shape = RoundedCornerShape(999.dp),
-                        color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFECFDF5),
-                        border = BorderStroke(1.dp, if (isDirty) Color(0xFFFDE68A) else Color(0xFFA7F3D0))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Icon(
-                                imageVector = if (isDirty) Icons.Default.Warning else Icons.Default.CheckCircle,
-                                contentDescription = null,
-                                tint = if (isDirty) Color(0xFFD97706) else Color(0xFF059669),
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = if (isDirty) "$needWashCount Need Wash" else "All Clean (${junctions.size})",
-                                fontSize = 10.sp,
+                                text = totalHrs,
+                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857)
+                                color = Color(0xFF4338CA)
                             )
                         }
                     }
 
-                    IconButton(
-                        onClick = onDeleteClick,
-                        modifier = Modifier.size(30.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteOutline,
-                            contentDescription = "Delete Report",
-                            tint = Slate400,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-
-            // Title & Notes
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(
-                    text = report.name.ifBlank { "Wearing Report" },
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900
-                )
-                val notes = report.reportDetail.ifBlank {
-                    listOfNotNull(
-                        report.shoulderFeel.takeIf { it.isNotBlank() }?.let { "Shoulder: $it" },
-                        report.midBreast.takeIf { it.isNotBlank() }?.let { "Chest: $it" },
-                        report.sweat.takeIf { it.isNotBlank() }?.let { "Sweat: $it" },
-                        report.legFeel.takeIf { it.isNotBlank() }?.let { "Leg: $it" }
-                    ).joinToString(" · ").ifBlank { "Comfortable wearing session." }
-                }
-                Text(
-                    text = notes,
-                    fontSize = 12.sp,
-                    color = Slate600,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            // Comfort / Fit / Mobility Rating Pills
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp)
-            ) {
-                SensoryScorePill("Comfort", "$comfort/5")
-                SensoryScorePill("Fit", "$fit/5")
-                SensoryScorePill("Mobility", "$mobility/5")
-            }
-
-            HorizontalDivider(color = Slate100)
-
-            // Garments Worn in This Session
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Checkroom,
-                        contentDescription = null,
-                        tint = Slate500,
-                        modifier = Modifier.size(13.dp)
-                    )
-                    Text(
-                        text = "Garments Worn in This Session (${junctions.size})",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate600
-                    )
-                }
-
-                val garmentRows = if (isWide && junctions.size > 1) junctions.chunked(2) else junctions.chunked(1)
-                garmentRows.forEach { rowJuncs ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        rowJuncs.forEach { j ->
-                            val garment = clothesById[j.clothesId]
-                            val gName = garment?.name ?: j.clothesTitle.ifBlank { "Garment" }
-                            val gType = (garment?.clothesType ?: j.clothesType).ifBlank { "Tops" }
-                            val isDirty = j.washStated.equals("need wash", ignoreCase = true)
-                            val durHrs = String.format(Locale.US, "%.1fh", j.duration / 3600.0)
-                            val resolvedPhoto = garment?.let {
-                                ImageUtils.resolveFirstValidPhoto(it.pictures, context)?.let { p ->
-                                    ImageUtils.resolveImageModel(p, context)
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = Color(0xFFF8FAFC),
-                                border = BorderStroke(1.dp, Slate200),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .clickable {
-                                        if (garment != null) onSelectGarment(garment) else onClick()
-                                    }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.SpaceBetween
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                        modifier = Modifier.weight(1f)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(38.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(Color.White),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            if (resolvedPhoto != null) {
-                                                AsyncImage(
-                                                    model = resolvedPhoto,
-                                                    contentDescription = gName,
-                                                    contentScale = ContentScale.Crop,
-                                                    modifier = Modifier.fillMaxSize()
-                                                )
-                                            } else {
-                                                Icon(
-                                                    imageVector = Icons.Default.Checkroom,
-                                                    contentDescription = null,
-                                                    tint = Slate400,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-
-                                        Column {
-                                            Text(
-                                                text = gName,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Slate900,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            Text(
-                                                text = gType,
-                                                fontSize = 10.sp,
-                                                color = Slate500
-                                            )
-                                        }
-                                    }
-
-                                    Column(horizontalAlignment = Alignment.End) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                        ) {
-                                            Text(
-                                                text = durHrs,
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Slate700
-                                            )
-                                            Surface(
-                                                shape = RoundedCornerShape(6.dp),
-                                                color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFD1FAE5)
-                                            ) {
-                                                Text(
-                                                    text = if (isDirty) "Need Wash" else "Clean",
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857),
-                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                                )
-                                            }
-                                        }
-                                        if (!isDirty && j.washDate.isNotBlank()) {
-                                            Text(
-                                                text = "Washed: ${j.washDate}",
-                                                fontSize = 9.sp,
-                                                color = Color(0xFF059669)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        if (isWide && junctions.size > 1 && rowJuncs.size == 1) {
-                            Spacer(modifier = Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SensoryScorePill(label: String, score: String) {
-    Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = Color(0xFFF8FAFC),
-        border = BorderStroke(1.dp, Slate200)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "$label:",
-                fontSize = 11.sp,
-                color = Slate500
-            )
-            Text(
-                text = score,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Slate900
-            )
-        }
-    }
-}
-
-/**
- * Matches Screenshot_20261001-225021.png 2-Column (and Tablet/Laptop multi-column) Compact Grid Card
- */
-@Composable
-private fun JournalCompactGridCard(
-    report: ReportEntity,
-    junctions: List<JunctionEntity>,
-    clothesById: Map<String, GarmentEntity>,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val context = LocalContext.current
-    val totalHours = remember(junctions) {
-        val totalSec = junctions.maxOfOrNull { it.duration } ?: 0L
-        String.format(Locale.US, "%.1fh", totalSec / 3600.0)
-    }
-    val needWashCount = remember(junctions) {
-        junctions.count { it.washStated.equals("need wash", ignoreCase = true) }
-    }
-    val isDirty = needWashCount > 0
-    val tempStr = remember(report) { deriveReportTemp(report) }
-    val occasionStr = remember(report) { deriveReportOccasion(report) }
-    val comfort = remember(report) { deriveReportComfort(report) }
-    val fit = remember(report) { deriveReportFit(report) }
-
-    Card(
-        modifier = modifier
-            .clickable(onClick = onClick)
-            .testTag("journal_grid_card_${report.id}"),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Slate200),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            // Top Row: Date + Clean/Wash Badge
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = report.wearDate.ifBlank { "—" },
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF059669)
-                )
-                Surface(
-                    shape = RoundedCornerShape(999.dp),
-                    color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFD1FAE5)
-                ) {
-                    Text(
-                        text = if (isDirty) "$needWashCount Wash" else "${junctions.size} Clean",
-                        fontSize = 9.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857),
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                    )
-                }
-            }
-
-            // Title & Meta
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = report.name.ifBlank { "Wearing Report" },
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Slate900,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = "$tempStr · $occasionStr · $totalHours",
-                    fontSize = 10.sp,
-                    color = Slate500,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-
-            // Mini Garment Thumbnails Strip
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(38.dp)
-            ) {
-                junctions.take(4).forEach { j ->
-                    val g = clothesById[j.clothesId]
-                    val resolvedPhoto = g?.let {
-                        ImageUtils.resolveFirstValidPhoto(it.pictures, context)?.let { p ->
-                            ImageUtils.resolveImageModel(p, context)
-                        }
-                    }
-                    Box(
+                    // Eye icon circle button
+                    Surface(
+                        shape = CircleShape,
+                        color = Color(0xFFF1F5F9),
                         modifier = Modifier
-                            .size(36.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Slate100),
-                        contentAlignment = Alignment.Center
+                            .size(32.dp)
+                            .clickable { onClick() }
                     ) {
-                        if (resolvedPhoto != null) {
-                            AsyncImage(
-                                model = resolvedPhoto,
-                                contentDescription = g.name,
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else {
+                        Box(contentAlignment = Alignment.Center) {
                             Icon(
-                                imageVector = Icons.Default.Checkroom,
-                                contentDescription = null,
-                                tint = Slate400,
+                                imageVector = Icons.Default.Visibility,
+                                contentDescription = "View Report",
+                                tint = Slate600,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
                     }
                 }
-                if (junctions.size > 4) {
-                    Text(
-                        text = "+${junctions.size - 4}",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate500
-                    )
-                }
             }
 
             HorizontalDivider(color = Slate100)
 
-            // Footer: Comfort 5/5 | Fit 5/5
+            // 2. CLOTHES(NEW) · CLOTHES ITEMS section (IMG_9719)
+            Text(
+                text = "CLOTHES(NEW)  •  CLOTHES ITEMS",
+                fontSize = 11.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                color = Slate400,
+                letterSpacing = 0.5.sp
+            )
+
+            if (junctions.isNotEmpty()) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    junctions.forEach { j ->
+                        val garment = clothes.find { it.id == j.clothesId }
+                        val gName = garment?.name ?: j.clothesTitle.ifBlank { "Garment" }
+                        val gType = (garment?.clothesType ?: j.clothesType).ifBlank { "Item" }
+                        val isDirty = j.washStated.contains("need wash", ignoreCase = true) || j.washStated.isBlank()
+
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color(0xFFFAF5FF),
+                            border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                            modifier = Modifier.clickable {
+                                if (garment != null) onSelectGarment(garment) else onClick()
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Checkroom,
+                                    contentDescription = null,
+                                    tint = Color(0xFF9333EA),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = gName,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+                                Text(
+                                    text = "($gType)",
+                                    fontSize = 12.sp,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = Color(0xFF9333EA)
+                                )
+
+                                // Clean / need wash inner badge
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFD1FAE5),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        if (isDirty) Color(0xFFF59E0B) else Color(0xFF10B981)
+                                    ),
+                                    modifier = Modifier.clickable {
+                                        if (isDirty) {
+                                            onWashBadgeClick?.invoke(j, gName)
+                                        }
+                                    }
+                                ) {
+                                    Text(
+                                        text = if (isDirty) "need wash" else "Clean",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857),
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 3. Sensory Monospace Summary Box (IMG_9719)
+            Surface(
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFFF8FAFC),
+                border = BorderStroke(1.dp, Slate200),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    SensorySummaryLine("SHOULDER FEEL", report.shoulderFeel)
+                    SensorySummaryLine("MID BREAST", report.midBreast)
+                    SensorySummaryLine("SWEAT", report.sweat)
+                    SensorySummaryLine("LEG FEEL", report.legFeel)
+                }
+            }
+
+            // 4. Bottom Action Prompt: "👁 Tap to view full detail & edit this wearing report >" (IMG_9719)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Comfort $comfort/5",
-                    fontSize = 10.sp,
-                    color = Slate600
-                )
-                Text(
-                    text = "Fit $fit/5",
-                    fontSize = 10.sp,
-                    color = Slate600
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Visibility,
+                        contentDescription = null,
+                        tint = Slate500,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Text(
+                        text = "Tap to view full detail & edit this wearing report",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Slate600
+                    )
+                }
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = null,
+                    tint = Slate400,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }
     }
 }
 
-/**
- * Matches Screenshot_20261001-225035.png Table View:
- * Columns: DATE | REPORT TITLE | TEMP / OCCASION | GARMENTS WORN | TOTAL DURATION | COMFORT / FIT | WASH STATUS
- */
 @Composable
-private fun JournalTableView(
-    reports: List<ReportEntity>,
-    junctionsByReportId: Map<String, List<JunctionEntity>>,
-    clothesById: Map<String, GarmentEntity>,
-    minTableWidth: Dp = 860.dp,
-    onReportClick: (ReportEntity) -> Unit,
-    onSelectGarment: (GarmentEntity) -> Unit
-) {
-    val context = LocalContext.current
-    val hScroll = rememberScrollState()
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Slate200),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(hScroll)
-        ) {
-            // Header Row
-            Row(
-                modifier = Modifier
-                    .width(minTableWidth)
-                    .background(Color(0xFFF8FAFC))
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
+private fun SensorySummaryLine(label: String, value: String) {
+    val hasData = value.isNotBlank()
+    Text(
+        text = buildAnnotatedString {
+            withStyle(
+                SpanStyle(
+                    fontFamily = FontFamily.Monospace,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp,
+                    color = Slate500
+                )
             ) {
-                Text("DATE", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
-                Text("REPORT TITLE", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.6f))
-                Text("TEMP / OCCASION", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.1f))
-                Text("GARMENTS WORN", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(2.2f))
-                Text("TOTAL DURATION", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
-                Text("COMFORT / FIT", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
-                Text("WASH STATUS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
+                append("$label: ")
             }
-            HorizontalDivider(color = Slate200)
-
-            reports.forEach { report ->
-                val rJunctions = junctionsByReportId[report.id].orEmpty()
-                val totalHours = remember(rJunctions) {
-                    val totalSec = rJunctions.maxOfOrNull { it.duration } ?: 0L
-                    String.format(Locale.US, "%.1fh", totalSec / 3600.0)
-                }
-                val needWashCount = rJunctions.count { it.washStated.equals("need wash", ignoreCase = true) }
-                val isDirty = needWashCount > 0
-
-                Row(
-                    modifier = Modifier
-                        .width(minTableWidth)
-                        .clickable { onReportClick(report) }
-                        .padding(horizontal = 16.dp, vertical = 11.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // DATE
-                    Text(
-                        text = report.wearDate.ifBlank { "—" },
-                        fontSize = 11.sp,
+            if (hasData) {
+                withStyle(
+                    SpanStyle(
                         fontFamily = FontFamily.Monospace,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF059669),
-                        modifier = Modifier.weight(1.0f)
-                    )
-
-                    // REPORT TITLE
-                    Column(modifier = Modifier.weight(1.6f).padding(end = 8.dp)) {
-                        Text(
-                            text = report.name.ifBlank { "Wearing Report" },
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Slate900,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        val sub = report.reportDetail.ifBlank { "Comfortable session." }
-                        Text(
-                            text = sub,
-                            fontSize = 10.sp,
-                            color = Slate500,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    // TEMP / OCCASION
-                    Text(
-                        text = "${deriveReportTemp(report)} · ${deriveReportOccasion(report)}",
-                        fontSize = 11.sp,
-                        color = Slate600,
-                        modifier = Modifier.weight(1.1f)
-                    )
-
-                    // GARMENTS WORN
-                    Row(
-                        modifier = Modifier.weight(2.2f).padding(end = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        rJunctions.take(2).forEach { j ->
-                            val g = clothesById[j.clothesId]
-                            val gName = g?.name ?: j.clothesTitle.ifBlank { "Garment" }
-                            val resolvedPhoto = g?.let {
-                                ImageUtils.resolveFirstValidPhoto(it.pictures, context)?.let { p ->
-                                    ImageUtils.resolveImageModel(p, context)
-                                }
-                            }
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFF8FAFC),
-                                border = BorderStroke(1.dp, Slate200),
-                                modifier = Modifier.clickable {
-                                    if (g != null) onSelectGarment(g) else onReportClick(report)
-                                }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(20.dp)
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(Slate100),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        if (resolvedPhoto != null) {
-                                            AsyncImage(
-                                                model = resolvedPhoto,
-                                                contentDescription = gName,
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.fillMaxSize()
-                                            )
-                                        } else {
-                                            Icon(
-                                                imageVector = Icons.Default.Checkroom,
-                                                contentDescription = null,
-                                                tint = Slate400,
-                                                modifier = Modifier.size(12.dp)
-                                            )
-                                        }
-                                    }
-                                    Text(
-                                        text = gName,
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Slate800,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        modifier = Modifier.widthIn(max = 110.dp)
-                                    )
-                                }
-                            }
-                        }
-                        if (rJunctions.size > 2) {
-                            Text(
-                                text = "+${rJunctions.size - 2}",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate500
-                            )
-                        }
-                    }
-
-                    // TOTAL DURATION
-                    Text(
-                        text = totalHours,
+                        fontWeight = FontWeight.Normal,
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Slate800,
-                        modifier = Modifier.weight(1.0f)
+                        color = Slate800
                     )
-
-                    // COMFORT / FIT
-                    Text(
-                        text = "C:${deriveReportComfort(report)}/5 · F:${deriveReportFit(report)}/5",
-                        fontSize = 11.sp,
-                        color = Slate600,
-                        modifier = Modifier.weight(1.0f)
-                    )
-
-                    // WASH STATUS
-                    Box(modifier = Modifier.weight(1.0f)) {
-                        Surface(
-                            shape = RoundedCornerShape(999.dp),
-                            color = if (isDirty) Color(0xFFFEF3C7) else Color(0xFFD1FAE5)
-                        ) {
-                            Text(
-                                text = if (isDirty) "$needWashCount Need Wash" else "All Clean",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (isDirty) Color(0xFFB45309) else Color(0xFF047857),
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                            )
-                        }
-                    }
+                ) {
+                    append(value)
                 }
-                HorizontalDivider(color = Slate100)
+            } else {
+                withStyle(
+                    SpanStyle(
+                        fontFamily = FontFamily.SansSerif,
+                        fontStyle = FontStyle.Italic,
+                        fontSize = 12.sp,
+                        color = Slate400
+                    )
+                ) {
+                    append("No data")
+                }
             }
-        }
-    }
+        },
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }

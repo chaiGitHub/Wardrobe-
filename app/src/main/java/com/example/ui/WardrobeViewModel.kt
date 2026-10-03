@@ -18,6 +18,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.example.ui.dialogs.SavedAiReportItem
+import com.example.ui.dialogs.AiReportVersion
+import com.example.ui.dialogs.AiReportVersionHelper
+import com.example.ui.dialogs.UniversalAiReportItem
+import org.json.JSONArray
+import org.json.JSONObject
 import java.util.UUID
 
 enum class AppTab(val title: String, val badge: String = "") {
@@ -141,6 +146,322 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
 
     fun deleteSavedAiReport(id: String) {
         _savedAiReports.value = _savedAiReports.value.filter { it.id != id }
+    }
+
+    // =========================================================================
+    // MULTI-VERSION AI REPORTS MANAGEMENT (Matching Web App wardrobeDataService)
+    // =========================================================================
+
+    private val macroPrefs = application.getSharedPreferences("wardrobe_macro_ai_reports_v1", Context.MODE_PRIVATE)
+
+    private fun loadMacroReports(): List<UniversalAiReportItem> {
+        val raw = macroPrefs.getString("macro_reports", null)
+        val list = mutableListOf<UniversalAiReportItem>()
+        if (raw != null) {
+            try {
+                val arr = JSONArray(raw)
+                for (i in 0 until arr.length()) {
+                    val obj = arr.getJSONObject(i)
+                    list.add(
+                        UniversalAiReportItem(
+                            id = obj.optString("id", "macro_$i"),
+                            type = "macro",
+                            typeLabel = "全局穿搭顾问",
+                            sourceEntityId = obj.optString("id", "macro_$i"),
+                            sourceEntityTitle = obj.optString("occasion", "不限温度/常规天气"),
+                            versionId = obj.optString("id", "macro_$i"),
+                            title = obj.optString("title", "穿搭体感报告 - 常规天气"),
+                            timestamp = obj.optString("timestamp", "2026-09-27T10:37:00"),
+                            model = obj.optString("model", "gemini-3.1-flash-lite"),
+                            isPrimary = true,
+                            content = obj.optString("content", "全局穿搭体感分析：推荐优先考虑轻薄透气、散热优良的上身衣物。"),
+                            metaInfo = obj.optString("metaInfo", "全衣橱智能扫描")
+                        )
+                    )
+                }
+            } catch (_: Exception) {}
+        }
+        if (list.isEmpty()) {
+            // Seed macro reports matching Screenshot_20261003-122012.png
+            list.add(
+                UniversalAiReportItem(
+                    id = "macro_seed_1",
+                    type = "macro",
+                    typeLabel = "全局穿搭顾问",
+                    sourceEntityId = "macro_seed_1",
+                    sourceEntityTitle = "不限温度/常规天气",
+                    versionId = "macro_seed_1",
+                    title = "穿搭体感报告 - 常规天气 (9/27/2026)",
+                    timestamp = "2026-09-27T10:37:00",
+                    model = "gemini-3.1-flash-lite",
+                    isPrimary = true,
+                    content = """【全衣橱宏观穿搭体感诊断】\n\n- **温度与环境适应性**：常规天气下，全衣橱中 70% 的透气棉麻与真丝单品均具备良好的体感宽容度。\n- **中午炎热防御**：中午烈日气温升高时，推荐避开厚重化纤款式，优先选择带肩部支撑的透气单品。\n- **久坐与活动建议**：腹部余量充足、底围舒适的单品更适合全天工作与出行。""",
+                    metaInfo = "全衣橱智能扫描 · 关联 12 件单品"
+                )
+            )
+            list.add(
+                UniversalAiReportItem(
+                    id = "macro_seed_2",
+                    type = "macro",
+                    typeLabel = "全局穿搭顾问",
+                    sourceEntityId = "macro_seed_2",
+                    sourceEntityTitle = "不限温度/常规天气",
+                    versionId = "macro_seed_2",
+                    title = "穿搭体感报告 - 常规天气 (9/27/2026)",
+                    timestamp = "2026-09-27T10:01:00",
+                    model = "gemini-3.1-flash-lite",
+                    isPrimary = true,
+                    content = """【早间全套搭配建议】\n\n基于当前衣橱数据，建议优先选择自然垂坠、不易产生静电摩擦的面料组合。""",
+                    metaInfo = "全衣橱智能扫描"
+                )
+            )
+        }
+        return list
+    }
+
+    private fun saveMacroReports(list: List<UniversalAiReportItem>) {
+        val arr = JSONArray()
+        list.forEach { item ->
+            val obj = JSONObject().apply {
+                put("id", item.id)
+                put("occasion", item.sourceEntityTitle)
+                put("title", item.title)
+                put("timestamp", item.timestamp)
+                put("model", item.model)
+                put("content", item.content)
+                put("metaInfo", item.metaInfo)
+            }
+            arr.put(obj)
+        }
+        macroPrefs.edit().putString("macro_reports", arr.toString()).apply()
+    }
+
+    private val _macroAiReports = MutableStateFlow<List<UniversalAiReportItem>>(loadMacroReports())
+    val macroAiReports: StateFlow<List<UniversalAiReportItem>> = _macroAiReports.asStateFlow()
+
+    fun addMacroAiReport(title: String, occasion: String, content: String, model: String = "gemini-3.1-flash-lite", metaInfo: String = "") {
+        val now = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+        val id = "macro_${System.currentTimeMillis()}"
+        val item = UniversalAiReportItem(
+            id = id,
+            type = "macro",
+            typeLabel = "全局穿搭顾问",
+            sourceEntityId = id,
+            sourceEntityTitle = occasion.ifBlank { "不限温度/常规天气" },
+            versionId = id,
+            title = title.ifBlank { "穿搭体感报告 - ${occasion.ifBlank { "常规天气" }} (${java.time.LocalDate.now()})" },
+            timestamp = now,
+            model = model,
+            isPrimary = true,
+            content = content,
+            metaInfo = metaInfo.ifBlank { "全衣橱智能扫描" }
+        )
+        val updated = listOf(item) + _macroAiReports.value
+        _macroAiReports.value = updated
+        saveMacroReports(updated)
+    }
+
+    fun updateMacroAiReport(id: String, newTitle: String, newContent: String) {
+        val updated = _macroAiReports.value.map {
+            if (it.id == id || it.versionId == id) it.copy(title = newTitle, content = newContent) else it
+        }
+        _macroAiReports.value = updated
+        saveMacroReports(updated)
+    }
+
+    fun deleteMacroAiReport(id: String) {
+        val updated = _macroAiReports.value.filterNot { it.id == id || it.versionId == id }
+        _macroAiReports.value = updated
+        saveMacroReports(updated)
+    }
+
+    // 1. Garment AI Multi-Version Methods
+    fun addGarmentAiReportVersion(garmentId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+            val primaryFlag = isPrimary ?: existing.isEmpty()
+            val newVer = AiReportVersion(
+                id = "garment_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                title = title ?: "Report #${existing.size + 1}",
+                model = model,
+                content = content,
+                isPrimary = primaryFlag
+            )
+            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+            val updatedGarment = garment.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                aiClothesAnalysis = primary?.content ?: ""
+            )
+            repository.updateGarment(updatedGarment)
+        }
+    }
+
+    fun updateGarmentAiReportVersion(garmentId: String, versionId: String, title: String? = null, content: String? = null, isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+            val updatedList = existing.map { v ->
+                if (v.id == versionId) {
+                    v.copy(
+                        title = title ?: v.title,
+                        content = content ?: v.content,
+                        isPrimary = isPrimary ?: v.isPrimary
+                    )
+                } else if (isPrimary == true) {
+                    v.copy(isPrimary = false)
+                } else {
+                    v
+                }
+            }
+            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+            val updatedGarment = garment.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                aiClothesAnalysis = primary?.content ?: ""
+            )
+            repository.updateGarment(updatedGarment)
+        }
+    }
+
+    fun deleteGarmentAiReportVersion(garmentId: String, versionId: String) {
+        viewModelScope.launch {
+            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+            val remaining = existing.filterNot { it.id == versionId }.toMutableList()
+            if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
+                remaining[0] = remaining[0].copy(isPrimary = true)
+            }
+            val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
+            val updatedGarment = garment.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(remaining),
+                aiClothesAnalysis = primary?.content ?: ""
+            )
+            repository.updateGarment(updatedGarment)
+        }
+    }
+
+    fun setPrimaryGarmentAiReportVersion(garmentId: String, versionId: String) {
+        updateGarmentAiReportVersion(garmentId, versionId, isPrimary = true)
+    }
+
+    // 2. Wearing Report AI Multi-Version Methods
+    fun addWearingAiReportVersion(reportId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val rep = reports.value.find { it.id == reportId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+            val primaryFlag = isPrimary ?: existing.isEmpty()
+            val newVer = AiReportVersion(
+                id = "wearing_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                title = title ?: "Report #${existing.size + 1}",
+                model = model,
+                content = content,
+                isPrimary = primaryFlag
+            )
+            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+            val updatedReport = rep.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                aiWearingAnalysis = primary?.content ?: ""
+            )
+            repository.insertReport(updatedReport)
+        }
+    }
+
+    fun updateWearingAiReportVersion(reportId: String, versionId: String, title: String? = null, content: String? = null, isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val rep = reports.value.find { it.id == reportId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+            val updatedList = existing.map { v ->
+                if (v.id == versionId) {
+                    v.copy(
+                        title = title ?: v.title,
+                        content = content ?: v.content,
+                        isPrimary = isPrimary ?: v.isPrimary
+                    )
+                } else if (isPrimary == true) {
+                    v.copy(isPrimary = false)
+                } else {
+                    v
+                }
+            }
+            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+            val updatedReport = rep.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                aiWearingAnalysis = primary?.content ?: ""
+            )
+            repository.insertReport(updatedReport)
+        }
+    }
+
+    fun deleteWearingAiReportVersion(reportId: String, versionId: String) {
+        viewModelScope.launch {
+            val rep = reports.value.find { it.id == reportId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+            val remaining = existing.filterNot { it.id == versionId }.toMutableList()
+            if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
+                remaining[0] = remaining[0].copy(isPrimary = true)
+            }
+            val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
+            val updatedReport = rep.copy(
+                aiReports = AiReportVersionHelper.serializeVersions(remaining),
+                aiWearingAnalysis = primary?.content ?: ""
+            )
+            repository.insertReport(updatedReport)
+        }
+    }
+
+    fun setPrimaryWearingAiReportVersion(reportId: String, versionId: String) {
+        updateWearingAiReportVersion(reportId, versionId, isPrimary = true)
+    }
+
+    // 3. Junction AI Multi-Version Methods
+    fun addJunctionAiReportVersion(junctionId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val junc = junctions.value.find { it.id == junctionId } ?: return@launch
+            val existing = AiReportVersionHelper.parseVersions("", junc.aiJunctionAnalysis, "搭配诊断 #1")
+            val primaryFlag = isPrimary ?: existing.isEmpty()
+            val newVer = AiReportVersion(
+                id = "junction_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                title = title ?: "搭配诊断 #${existing.size + 1}",
+                model = model,
+                content = content,
+                isPrimary = primaryFlag
+            )
+            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+            val updatedJunction = junc.copy(
+                aiJunctionAnalysis = primary?.content ?: ""
+            )
+            repository.updateJunction(updatedJunction)
+        }
+    }
+
+    fun updateJunctionAiReportVersion(junctionId: String, versionId: String, title: String? = null, content: String? = null, isPrimary: Boolean? = null) {
+        viewModelScope.launch {
+            val junc = junctions.value.find { it.id == junctionId } ?: return@launch
+            val updatedJunction = junc.copy(
+                aiJunctionAnalysis = content ?: junc.aiJunctionAnalysis
+            )
+            repository.updateJunction(updatedJunction)
+        }
+    }
+
+    fun deleteJunctionAiReportVersion(junctionId: String, versionId: String) {
+        viewModelScope.launch {
+            val junc = junctions.value.find { it.id == junctionId } ?: return@launch
+            val updatedJunction = junc.copy(
+                aiJunctionAnalysis = ""
+            )
+            repository.updateJunction(updatedJunction)
+        }
+    }
+
+    fun setPrimaryJunctionAiReportVersion(junctionId: String, versionId: String) {
+        // Active
     }
 
     // Restore Progress State

@@ -191,6 +191,8 @@ fun SessionDetailModal(
         SimpleDateFormat("dd MMM yyyy", Locale.US).format(Date())
     }
 
+    var pendingWashTarget by remember { mutableStateOf<Pair<JunctionEntity, String>?>(null) }
+
     Dialog(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -840,8 +842,12 @@ fun SessionDetailModal(
                                                                     if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF10B981)
                                                                 ),
                                                                 modifier = Modifier.clickable {
-                                                                    val next = if (isNeedWash) "Clean" else "need wash"
-                                                                    onUpdateWashStatus(junction.id, next)
+                                                                    if (isNeedWash) {
+                                                                        val gName = garment?.name ?: junction.clothesTitle.ifBlank { "Garment" }
+                                                                        pendingWashTarget = junction to gName
+                                                                    } else {
+                                                                        onUpdateWashStatus(junction.id, "need wash")
+                                                                    }
                                                                 }
                                                             ) {
                                                                 Row(
@@ -974,7 +980,10 @@ fun SessionDetailModal(
                                                         }
 
                                                         Button(
-                                                            onClick = { onUpdateWashStatus(junction.id, "Clean") },
+                                                            onClick = {
+                                                                val gName = garment?.name ?: junction.clothesTitle.ifBlank { "Garment" }
+                                                                pendingWashTarget = junction to gName
+                                                            },
                                                             shape = RoundedCornerShape(12.dp),
                                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
                                                             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
@@ -1744,6 +1753,20 @@ fun SessionDetailModal(
             garment = g,
             report = report,
             onDismiss = { activeAiJunction = null }
+        )
+    }
+
+    // Wash Guard Confirmation Dialog
+    pendingWashTarget?.let { (junc, gName) ->
+        val washDateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+        WashGuardDialog(
+            garmentName = gName,
+            initialWashDate = washDateStr,
+            onConfirm = { date ->
+                onUpdateWashStatus(junc.id, "Clean")
+                pendingWashTarget = null
+            },
+            onDismiss = { pendingWashTarget = null }
         )
     }
 }

@@ -11,7 +11,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -24,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -57,6 +55,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -82,6 +81,8 @@ import com.example.ui.dialogs.FieldDictionaryService
 import com.example.ui.dialogs.InlineFieldDictionaryCard
 import com.example.ui.dialogs.SavedAiReportItem
 import com.example.ui.dialogs.SavedReportsListModal
+import com.example.ui.dialogs.AllAiReportsArchiveView
+import com.example.ui.dialogs.UniversalAiReportItem
 import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandEmerald
@@ -111,6 +112,8 @@ fun AdvisorScreen(
     isGenerating: Boolean,
     onSelectGarment: (GarmentEntity?) -> Unit,
     onOpenGarmentDetail: ((GarmentEntity) -> Unit)? = null,
+    onSelectReport: ((ReportEntity) -> Unit)? = null,
+    viewModel: com.example.ui.WardrobeViewModel? = null,
     savedReports: List<SavedAiReportItem> = emptyList(),
     onSaveReport: ((title: String, category: String, content: String) -> Unit)? = null,
     onDeleteSavedReport: ((String) -> Unit)? = null,
@@ -122,6 +125,7 @@ fun AdvisorScreen(
     val mainScrollState = rememberScrollState()
 
     val dictionaryService = remember { FieldDictionaryService(context) }
+    val macroReports = viewModel?.macroAiReports?.collectAsState(initial = emptyList())?.value ?: emptyList()
     var dictionaryFields by remember { mutableStateOf(dictionaryService.getFields()) }
 
     var showSavedReportsModal by remember { mutableStateOf(false) }
@@ -216,21 +220,14 @@ fun AdvisorScreen(
         result
     }
 
-    BoxWithConstraints(
+    Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC)),
-        contentAlignment = Alignment.TopCenter
+            .background(Color(0xFFF8FAFC))
+            .verticalScroll(mainScrollState)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        val isWide = maxWidth >= 800.dp
-        Column(
-            modifier = Modifier
-                .widthIn(max = 1440.dp)
-                .fillMaxSize()
-                .verticalScroll(mainScrollState)
-                .padding(horizontal = if (isWide) 28.dp else 14.dp, vertical = if (isWide) 20.dp else 12.dp),
-            verticalArrangement = Arrangement.spacedBy(if (isWide) 16.dp else 12.dp)
-        ) {
         // 1. HEADER CARD (Matching Screenshots 13-19)
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -369,10 +366,11 @@ fun AdvisorScreen(
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 listOf(
-                    Triple("macro", "🌐 全局宏观报告", "Clothes+Report+Junction"),
-                    Triple("clothes", "👗 单品字段报告", "仅 Clothes 字段"),
-                    Triple("report", "📋 穿搭报告分析", "仅 WearingReport 字段"),
-                    Triple("junction", "🔗 关联记录诊断", "仅 Junction 字段")
+                    Triple("macro", "🌐 全局顾问", "Macro Advisor"),
+                    Triple("clothes", "👗 单件衣服", "Garment AI"),
+                    Triple("report", "📋 穿着记录", "Wearing AI"),
+                    Triple("junction", "🔗 单品搭配", "Junction AI"),
+                    Triple("archive", "📂 报告归档", "All Reports Archive")
                 ).forEach { (tabId, title, subtitle) ->
                     val isSelected = activeAdvisorTab == tabId
                     Surface(
@@ -806,6 +804,15 @@ fun AdvisorScreen(
                                 generatedMacroSources = resp.sources
                                 generatedMacroNote = resp.statusNote
                                 isGeneratingMacro = false
+                                if (resp.text.isNotBlank()) {
+                                    viewModel?.addMacroAiReport(
+                                        title = "穿搭体感报告 - ${macroOccasion.ifBlank { "常规天气" }}",
+                                        occasion = macroOccasion.ifBlank { "常规天气" },
+                                        content = resp.text,
+                                        model = "gemini-3.1-flash-lite",
+                                        metaInfo = if (selectedMacroGarments.isEmpty()) "全衣橱智能扫描" else "已选 ${selectedMacroGarments.size} 件单品"
+                                    )
+                                }
                             }
                         },
                         enabled = !isGeneratingMacro,
@@ -1339,6 +1346,13 @@ fun AdvisorScreen(
                                     generatedClothesReport = resp.text
                                     generatedClothesNote = resp.statusNote
                                     isGeneratingClothesAi = false
+                                    if (resp.text.isNotBlank()) {
+                                        viewModel?.addGarmentAiReportVersion(
+                                            garmentId = target.id,
+                                            content = resp.text,
+                                            model = "gemini-3.6-flash"
+                                        )
+                                    }
                                 }
                             },
                             enabled = !isGeneratingClothesAi,
@@ -1564,6 +1578,13 @@ fun AdvisorScreen(
                                     generatedReportAnalysis = resp.text
                                     generatedReportNote = resp.statusNote
                                     isGeneratingReportAi = false
+                                    if (resp.text.isNotBlank()) {
+                                        viewModel?.addWearingAiReportVersion(
+                                            reportId = rep.id,
+                                            content = resp.text,
+                                            model = "gemini-3.6-flash"
+                                        )
+                                    }
                                 }
                             },
                             enabled = !isGeneratingReportAi,
@@ -1709,6 +1730,13 @@ fun AdvisorScreen(
                                     generatedJunctionAnalysis = resp.text
                                     generatedJunctionNote = resp.statusNote
                                     isGeneratingJunctionAi = false
+                                    if (resp.text.isNotBlank()) {
+                                        viewModel?.addJunctionAiReportVersion(
+                                            junctionId = junc.id,
+                                            content = resp.text,
+                                            model = "gemini-3.6-flash"
+                                        )
+                                    }
                                 }
                             },
                             enabled = !isGeneratingJunctionAi,
@@ -1755,10 +1783,47 @@ fun AdvisorScreen(
                 }
             }
         }
-        }
     }
 
-    if (showSavedReportsModal) {
+        // =====================================================================
+        // TAB 5 CONTENT: 全维度 AI 报告管理归档中心 (All AI Reports Archive)
+        // Matching Screenshot_20261003-122012.png, 122016.png, 122019.png
+        // =====================================================================
+        if (activeAdvisorTab == "archive") {
+            AllAiReportsArchiveView(
+                clothes = clothes,
+                reports = reports,
+                junctions = junctions,
+                macroReports = macroReports,
+                onUpdateReport = { item, newTitle, newContent ->
+                    when (item.type) {
+                        "macro" -> viewModel?.updateMacroAiReport(item.versionId, newTitle, newContent)
+                        "clothes" -> viewModel?.updateGarmentAiReportVersion(item.sourceEntityId, item.versionId, title = newTitle, content = newContent)
+                        "wearing" -> viewModel?.updateWearingAiReportVersion(item.sourceEntityId, item.versionId, title = newTitle, content = newContent)
+                        "junction" -> viewModel?.updateJunctionAiReportVersion(item.sourceEntityId, item.versionId, title = newTitle, content = newContent)
+                    }
+                },
+                onDeleteReport = { item ->
+                    when (item.type) {
+                        "macro" -> viewModel?.deleteMacroAiReport(item.versionId)
+                        "clothes" -> viewModel?.deleteGarmentAiReportVersion(item.sourceEntityId, item.versionId)
+                        "wearing" -> viewModel?.deleteWearingAiReportVersion(item.sourceEntityId, item.versionId)
+                        "junction" -> viewModel?.deleteJunctionAiReportVersion(item.sourceEntityId, item.versionId)
+                    }
+                },
+                onSetPrimary = { item ->
+                    when (item.type) {
+                        "clothes" -> viewModel?.setPrimaryGarmentAiReportVersion(item.sourceEntityId, item.versionId)
+                        "wearing" -> viewModel?.setPrimaryWearingAiReportVersion(item.sourceEntityId, item.versionId)
+                        "junction" -> viewModel?.setPrimaryJunctionAiReportVersion(item.sourceEntityId, item.versionId)
+                    }
+                },
+                onSelectGarment = onSelectGarment,
+                onSelectReport = onSelectReport
+            )
+        }
+
+        if (showSavedReportsModal) {
         SavedReportsListModal(
             reports = savedReports,
             onDeleteReport = { id -> onDeleteSavedReport?.invoke(id) },
