@@ -1,0 +1,76 @@
+package com.example.data.model
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "clothes")
+data class GarmentEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val clothesType: String = "",        // e.g. "Dress", "bra", "Top", "Bottom", "Sleepwear"
+    val material: String = "",           // e.g. "Chiffon", "Cotton"
+    val thickClothes: String = "",       // e.g. "03 thick clothes", "thin"
+    val hotAtNoon: String = "",          // e.g. "Hot", "Not hot"
+    val diaoDai: String = "",            // e.g. "not diao dai", "diao dai"
+    val sideBreastOk: String = "",       // e.g. "side breast shape ok"
+    val standBreast: String = "",        // e.g. "center chest" / "stand breast"
+    val sitBreast: String = "",          // e.g. "sit breast ok"
+    val beautiful: String = "",          // e.g. "Beautiful", "not so beautiful"
+    val beautifulReason: String = "",    // e.g. "beatiful reason"
+    val wet: String = "",                // e.g. "dry", "wet"
+    val wetReason: String = "",          // e.g. "wet reason"
+    val descriptions: String = "",       // e.g. "Descriptions"
+    val descriptions2: String = "",      // e.g. "Descriptions 2"
+    val longDress: String = "",          // e.g. "long dress", "short dress", "middle dress"
+    val price: Double = 0.0,
+    val wearingFrequency: Int = 0,       // legacy washed count
+    val trackedAppWashes: Int = 0,
+    val lastWashed: String = "",
+    val mayThrow: String = "",           // e.g. "may throw", "keep"
+    val lastComment: String = "",        // e.g. "last comment or action"
+    val aiClothesAnalysis: String = "",  // e.g. "AI Clothes Analysis"
+    val aiReports: String = "[]",        // JSON array of AI report versions
+    val pictures: String = "[]",         // JSON array of image paths/filenames
+    val tags: String = "[]",             // JSON array of tags
+    val created: String = "",
+    val customFields: String = "{}"
+)
+
+@Entity(tableName = "reports")
+data class ReportEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val wearDate: String = "",
+    val created: String = "",
+    val categories: String = "[]",
+    val shoulderFeel: String = "",
+    val midBreast: String = "",
+    val nightMidBreast: String = "",
+    val sweat: String = "",
+    val nightSweat: String = "",
+    val legFeel: String = "",
+    val nightLegFeel: String = "",
+    val reportDetail: String = "",
+    val aiWearingAnalysis: String = "",
+    val aiReports: String = "[]",
+    val customFields: String = "{}",
+    val pictures: String = "[]",
+    val tags: String = "[]"
+)
+
+@Entity(tableName = "junctions")
+data class JunctionEntity(
+    @PrimaryKey val id: String,
+    val name: Int = 0,
+    val wearingReportId: String,
+    val wearingReportTitle: String = "",
+    val clothesId: String,
+    val clothesTitle: String = "",
+    val clothesType: String = "",
+    val duration: Long = 0,             // duration in seconds
+    val washStated: String = "need wash", // "need wash", "washing", "washed"
+    val washDate: String = "",
+    val washedDate: String = "",
+    val wearDate: String = "",
+    val aiJunctionAnalysis: String = ""
+)
