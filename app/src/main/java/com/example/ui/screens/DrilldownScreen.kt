@@ -43,6 +43,8 @@ import androidx.compose.material.icons.filled.TableRows
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.ViewSidebar
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -73,15 +75,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.*
-import com.example.ui.dialogs.GarmentDetailDialog
-import com.example.ui.dialogs.InlineFieldDictionarySection
-import com.example.ui.dialogs.SessionDetailModal
+import com.example.ui.drilldown.ALL_AVAILABLE_FIELDS
+import com.example.ui.drilldown.DEFAULT_DRILL_PRESETS
+import com.example.ui.drilldown.DrillPreset
+import com.example.ui.drilldown.DrillRecordCard
+import com.example.ui.drilldown.DrillRecordRow
+import com.example.ui.drilldown.DrilldownBreadcrumb
 import com.example.ui.drilldown.DrilldownUtils
+import com.example.ui.drilldown.GroupSummary
+import com.example.ui.drilldown.PresetEditorModal
+import com.example.ui.drilldown.ReportPresetService
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.RestartAlt
+import androidx.compose.material.icons.filled.Layers
+
+import com.example.ui.dialogs.GarmentDetailDialog
+import com.example.ui.dialogs.SessionDetailModal
 import com.example.ui.drilldown.GarmentStats
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandEmerald
 import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.BrandPurpleLight
+import com.example.ui.theme.Slate50
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate400
@@ -136,6 +155,20 @@ fun DrilldownScreen(
     var sortOption by remember { mutableStateOf(DrilldownSortOption.LATEST_WEAR) }
     var viewMode by remember { mutableStateOf("cards") } // "cards" (Tree), "split" (Split), "table" (List)
 
+    val context = LocalContext.current
+    val presetService = remember { ReportPresetService(context) }
+    var presets by remember { mutableStateOf(presetService.getPresets()) }
+    var activePresetId by remember { mutableStateOf(presetService.getActivePresetId()) }
+    val currentPreset = remember(presets, activePresetId) {
+        presets.find { it.id == activePresetId } ?: presets.firstOrNull() ?: DEFAULT_DRILL_PRESETS.first()
+    }
+    var showPresetEditor by remember { mutableStateOf(false) }
+    var drillPath by remember(currentPreset.id) { mutableStateOf<List<DrilldownBreadcrumb>>(emptyList()) }
+    var branchSearchQuery by remember { mutableStateOf("") }
+    val fieldMap = remember { ALL_AVAILABLE_FIELDS.associateBy { it.key } }
+
+
+
     val expandedIds = remember { mutableStateMapOf<String, Boolean>() }
     var selectedSplitGarmentId by remember { mutableStateOf<String?>(null) }
     var selectedSplitReportId by remember { mutableStateOf<String?>(null) }
@@ -150,6 +183,74 @@ fun DrilldownScreen(
 
     val statsById = remember(clothes, junctions) {
         clothes.associate { g -> g.id to DrilldownUtils.calculateGarmentStats(g.id, junctions) }
+    }
+
+    // Current branch garments matching all tiers selected in drillPath
+    val currentBranchGarments = remember(clothes, drillPath, junctions) {
+        clothes.filter { g ->
+            drillPath.all { bc ->
+                val v = DrilldownUtils.getFieldValue(g, bc.field, junctions)
+                v.equals(bc.value, ignoreCase = true)
+            }
+        }
+    }
+
+    // Next tier subgroups if not at leaf level
+    val currentTierIndex = drillPath.size
+    val currentTierField = if (currentTierIndex < currentPreset.groupTiers.size) currentPreset.groupTiers[currentTierIndex] else ""
+    val currentTierFieldDef = fieldMap[currentTierField]
+    val currentTierLabel = currentTierFieldDef?.label ?: currentTierField
+
+    val subgroups = remember(currentBranchGarments, currentTierField, junctions) {
+        if (currentTierField.isBlank()) emptyList()
+        else {
+            currentBranchGarments.groupBy { g ->
+                DrilldownUtils.getFieldValue(g, currentTierField, junctions)
+            }.map { (v, gList) ->
+                val needWash = gList.count { g ->
+                    DrilldownUtils.calculateGarmentStats(g.id, junctions).needWash
+                }
+                GroupSummary(
+                    field = currentTierField,
+                    value = v,
+                    count = gList.size,
+                    cleanCount = gList.size - needWash,
+                    needWashCount = needWash,
+                    sampleGarments = gList.take(3)
+                )
+            }.sortedByDescending { it.count }
+        }
+    }
+
+    // Sorted garments in the current branch
+    val sortedBranchGarments = remember(currentBranchGarments, branchSearchQuery, currentPreset, junctions) {
+        val q = branchSearchQuery.trim().lowercase(Locale.ROOT)
+        val filtered = if (q.isEmpty()) currentBranchGarments else {
+            currentBranchGarments.filter { g ->
+                val gJuncs = junctionsByGarmentId[g.id].orEmpty()
+                val reportMatch = gJuncs.any { j ->
+                    val r = reportsById[j.wearingReportId]
+                    (r?.name?.lowercase(Locale.ROOT)?.contains(q) == true) ||
+                        (r?.reportDetail?.lowercase(Locale.ROOT)?.contains(q) == true)
+                }
+                g.name.lowercase(Locale.ROOT).contains(q) ||
+                    g.clothesType.lowercase(Locale.ROOT).contains(q) ||
+                    g.material.lowercase(Locale.ROOT).contains(q) ||
+                    g.lastComment.lowercase(Locale.ROOT).contains(q) ||
+                    reportMatch
+            }
+        }
+        if (currentPreset.sortOrder.equals("asc", ignoreCase = true)) {
+            filtered.sortedWith(
+                compareBy<GarmentEntity> { DrilldownUtils.getNumericalSortValue(it, currentPreset.sortField, junctions) }
+                    .thenBy { it.name.lowercase(Locale.ROOT) }
+            )
+        } else {
+            filtered.sortedWith(
+                compareByDescending<GarmentEntity> { DrilldownUtils.getNumericalSortValue(it, currentPreset.sortField, junctions) }
+                    .thenBy { it.name.lowercase(Locale.ROOT) }
+            )
+        }
     }
 
     // Latest wear date per garment
@@ -234,178 +335,273 @@ fun DrilldownScreen(
                 .widthIn(max = 1440.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = if (isWide) 24.dp else 14.dp,
-                vertical = 16.dp
+                horizontal = if (isWide) 20.dp else 10.dp,
+                vertical = 8.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 1. HEADER & CONTROLS CARD (Screenshot 225451)
+            // 1. COMPACT HEADER & CONTROLS CARD
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(16.dp),
                     border = BorderStroke(1.dp, Slate200),
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                        modifier = Modifier.padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Title Row
+                        // Title Block (Full width, no squeezed button on the right!)
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFFAF5FF)),
+                                    .size(38.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .background(BrandEmerald),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.AccountTree,
+                                    imageVector = Icons.Default.Layers,
                                     contentDescription = null,
-                                    tint = BrandPurple,
-                                    modifier = Modifier.size(22.dp)
+                                    tint = Color.White,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             }
-                            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Column(verticalArrangement = Arrangement.spacedBy(1.dp)) {
                                 Text(
-                                    text = "Interactive Data Drilldown Explorer",
+                                    text = "ANALYTICS & CATEGORIZATION",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = BrandEmerald,
+                                    letterSpacing = 1.sp
+                                )
+                                Text(
+                                    text = "Drill-Down List Report",
                                     fontSize = if (isWide) 20.sp else 17.sp,
                                     fontWeight = FontWeight.ExtraBold,
                                     color = Slate900
                                 )
-                                Text(
-                                    text = "穿透式数据浏览器：按「衣物 → 穿搭报告」或「穿搭报告 → 衣物」自由钻取，并支持树状卡片、分栏钻取、列表呈现 3 种视图",
-                                    fontSize = 11.sp,
-                                    color = Slate500,
-                                    lineHeight = 15.sp
-                                )
                             }
                         }
-
-                        // Inline Collapsible Field Dictionary (Screenshot 225451)
-                        InlineFieldDictionarySection(
-                            highlightScope = "all",
-                            defaultExpanded = false
+                        Text(
+                            text = "Hierarchical single-branch drill navigation. Selecting a subgroup option immediately filters and lists branch records.",
+                            fontSize = 11.sp,
+                            color = Slate500,
+                            lineHeight = 14.sp
                         )
 
-                        // Search Bar + Direction Switcher (side-by-side on Laptop, stacked on Mobile)
-                        if (isLaptop) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                        // Action Row DOWN BELOW the header title (Moves Customize Preset down below instead of right side!)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Button(
+                                onClick = { showPresetEditor = true },
+                                colors = ButtonDefaults.buttonColors(containerColor = BrandEmerald),
+                                shape = RoundedCornerShape(10.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                modifier = Modifier.height(34.dp)
                             ) {
-                                DrilldownSearchField(
-                                    searchQuery = searchQuery,
-                                    onSearchChange = { searchQuery = it },
-                                    modifier = Modifier.weight(1f)
+                                Icon(
+                                    imageVector = Icons.Default.Tune,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(15.dp)
                                 )
-                                DrilldownDirectionToggle(
-                                    direction = direction,
-                                    onDirectionChange = { direction = it }
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "自定义分组方案 / Customize Preset",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
                                 )
                             }
-                        } else {
-                            DrilldownSearchField(
-                                searchQuery = searchQuery,
-                                onSearchChange = { searchQuery = it },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            DrilldownDirectionToggle(
-                                direction = direction,
-                                onDirectionChange = { direction = it },
-                                modifier = Modifier.fillMaxWidth()
-                            )
                         }
 
-                        // Sort Pills Row: 排序: 最新穿着 | 穿着次数 | 待洗时长 | 累计穿着时长 | 名称
-                        FlowRow(
+                        // Compact Presets Row (Horizontal scroll)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "排序:",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate500,
-                                modifier = Modifier.padding(end = 2.dp)
-                            )
-                            DrilldownSortOption.entries.forEach { opt ->
-                                val isSel = sortOption == opt
+                            presets.forEach { p ->
+                                val isSel = p.id == activePresetId
                                 Surface(
                                     shape = RoundedCornerShape(8.dp),
                                     color = if (isSel) Color(0xFFFAF5FF) else Slate100,
-                                    border = if (isSel) BorderStroke(1.dp, Color(0xFFD8B4FE)) else null,
+                                    border = if (isSel) BorderStroke(1.dp, Color(0xFFD8B4FE)) else BorderStroke(1.dp, Slate200),
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(8.dp))
-                                        .clickable { sortOption = opt }
+                                        .clickable {
+                                            activePresetId = p.id
+                                            presetService.setActivePresetId(p.id)
+                                            drillPath = emptyList()
+                                        }
                                 ) {
-                                    Text(
-                                        text = opt.label,
-                                        fontSize = 11.sp,
-                                        fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
-                                        color = if (isSel) BrandPurple else Slate700,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = p.name + if (p.isCustom) " ★" else "",
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
+                                            color = if (isSel) BrandPurple else Slate700
+                                        )
+                                    }
                                 }
                             }
                         }
 
-                        // FULL-WIDTH BOTTOM VIEW MODE SWITCHER (Screenshot 225451 - Bottom placement)
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Slate100,
-                            border = BorderStroke(1.dp, Slate200),
-                            modifier = Modifier.fillMaxWidth()
+                        // Compact Tiers Row: Single line
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
+                            Text(
+                                text = "Tiers:",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                color = Slate400,
+                                modifier = Modifier.padding(end = 2.dp)
+                            )
+                            currentPreset.groupTiers.forEachIndexed { idx, tKey ->
+                                val tDef = fieldMap[tKey]
+                                val isCurrent = idx == drillPath.size
+                                val isPassed = idx < drillPath.size
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isPassed) Color(0xFFD1FAE5) else if (isCurrent) Color(0xFFECFDF5) else Slate100,
+                                    border = BorderStroke(1.dp, if (isPassed) Color(0xFF6EE7B7) else if (isCurrent) Color(0xFFA7F3D0) else Slate200)
+                                ) {
+                                    Text(
+                                        text = "L${idx + 1}: ${tDef?.label ?: tKey}",
+                                        fontSize = 10.sp,
+                                        fontWeight = if (isPassed || isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                        color = if (isPassed) Color(0xFF065F46) else if (isCurrent) Color(0xFF047857) else Slate600,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                if (idx < currentPreset.groupTiers.size - 1) {
+                                    Text("›", fontSize = 11.sp, color = Slate400)
+                                }
+                            }
+                        }
+
+                        // Toolbar: Sorting Row + 3-Segment View Switcher (Column)
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            // Row 1: Sorting button on Left + Garment count on Right
                             Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(4.dp),
-                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                val modes = listOf(
-                                    Triple("cards", "树状卡片 Tree", Icons.Default.AccountTree),
-                                    Triple("split", "分栏钻取 Split", Icons.Default.ViewSidebar),
-                                    Triple("table", "列表呈现 List", Icons.Default.TableRows)
-                                )
-                                modes.forEach { (mode, label, icon) ->
-                                    val isSel = viewMode == mode
-                                    Surface(
-                                        shape = RoundedCornerShape(9.dp),
-                                        color = if (isSel) BrandPurple else Color.Transparent,
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(9.dp))
-                                            .clickable { viewMode = mode }
-                                            .testTag("drilldown_present_mode_$mode")
+                                val sortDef = fieldMap[currentPreset.sortField]
+                                val sortLabel = sortDef?.label ?: currentPreset.sortField
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Slate100,
+                                    border = BorderStroke(1.dp, Slate200),
+                                    modifier = Modifier.clickable {
+                                        val newOrder = if (currentPreset.sortOrder.equals("asc", ignoreCase = true)) "desc" else "asc"
+                                        val updated = currentPreset.copy(sortOrder = newOrder)
+                                        presets = presetService.savePreset(updated)
+                                    }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                                     ) {
-                                        Row(
-                                            modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
-                                            horizontalArrangement = Arrangement.Center,
-                                            verticalAlignment = Alignment.CenterVertically
+                                        Icon(
+                                            imageVector = if (currentPreset.sortOrder == "asc") Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            contentDescription = null,
+                                            tint = BrandEmerald,
+                                            modifier = Modifier.size(13.dp)
+                                        )
+                                        Text(
+                                            text = "排序: $sortLabel (${currentPreset.sortOrder.uppercase(Locale.US)})",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate800,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
+
+                                Text(
+                                    text = "共 ${clothes.size} 件衣服",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Slate500
+                                )
+                            }
+
+                            // Row 2: View Mode Switcher (Full-width 3-tab segmented control)
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Slate100,
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(2.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    listOf(
+                                        Triple("cards", "树状卡片", Icons.Default.AccountTree),
+                                        Triple("split", "分栏钻取", Icons.Default.ViewSidebar),
+                                        Triple("table", "列表呈现", Icons.Default.TableRows)
+                                    ).forEach { (mode, label, icon) ->
+                                        val isSel = viewMode == mode
+                                        Surface(
+                                            shape = RoundedCornerShape(6.dp),
+                                            color = if (isSel) BrandEmerald else Color.Transparent,
+                                            modifier = Modifier
+                                                .weight(1f)
+                                                .clip(RoundedCornerShape(6.dp))
+                                                .clickable { viewMode = mode }
                                         ) {
-                                            Icon(
-                                                imageVector = icon,
-                                                contentDescription = label,
-                                                tint = if (isSel) Color.White else Slate600,
-                                                modifier = Modifier.size(14.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(5.dp))
-                                            Text(
-                                                text = label,
-                                                fontSize = 11.sp,
-                                                fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
-                                                color = if (isSel) Color.White else Slate700,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 6.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = icon,
+                                                    contentDescription = null,
+                                                    tint = if (isSel) Color.White else Slate600,
+                                                    modifier = Modifier.size(13.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = label,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isSel) Color.White else Slate700,
+                                                    maxLines = 1,
+                                                    softWrap = false
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -415,164 +611,343 @@ fun DrilldownScreen(
                 }
             }
 
-            // 2. CONTENT BY VIEW MODE
-            when (viewMode) {
-                // MODE A: TREE CARDS (Screenshot 225451 & 225454)
-                "cards" -> {
-                    if (direction == "garment_to_report") {
-                        item {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+            // 2. COMPACT BREADCRUMB & BRANCH FILTER CARD
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, Slate200)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        // Breadcrumbs
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .horizontalScroll(rememberScrollState()),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = if (drillPath.isEmpty()) BrandEmerald else Slate100,
+                                modifier = Modifier.clickable { drillPath = emptyList() }
                             ) {
-                                Text(
-                                    text = "共 ${sortedGarments.size} 件衣物（展开任意卡片查看其完整穿搭历史与每次穿着时长/洗护状态）",
-                                    fontSize = 11.sp,
-                                    color = Slate500,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                    Text(
-                                        text = "展开第一个",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BrandPurple,
-                                        modifier = Modifier.clickable {
-                                            expandedIds.clear()
-                                            sortedGarments.firstOrNull()?.let { expandedIds[it.id] = true }
-                                        }
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Folder,
+                                        contentDescription = null,
+                                        tint = if (drillPath.isEmpty()) Color.White else Slate600,
+                                        modifier = Modifier.size(13.dp)
                                     )
+                                    Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "全部收起",
+                                        text = "All Garments (${clothes.size})",
                                         fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Slate500,
-                                        modifier = Modifier.clickable { expandedIds.clear() }
+                                        fontWeight = if (drillPath.isEmpty()) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (drillPath.isEmpty()) Color.White else Slate700
                                     )
+                                }
+                            }
+
+                            drillPath.forEachIndexed { i, bc ->
+                                Text("›", fontSize = 12.sp, color = Slate400)
+                                val isLast = i == drillPath.size - 1
+                                val fDef = fieldMap[bc.field]
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = if (isLast) BrandEmerald else Slate100,
+                                    modifier = Modifier.clickable { drillPath = drillPath.take(i + 1) }
+                                ) {
+                                    Text(
+                                        text = "${fDef?.label ?: bc.field}: ${bc.value}",
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isLast) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isLast) Color.White else Slate700,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
+
+                            if (drillPath.isNotEmpty()) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Slate100,
+                                    border = BorderStroke(1.dp, Slate200),
+                                    modifier = Modifier.clickable { drillPath = emptyList() }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(Icons.Default.RestartAlt, contentDescription = null, tint = Slate600, modifier = Modifier.size(12.dp))
+                                        Spacer(modifier = Modifier.width(2.dp))
+                                        Text("Reset", fontSize = 10.sp, color = Slate600)
+                                    }
                                 }
                             }
                         }
 
-                        items(sortedGarments, key = { "tree_g_${it.id}" }) { garment ->
-                            val isExpanded = expandedIds[garment.id] == true
-                            val stats = statsById[garment.id] ?: GarmentStats(
-                                needWash = false,
-                                unwashedSeconds = 0L,
-                                unwashedHours = "0.0",
-                                totalWears = 0,
-                                totalDurationHours = 0L
-                            )
-                            val gJunctions = remember(garment.id, junctionsByGarmentId, reportsById) {
-                                junctionsByGarmentId[garment.id].orEmpty().sortedByDescending { j ->
-                                    reportsById[j.wearingReportId]?.wearDate ?: j.dateCreated
+                        // Branch search input (compact)
+                        OutlinedTextField(
+                            value = branchSearchQuery,
+                            onValueChange = { branchSearchQuery = it },
+                            placeholder = {
+                                Text("Filter current branch (${currentBranchGarments.size} items)...", fontSize = 11.sp, color = Slate400)
+                            },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = null, tint = Slate400, modifier = Modifier.size(16.dp))
+                            },
+                            trailingIcon = if (branchSearchQuery.isNotEmpty()) {
+                                {
+                                    IconButton(onClick = { branchSearchQuery = "" }, modifier = Modifier.size(24.dp)) {
+                                        Icon(Icons.Default.Close, contentDescription = "Clear", tint = Slate400, modifier = Modifier.size(14.dp))
+                                    }
+                                }
+                            } else null,
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = BrandEmerald,
+                                unfocusedBorderColor = Slate200,
+                                focusedContainerColor = Slate50,
+                                unfocusedContainerColor = Slate50
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp)
+                        )
+                    }
+                }
+            }
+
+            // 3. LEVEL SUBGROUPS DRILLDOWN (If not at leaf tier)
+            if (subgroups.isNotEmpty()) {
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 4.dp, vertical = 2.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Level ${drillPath.size + 1}: Group by $currentTierLabel (${subgroups.size} groups)",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate800
+                        )
+                        Text(
+                            text = "Tap to drill down",
+                            fontSize = 11.sp,
+                            color = Slate400
+                        )
+                    }
+                }
+
+                items(subgroups, key = { "subgroup_${it.field}_${it.value}" }) { sg ->
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                drillPath = drillPath + DrilldownBreadcrumb(drillPath.size, sg.field, sg.value)
+                            },
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Slate200),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(RoundedCornerShape(7.dp))
+                                        .background(Color(0xFFECFDF5)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(Icons.Default.Folder, contentDescription = null, tint = BrandEmerald, modifier = Modifier.size(16.dp))
+                                }
+                                Text(
+                                    text = sg.value,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = Color(0xFFECFDF5)
+                                ) {
+                                    Text(
+                                        text = "${sg.count} garments",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF065F46),
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                                if (sg.needWashCount > 0) {
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFFFEF3C7)
+                                    ) {
+                                        Text(
+                                            text = "${sg.needWashCount} need wash",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF92400E),
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
                                 }
                             }
-                            DrilldownGarmentTreeCard(
-                                garment = garment,
-                                stats = stats,
-                                latestWearDate = latestWearDateById[garment.id].orEmpty(),
-                                junctions = gJunctions,
-                                reportsById = reportsById,
-                                isExpanded = isExpanded,
-                                isWide = isWide,
-                                onToggleExpand = { expandedIds[garment.id] = !isExpanded },
-                                onOpenGarmentDetail = {
-                                    if (onSelectGarment != null) onSelectGarment(garment)
-                                    else selectedGarmentForDetail = garment
-                                },
-                                onOpenReportDetail = { r ->
-                                    if (onSelectReport != null) onSelectReport(r)
-                                    else selectedReportForDetail = r
-                                }
-                            )
-                        }
-                    } else {
-                        // Report -> Garments Tree Cards
-                        items(sortedReports, key = { "tree_r_${it.id}" }) { report ->
-                            val isExpanded = expandedIds[report.id] == true
-                            val rJunctions = junctionsByReportId[report.id].orEmpty()
-                            DrilldownReportTreeCard(
-                                report = report,
-                                junctions = rJunctions,
-                                clothesById = clothesById,
-                                isExpanded = isExpanded,
-                                onToggleExpand = { expandedIds[report.id] = !isExpanded },
-                                onOpenReportDetail = { selectedReportForDetail = report },
-                                onOpenGarmentDetail = { g ->
-                                    if (onSelectGarment != null) onSelectGarment(g)
-                                    else selectedGarmentForDetail = g
-                                }
+
+                            Icon(
+                                imageVector = Icons.Default.ChevronRight,
+                                contentDescription = null,
+                                tint = Slate400,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }
                 }
+            }
 
-                // MODE B: SPLIT MASTER-DETAIL (Screenshot 225458)
+            // 4. BRANCH RECORDS / PRESENTATION SECTION
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "钻取列表呈现方式 (Drilldown List Presentation)",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Slate800
+                    )
+                    Text(
+                        text = "共 ${sortedBranchGarments.size} 件",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BrandEmerald
+                    )
+                }
+            }
+
+            when (viewMode) {
+                "cards" -> {
+                    items(sortedBranchGarments, key = { "branch_card_${it.id}" }) { g ->
+                        DrillRecordCard(
+                            garment = g,
+                            preset = currentPreset,
+                            junctions = junctions,
+                            onSelect = { onSelectGarment?.invoke(it) ?: run { selectedGarmentForDetail = it } }
+                        )
+                    }
+                }
+                "table" -> {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Slate200)
+                        ) {
+                            Column {
+                                sortedBranchGarments.forEachIndexed { idx, g ->
+                                    DrillRecordRow(
+                                        garment = g,
+                                        preset = currentPreset,
+                                        junctions = junctions,
+                                        onSelect = { onSelectGarment?.invoke(it) ?: run { selectedGarmentForDetail = it } }
+                                    )
+                                    if (idx < sortedBranchGarments.size - 1) {
+                                        HorizontalDivider(color = Slate100)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 "split" -> {
                     item {
-                        if (direction == "garment_to_report") {
-                            val activeGarment = sortedGarments.find { it.id == selectedSplitGarmentId }
-                                ?: sortedGarments.firstOrNull()
-                            DrilldownSplitGarmentExplorer(
-                                garments = sortedGarments,
-                                activeGarment = activeGarment,
-                                statsById = statsById,
-                                junctionsByGarmentId = junctionsByGarmentId,
-                                reportsById = reportsById,
-                                isWide = isWide,
-                                onSelectSplitGarment = { selectedSplitGarmentId = it.id },
-                                onOpenGarmentDetail = { g ->
-                                    if (onSelectGarment != null) onSelectGarment(g)
-                                    else selectedGarmentForDetail = g
-                                },
-                                onOpenReportDetail = { r -> selectedReportForDetail = r }
-                            )
-                        } else {
-                            val activeReport = sortedReports.find { it.id == selectedSplitReportId }
-                                ?: sortedReports.firstOrNull()
-                            DrilldownSplitReportExplorer(
-                                reports = sortedReports,
-                                activeReport = activeReport,
-                                junctionsByReportId = junctionsByReportId,
-                                clothesById = clothesById,
-                                isWide = isWide,
-                                onSelectSplitReport = { selectedSplitReportId = it.id },
-                                onOpenReportDetail = { r -> selectedReportForDetail = r },
-                                onOpenGarmentDetail = { g ->
-                                    if (onSelectGarment != null) onSelectGarment(g)
-                                    else selectedGarmentForDetail = g
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // MODE C: FLAT RELATIONAL TABLE (Screenshot 225502)
-                else -> {
-                    item {
-                        DrilldownFlatTableView(
-                            garments = sortedGarments,
+                        val activeGarment = sortedBranchGarments.find { it.id == selectedSplitGarmentId }
+                            ?: sortedBranchGarments.firstOrNull()
+                        DrilldownSplitGarmentExplorer(
+                            garments = sortedBranchGarments,
+                            activeGarment = activeGarment,
                             statsById = statsById,
-                            latestWearDateById = latestWearDateById,
                             junctionsByGarmentId = junctionsByGarmentId,
                             reportsById = reportsById,
-                            minTableWidth = if (isWide) (screenWidth - 48.dp).coerceAtLeast(860.dp) else 860.dp,
+                            isWide = isWide,
+                            onSelectSplitGarment = { selectedSplitGarmentId = it.id },
                             onOpenGarmentDetail = { g ->
                                 if (onSelectGarment != null) onSelectGarment(g)
                                 else selectedGarmentForDetail = g
-                            }
+                            },
+                            onOpenReportDetail = { r -> selectedReportForDetail = r }
                         )
                     }
                 }
             }
 
             item {
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
+
+        // Preset Editor Modal
+        PresetEditorModal(
+            isOpen = showPresetEditor,
+            preset = currentPreset,
+            onClose = { showPresetEditor = false },
+            onSavePreset = { updated ->
+                val updatedList = presetService.savePreset(updated)
+                presets = updatedList
+                activePresetId = updated.id
+                showPresetEditor = false
+            },
+            onSaveAsNew = { newPreset ->
+                val updatedList = presetService.savePreset(newPreset)
+                presets = updatedList
+                activePresetId = newPreset.id
+                showPresetEditor = false
+            },
+            onDeletePreset = { delId ->
+                val updatedList = presetService.deletePreset(delId)
+                presets = updatedList
+                activePresetId = presets.firstOrNull()?.id ?: DEFAULT_DRILL_PRESETS.first().id
+                showPresetEditor = false
+            },
+            onResetDefaults = {
+                val updatedList = presetService.resetToDefaults()
+                presets = updatedList
+                activePresetId = updatedList.first().id
+                showPresetEditor = false
+            }
+        )
 
         // Fallback Garment Detail Modal
         selectedGarmentForDetail?.let { garment ->

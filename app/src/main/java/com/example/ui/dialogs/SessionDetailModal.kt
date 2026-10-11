@@ -192,6 +192,7 @@ fun SessionDetailModal(
     }
 
     var pendingWashTarget by remember { mutableStateOf<Pair<JunctionEntity, String>?>(null) }
+    var pendingDeleteJunction by remember { mutableStateOf<JunctionEntity?>(null) }
 
     Dialog(
         onDismissRequest = onClose,
@@ -897,7 +898,7 @@ fun SessionDetailModal(
                                                                     tint = Slate400,
                                                                     modifier = Modifier
                                                                         .size(18.dp)
-                                                                        .clickable { onDeleteJunction?.invoke(junction.id) }
+                                                                        .clickable { pendingDeleteJunction = junction }
                                                                 )
                                                                 Icon(
                                                                     imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -1582,7 +1583,7 @@ fun SessionDetailModal(
                                                                     tint = Slate400,
                                                                     modifier = Modifier
                                                                         .size(16.dp)
-                                                                        .clickable { onDeleteJunction?.invoke(j.id) }
+                                                                        .clickable { pendingDeleteJunction = j }
                                                                 )
                                                             }
                                                         }
@@ -1767,6 +1768,41 @@ fun SessionDetailModal(
                 pendingWashTarget = null
             },
             onDismiss = { pendingWashTarget = null }
+        )
+    }
+
+    // Confirmation Dialog for unlinking / deleting Junction
+    pendingDeleteJunction?.let { target ->
+        val g = clothes.find { it.id == target.clothesId }
+        val gName = g?.name ?: target.clothesTitle.ifBlank { "Garment" }
+        AlertDialog(
+            onDismissRequest = { pendingDeleteJunction = null },
+            title = {
+                Text("解除单品搭配关联？", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            },
+            text = {
+                Text(
+                    "确定要从本次穿搭记录中解除「$gName」的搭配关联吗？\n\n注意：这仅会移除本次穿着中的单品关联记录（Junction 关联记录），不会删除衣物本体或本篇穿搭日记。",
+                    fontSize = 13.sp,
+                    color = Slate600
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDeleteJunction?.invoke(target.id)
+                        pendingDeleteJunction = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                ) {
+                    Text("确认解除")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteJunction = null }) {
+                    Text("取消")
+                }
+            }
         )
     }
 }

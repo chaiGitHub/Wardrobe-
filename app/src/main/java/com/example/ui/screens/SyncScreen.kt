@@ -11,6 +11,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -32,7 +33,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.CameraAlt
+import androidx.core.content.FileProvider
+import android.content.Intent
+import java.io.File
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.CleaningServices
@@ -74,6 +79,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import com.example.ui.components.buttonMarquee
+import com.example.ui.components.ScrollableButtonText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -364,16 +371,15 @@ fun SyncScreen(
                     modifier = Modifier.padding(18.dp),
                     verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
-                    // Header Row + 3-Tab Switcher
-                    FlowRow(
+                    // Header Row + 4-Tab Switcher
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Row(
                             verticalAlignment = Alignment.Top,
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Box(
                                 modifier = Modifier
@@ -389,7 +395,10 @@ fun SyncScreen(
                                     modifier = Modifier.size(22.dp)
                                 )
                             }
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 FlowRow(
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -424,21 +433,26 @@ fun SyncScreen(
                             }
                         }
 
-                        // 3-Tab Switcher: Google Sheets (3 Tabs) | Drive ZIP Backup | Local Export
+                        // 4-Tab Switcher: Google Sheets (3 Tabs) | Drive ZIP Backup | Local Export | 📦 APK & Build
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = Slate100,
-                            border = BorderStroke(1.dp, Slate200)
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
-                                modifier = Modifier.padding(3.dp),
-                                horizontalArrangement = Arrangement.spacedBy(3.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState())
+                                    .padding(3.dp),
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 val tabs = listOf(
                                     Triple("sheets", "Google Sheets (3 Tabs)", BrandEmerald),
                                     Triple("drive_zip", "Drive ZIP Backup", BrandBlue),
-                                    Triple("local", "Local Export", Slate900)
+                                    Triple("local", "Local Export", Slate900),
+                                    Triple("apk", "📦 APK & Build", BrandPurple)
                                 )
                                 tabs.forEach { (id, label, activeTint) ->
                                     val isSel = cloudTab == id
@@ -455,6 +469,8 @@ fun SyncScreen(
                                             fontSize = 11.sp,
                                             fontWeight = if (isSel) FontWeight.Bold else FontWeight.Medium,
                                             color = if (isSel) activeTint else Slate600,
+                                            maxLines = 1,
+                                            softWrap = false,
                                             modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                         )
                                     }
@@ -932,7 +948,7 @@ fun SyncScreen(
                         }
 
                         // TAB 3: LOCAL EXPORT
-                        else -> {
+                        "local" -> {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Button(
                                     onClick = { createZipLauncher.launch("wardrobe-full-backup-$timeStamp.zip") },
@@ -944,7 +960,14 @@ fun SyncScreen(
                                 ) {
                                     Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Save Backup to Device (.ZIP)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "Save Backup to Device (.ZIP)",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.buttonMarquee()
+                                    )
                                 }
 
                                 OutlinedButton(
@@ -956,7 +979,15 @@ fun SyncScreen(
                                 ) {
                                     Icon(Icons.Default.Share, contentDescription = null, tint = BrandPurple, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("1-Tap Share / Upload to Google Drive App", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandPurple)
+                                    Text(
+                                        text = "1-Tap Share / Upload to Google Drive App",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = BrandPurple,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.buttonMarquee()
+                                    )
                                 }
 
                                 OutlinedButton(
@@ -968,7 +999,14 @@ fun SyncScreen(
                                 ) {
                                     Icon(Icons.Default.Description, contentDescription = null, tint = Slate700, modifier = Modifier.size(16.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Export Raw Database Only (.JSON)", fontSize = 12.sp, color = Slate700)
+                                    Text(
+                                        text = "Export Raw Database Only (.JSON)",
+                                        fontSize = 12.sp,
+                                        color = Slate700,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.buttonMarquee()
+                                    )
                                 }
 
                                 if (onDeduplicate != null) {
@@ -981,7 +1019,173 @@ fun SyncScreen(
                                     ) {
                                         Icon(Icons.Default.CleaningServices, contentDescription = null, tint = BrandAmber, modifier = Modifier.size(16.dp))
                                         Spacer(modifier = Modifier.width(8.dp))
-                                        Text("Clean Up Duplicate Reports & Junctions", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Slate700)
+                                        Text(
+                                            text = "Clean Up Duplicate Reports & Junctions",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Slate700,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            modifier = Modifier.buttonMarquee()
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // TAB 4: APK PACKAGE & DOWNLOAD
+                        else -> {
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = Color(0xFFFAF5FF),
+                                border = BorderStroke(1.dp, Color(0xFFDDD6FE)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(34.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(BrandPurple),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Android,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "Android APK Package (安装包导出与下载)",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = Slate900
+                                            )
+                                            Text(
+                                                text = "Version 1.0.0 (Debug Signed) · Ready for Installation",
+                                                fontSize = 11.sp,
+                                                color = BrandPurple,
+                                                fontWeight = FontWeight.SemiBold
+                                            )
+                                        }
+                                    }
+
+                                    Text(
+                                        text = "随时直接提取或分享当前应用的安装包，无需每次由 AI 自动重新编译：",
+                                        fontSize = 11.sp,
+                                        color = Slate600,
+                                        lineHeight = 15.sp
+                                    )
+
+                                    // APK details card
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color.White,
+                                        border = BorderStroke(1.dp, Color(0xFFE9D5FF))
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text("文件名 (File):", fontSize = 11.sp, color = Slate500)
+                                                Text("app-debug.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800, fontFamily = FontFamily.Monospace)
+                                            }
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text("包名 (Package):", fontSize = 11.sp, color = Slate500)
+                                                Text(context.packageName, fontSize = 11.sp, color = Slate700, fontFamily = FontFamily.Monospace)
+                                            }
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text("大小 (Size):", fontSize = 11.sp, color = Slate500)
+                                                Text("~25 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
+                                            }
+                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                                Text("位置 (Location):", fontSize = 11.sp, color = Slate500)
+                                                Text("项目根目录 (Root Directory)", fontSize = 11.sp, color = Slate700)
+                                            }
+                                        }
+                                    }
+
+                                    // Action Buttons
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Button(
+                                            onClick = {
+                                                try {
+                                                    val srcApk = File(context.applicationInfo.sourceDir)
+                                                    val dest = File(context.cacheDir, "app-debug.apk")
+                                                    srcApk.copyTo(dest, overwrite = true)
+                                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", dest)
+                                                    val intent = Intent(Intent.ACTION_SEND).apply {
+                                                        type = "application/vnd.android.package-archive"
+                                                        putExtra(Intent.EXTRA_STREAM, uri)
+                                                        putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK")
+                                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                                    }
+                                                    context.startActivity(Intent.createChooser(intent, "分享 / 保存 APK 安装包"))
+                                                } catch (e: Exception) {
+                                                    cloudBannerMsg = "提取 APK 失败: ${e.message}"
+                                                }
+                                            },
+                                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                                            shape = RoundedCornerShape(10.dp),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "导出/分享 APK",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                modifier = Modifier.buttonMarquee()
+                                            )
+                                        }
+
+                                        OutlinedButton(
+                                            onClick = {
+                                                cloudBannerMsg = "已定位 APK！可在 Google AI Studio 左侧文件栏中直接右键 'app-debug.apk' 点击 Download 下载。"
+                                            },
+                                            shape = RoundedCornerShape(10.dp),
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+                                            modifier = Modifier.weight(1f)
+                                        ) {
+                                            Icon(Icons.Default.Download, contentDescription = null, tint = Slate700, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "AI Studio 下载指引",
+                                                fontSize = 11.sp,
+                                                color = Slate800,
+                                                maxLines = 1,
+                                                softWrap = false,
+                                                modifier = Modifier.buttonMarquee()
+                                            )
+                                        }
+                                    }
+
+                                    // How to download instructions
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color.White,
+                                        border = BorderStroke(1.dp, Slate200)
+                                    ) {
+                                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                            Text("💡 如何在 Google AI Studio 中下载 APK：", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800)
+                                            Text("1. 在左侧文件树直接找到根目录下的 app-debug.apk 文件", fontSize = 10.sp, color = Slate600)
+                                            Text("2. 鼠标右键点击该文件，选择「Download」下载到电脑或手机", fontSize = 10.sp, color = Slate600)
+                                            Text("3. 或者点击右上角设置/齿轮菜单 ->「Download APK」", fontSize = 10.sp, color = Slate600)
+                                            Text("4. 【免频繁自动打包】：后续只需调整功能时，不会每次自动重新编译 APK，仅在您需要时才生成！", fontSize = 10.sp, color = BrandPurple, fontWeight = FontWeight.SemiBold)
+                                        }
                                     }
                                 }
                             }

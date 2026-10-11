@@ -163,7 +163,7 @@ object AiReportVersionHelper {
         if (raw.isBlank()) return SimpleDateFormat("M/d/yyyy, h:mm a", Locale.getDefault()).format(Date())
         return try {
             if (raw.contains("T")) {
-                val parser = SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", Locale.getDefault())
+                val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
                 val d = parser.parse(raw.substringBefore("."))
                 SimpleDateFormat("M/d/yyyy, h:mm a", Locale.getDefault()).format(d ?: Date())
             } else {

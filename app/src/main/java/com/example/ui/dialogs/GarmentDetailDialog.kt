@@ -45,6 +45,7 @@ import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
@@ -66,6 +67,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -86,6 +88,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.example.ui.components.ErgonomicExplainField
+import com.example.ui.components.EnvironmentalScenariosEditSection
+import com.example.ui.components.EnvironmentalScenariosViewSection
 import com.example.data.model.GarmentEntity
 import com.example.data.model.JunctionEntity
 import com.example.data.model.ReportEntity
@@ -142,9 +147,29 @@ fun GarmentDetailDialog(
     var editPriceStr by remember(garment) { mutableStateOf(if (garment.price > 0) garment.price.toString() else "") }
 
     var editThickClothes by remember(garment) { mutableStateOf(garment.thickClothes) }
-    var editHotAtNoon by remember(garment) { mutableStateOf(garment.hotAtNoon) }
+    var editHotAtNoon by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
     var editDiaoDai by remember(garment) { mutableStateOf(garment.diaoDai) }
-    var editSideBreast by remember(garment) { mutableStateOf(garment.sideBreastOk) }
+    var editSideBreast by remember(garment) { mutableStateOf(garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }) }
+
+    // Dedicated Side Breast Bra fields
+    var editSideBreastGatherBra by remember(garment) { mutableStateOf(garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }) }
+    var editSideBreastSideOutBra by remember(garment) { mutableStateOf(garment.sideBreastSideOutBra) }
+
+    // 3 Environmental Scenarios
+    var editAircondHotFeeling by remember(garment) { mutableStateOf(garment.aircondHotFeeling) }
+    var editAircondHotExplain by remember(garment) { mutableStateOf(garment.aircondHotExplain) }
+    var editAircondLegFeeling by remember(garment) { mutableStateOf(garment.aircondLegFeeling) }
+    var editAircondLegExplain by remember(garment) { mutableStateOf(garment.aircondLegExplain) }
+
+    var editNoAircondHotFeeling by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
+    var editNoAircondHotExplain by remember(garment) { mutableStateOf(garment.noAircondHotExplain) }
+    var editNoAircondLegFeeling by remember(garment) { mutableStateOf(garment.noAircondLegFeeling) }
+    var editNoAircondLegExplain by remember(garment) { mutableStateOf(garment.noAircondLegExplain) }
+
+    var editFanSleepHotFeeling by remember(garment) { mutableStateOf(garment.fanSleepHotFeeling) }
+    var editFanSleepHotExplain by remember(garment) { mutableStateOf(garment.fanSleepHotExplain) }
+    var editFanSleepLegFeeling by remember(garment) { mutableStateOf(garment.fanSleepLegFeeling) }
+    var editFanSleepLegExplain by remember(garment) { mutableStateOf(garment.fanSleepLegExplain) }
     var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreast) }
     var editCenterChest by remember(garment) { mutableStateOf(garment.standBreast) }
     var editBeautiful by remember(garment) { mutableStateOf(garment.beautiful) }
@@ -160,6 +185,41 @@ fun GarmentDetailDialog(
     var editDescriptions by remember(garment) { mutableStateOf(garment.descriptions) }
     var editDescriptions2 by remember(garment) { mutableStateOf(garment.descriptions2) }
     var editLastCommentAction by remember(garment) { mutableStateOf(garment.lastComment) }
+
+    // Field-level explanations (mapping fieldKey to explanation text) matching Web App _fieldExplanations
+    val editFieldExplanations = remember(garment) {
+        val map = mutableStateMapOf<String, String>()
+        try {
+            if (garment.customFields.isNotBlank() && garment.customFields != "{}") {
+                val obj = JSONObject(garment.customFields)
+                val subObj = obj.optJSONObject("_fieldExplanations")
+                if (subObj != null) {
+                    val keys = subObj.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next()
+                        map[k] = subObj.optString(k, "")
+                    }
+                }
+                val keys = obj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    if (k.endsWith("_explain")) {
+                        val pureKey = k.removeSuffix("_explain")
+                        if (!map.containsKey(pureKey)) {
+                            map[pureKey] = obj.optString(k, "")
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        map
+    }
+
+    val fieldExplanationsInView = remember(garment.customFields) {
+        editFieldExplanations.toMap()
+    }
+    val expandedExplainFields = remember { mutableStateMapOf<String, Boolean>() }
+    val dictionaryService = remember { FieldDictionaryService(context) }
 
     // Extract tags
     val tagsList = remember(garment.tags) {
@@ -246,9 +306,16 @@ fun GarmentDetailDialog(
                 "Clothes Type" -> g.clothesType
                 "material" -> g.material
                 "thick clothes" -> g.thickClothes
-                "Hot at noon" -> g.hotAtNoon
+                "Hot at noon" -> g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
                 "diao dai" -> g.diaoDai
-                "side breast ok" -> g.sideBreastOk
+                "side breast ok", "side breast ok: with 聚拢 bra" -> g.sideBreastGatherBra.ifBlank { g.sideBreastOk }
+                "side breast ok: with side out bra" -> g.sideBreastSideOutBra
+                "when with aircond: hot feeling" -> g.aircondHotFeeling
+                "when with aircond: leg feeling" -> g.aircondLegFeeling
+                "when without aircond: hot feeling" -> g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
+                "when without aircond: leg feeling" -> g.noAircondLegFeeling
+                "when sleep under fan: hot feeling" -> g.fanSleepHotFeeling
+                "when sleep under fan: leg feeling" -> g.fanSleepLegFeeling
                 "sit breast ok" -> g.sitBreast
                 "center chest" -> g.standBreast
                 "beautiful" -> g.beautiful
@@ -267,9 +334,15 @@ fun GarmentDetailDialog(
             "Clothes Type" -> if (map.isEmpty()) clothesTypeOptions.forEach { map[it] = 1 }
             "material" -> if (map.isEmpty()) listOf("lace", "soft chiffon", "cotton", "silk", "wool", "linen", "polyester", "denim").forEach { map[it] = 1 }
             "thick clothes" -> if (map.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { map[it] = 1 }
-            "Hot at noon" -> if (map.isEmpty()) listOf("Hot", "Not hot", "Very hot", "Warm", "Cool").forEach { map[it] = 1 }
+            "Hot at noon", "when without aircond: hot feeling" -> if (map.isEmpty()) listOf("hot", "middle hot", "not hot", "very hot", "stuffy").forEach { map[it] = 1 }
+            "when without aircond: leg feeling" -> if (map.isEmpty()) listOf("middle hot", "hot", "not hot", "sticky", "breathable").forEach { map[it] = 1 }
+            "when with aircond: hot feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable cool", "very cold", "not cold").forEach { map[it] = 1 }
+            "when with aircond: leg feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable", "chilly knees").forEach { map[it] = 1 }
+            "when sleep under fan: hot feeling" -> if (map.isEmpty()) listOf("not hot", "middle cold", "comfortable", "cool", "sweaty back").forEach { map[it] = 1 }
+            "when sleep under fan: leg feeling" -> if (map.isEmpty()) listOf("middle cold", "cold", "not hot", "comfortable", "breezy").forEach { map[it] = 1 }
             "diao dai" -> if (map.isEmpty()) listOf("not diao dai", "diao dai", "wide strap", "halter").forEach { map[it] = 1 }
-            "side breast ok" -> if (map.isEmpty()) listOf("side breast shape ok", "friction at armpit", "no friction").forEach { map[it] = 1 }
+            "side breast ok", "side breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { map[it] = 1 }
+            "side breast ok: with side out bra" -> if (map.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { map[it] = 1 }
             "sit breast ok" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose").forEach { map[it] = 1 }
             "center chest" -> if (map.isEmpty()) listOf("center chest", "no center chest", "low cut", "modest").forEach { map[it] = 1 }
             "beautiful" -> if (map.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { map[it] = 1 }
@@ -284,15 +357,54 @@ fun GarmentDetailDialog(
 
     // Function to commit changes
     fun handleSaveChanges() {
+        val customFieldsObj = try {
+            if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
+        } catch (_: Exception) {
+            JSONObject()
+        }
+        val explainSubObj = JSONObject()
+        editFieldExplanations.forEach { (k, v) ->
+            if (v.isNotBlank()) {
+                explainSubObj.put(k, v)
+                customFieldsObj.put("${k}_explain", v)
+            } else {
+                customFieldsObj.remove("${k}_explain")
+            }
+        }
+        // Save environmental scenario explanations
+        if (editAircondHotExplain.isNotBlank()) explainSubObj.put("when with aircond: hot feeling", editAircondHotExplain)
+        if (editAircondLegExplain.isNotBlank()) explainSubObj.put("when with aircond: leg feeling", editAircondLegExplain)
+        if (editNoAircondHotExplain.isNotBlank()) explainSubObj.put("when without aircond: hot feeling", editNoAircondHotExplain)
+        if (editNoAircondLegExplain.isNotBlank()) explainSubObj.put("when without aircond: leg feeling", editNoAircondLegExplain)
+        if (editFanSleepHotExplain.isNotBlank()) explainSubObj.put("when sleep under fan: hot feeling", editFanSleepHotExplain)
+        if (editFanSleepLegExplain.isNotBlank()) explainSubObj.put("when sleep under fan: leg feeling", editFanSleepLegExplain)
+
+        customFieldsObj.put("_fieldExplanations", explainSubObj)
+
+        val effectiveHotAtNoon = editNoAircondHotFeeling.ifBlank { editHotAtNoon }
         val updated = garment.copy(
             name = editName.ifBlank { garment.name },
             clothesType = editClothesType.ifBlank { garment.clothesType },
             material = editMaterial,
             price = editPriceStr.toDoubleOrNull() ?: garment.price,
             thickClothes = editThickClothes,
-            hotAtNoon = editHotAtNoon,
+            hotAtNoon = effectiveHotAtNoon,
             diaoDai = editDiaoDai,
-            sideBreastOk = editSideBreast,
+            sideBreastOk = editSideBreastGatherBra,
+            sideBreastGatherBra = editSideBreastGatherBra,
+            sideBreastSideOutBra = editSideBreastSideOutBra,
+            aircondHotFeeling = editAircondHotFeeling,
+            aircondHotExplain = editAircondHotExplain,
+            aircondLegFeeling = editAircondLegFeeling,
+            aircondLegExplain = editAircondLegExplain,
+            noAircondHotFeeling = editNoAircondHotFeeling,
+            noAircondHotExplain = editNoAircondHotExplain,
+            noAircondLegFeeling = editNoAircondLegFeeling,
+            noAircondLegExplain = editNoAircondLegExplain,
+            fanSleepHotFeeling = editFanSleepHotFeeling,
+            fanSleepHotExplain = editFanSleepHotExplain,
+            fanSleepLegFeeling = editFanSleepLegFeeling,
+            fanSleepLegExplain = editFanSleepLegExplain,
             sitBreast = editSitBreast,
             standBreast = editCenterChest,
             beautiful = editBeautiful,
@@ -305,7 +417,8 @@ fun GarmentDetailDialog(
             trackedAppWashes = editTrackedAppWashes.toIntOrNull() ?: garment.trackedAppWashes,
             descriptions = editDescriptions,
             descriptions2 = editDescriptions2,
-            lastComment = editLastCommentAction
+            lastComment = editLastCommentAction,
+            customFields = customFieldsObj.toString()
         )
         onSaveGarment?.invoke(updated)
         isEditing = false
@@ -318,9 +431,23 @@ fun GarmentDetailDialog(
         editMaterial = garment.material
         editPriceStr = if (garment.price > 0) garment.price.toString() else ""
         editThickClothes = garment.thickClothes
-        editHotAtNoon = garment.hotAtNoon
+        editHotAtNoon = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
         editDiaoDai = garment.diaoDai
-        editSideBreast = garment.sideBreastOk
+        editSideBreast = garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }
+        editSideBreastGatherBra = garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }
+        editSideBreastSideOutBra = garment.sideBreastSideOutBra
+        editAircondHotFeeling = garment.aircondHotFeeling
+        editAircondHotExplain = garment.aircondHotExplain
+        editAircondLegFeeling = garment.aircondLegFeeling
+        editAircondLegExplain = garment.aircondLegExplain
+        editNoAircondHotFeeling = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
+        editNoAircondHotExplain = garment.noAircondHotExplain
+        editNoAircondLegFeeling = garment.noAircondLegFeeling
+        editNoAircondLegExplain = garment.noAircondLegExplain
+        editFanSleepHotFeeling = garment.fanSleepHotFeeling
+        editFanSleepHotExplain = garment.fanSleepHotExplain
+        editFanSleepLegFeeling = garment.fanSleepLegFeeling
+        editFanSleepLegExplain = garment.fanSleepLegExplain
         editSitBreast = garment.sitBreast
         editCenterChest = garment.standBreast
         editBeautiful = garment.beautiful
@@ -332,6 +459,30 @@ fun GarmentDetailDialog(
         editDescriptions = garment.descriptions
         editDescriptions2 = garment.descriptions2
         editLastCommentAction = garment.lastComment
+        editFieldExplanations.clear()
+        try {
+            if (garment.customFields.isNotBlank() && garment.customFields != "{}") {
+                val obj = JSONObject(garment.customFields)
+                val subObj = obj.optJSONObject("_fieldExplanations")
+                if (subObj != null) {
+                    val keys = subObj.keys()
+                    while (keys.hasNext()) {
+                        val k = keys.next()
+                        editFieldExplanations[k] = subObj.optString(k, "")
+                    }
+                }
+                val keys = obj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    if (k.endsWith("_explain")) {
+                        val pureKey = k.removeSuffix("_explain")
+                        if (!editFieldExplanations.containsKey(pureKey)) {
+                            editFieldExplanations[pureKey] = obj.optString(k, "")
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
         isEditing = false
     }
 
@@ -593,6 +744,17 @@ fun GarmentDetailDialog(
                                             focusedBorderColor = BrandPurple
                                         )
                                     )
+                                    ErgonomicExplainField(
+                                        fieldKey = "Name",
+                                        fieldLabel = "Garment Name",
+                                        value = editFieldExplanations["Name"] ?: "",
+                                        onValueChange = { editFieldExplanations["Name"] = it },
+                                        isExpanded = expandedExplainFields["Name"] == true,
+                                        onToggleExpand = { expandedExplainFields["Name"] = !(expandedExplainFields["Name"] ?: false) },
+                                        allClothes = existingClothes,
+                                        customPlaceholder = "补充命名原因或此单品特别备注...",
+                                        dictionaryService = dictionaryService
+                                    )
                                 }
 
                                 // 2. CLOTHES TYPE * (with Previous pill + Choose button)
@@ -688,6 +850,18 @@ fun GarmentDetailDialog(
                                             }
                                         }
                                     }
+
+                                    ErgonomicExplainField(
+                                        fieldKey = "Clothes Type",
+                                        fieldLabel = "Clothes Type",
+                                        value = editFieldExplanations["Clothes Type"] ?: "",
+                                        onValueChange = { editFieldExplanations["Clothes Type"] = it },
+                                        isExpanded = expandedExplainFields["Clothes Type"] == true,
+                                        onToggleExpand = { expandedExplainFields["Clothes Type"] = !(expandedExplainFields["Clothes Type"] ?: false) },
+                                        allClothes = existingClothes,
+                                        customPlaceholder = "例如: dress normally more feminine. Got better waist and breast cutting...",
+                                        dictionaryService = dictionaryService
+                                    )
                                 }
 
                                 // 3. MATERIAL (with Previous pill)
@@ -698,7 +872,14 @@ fun GarmentDetailDialog(
                                     onValueChange = { editMaterial = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "material" to { editMaterial = it }
-                                    }
+                                    },
+                                    fieldKey = "material",
+                                    explainValue = editFieldExplanations["material"] ?: "",
+                                    onExplainChange = { editFieldExplanations["material"] = it },
+                                    allClothes = existingClothes,
+                                    isExplainExpanded = expandedExplainFields["material"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["material"] = !(expandedExplainFields["material"] ?: false) },
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // 4. PRICE ($)
@@ -724,6 +905,17 @@ fun GarmentDetailDialog(
                                             unfocusedBorderColor = Slate200,
                                             focusedBorderColor = BrandPurple
                                         )
+                                    )
+                                    ErgonomicExplainField(
+                                        fieldKey = "price",
+                                        fieldLabel = "Price",
+                                        value = editFieldExplanations["price"] ?: "",
+                                        onValueChange = { editFieldExplanations["price"] = it },
+                                        isExpanded = expandedExplainFields["price"] == true,
+                                        onToggleExpand = { expandedExplainFields["price"] = !(expandedExplainFields["price"] ?: false) },
+                                        allClothes = existingClothes,
+                                        customPlaceholder = "价格、购入渠道或性价比体感备注...",
+                                        dictionaryService = dictionaryService
                                     )
                                 }
                             }
@@ -756,18 +948,66 @@ fun GarmentDetailDialog(
                                     onValueChange = { editThickClothes = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "thick clothes" to { editThickClothes = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["thick clothes"] ?: "",
+                                    onExplainChange = { editFieldExplanations["thick clothes"] = it }
                                 )
 
-                                // Hot at noon
-                                EditFieldWithPrevious(
-                                    label = "HOT AT NOON",
-                                    value = editHotAtNoon,
-                                    placeholder = "e.g. Hot, Not hot, Very hot",
-                                    onValueChange = { editHotAtNoon = it },
-                                    onOpenPrevious = {
-                                        activePreviousPicker = "Hot at noon" to { editHotAtNoon = it }
-                                    }
+                                // 3 Environmental Scenarios Expandable Cards
+                                EnvironmentalScenariosEditSection(
+                                    aircondHotFeeling = editAircondHotFeeling,
+                                    onAircondHotChange = { editAircondHotFeeling = it },
+                                    onAircondHotPrevious = {
+                                        activePreviousPicker = "when with aircond: hot feeling" to { editAircondHotFeeling = it }
+                                    },
+                                    aircondHotExplain = editAircondHotExplain,
+                                    onAircondHotExplainChange = { editAircondHotExplain = it },
+                                    aircondLegFeeling = editAircondLegFeeling,
+                                    onAircondLegChange = { editAircondLegFeeling = it },
+                                    onAircondLegPrevious = {
+                                        activePreviousPicker = "when with aircond: leg feeling" to { editAircondLegFeeling = it }
+                                    },
+                                    aircondLegExplain = editAircondLegExplain,
+                                    onAircondLegExplainChange = { editAircondLegExplain = it },
+
+                                    noAircondHotFeeling = editNoAircondHotFeeling,
+                                    onNoAircondHotChange = {
+                                        editNoAircondHotFeeling = it
+                                        editHotAtNoon = it
+                                    },
+                                    onNoAircondHotPrevious = {
+                                        activePreviousPicker = "when without aircond: hot feeling" to {
+                                            editNoAircondHotFeeling = it
+                                            editHotAtNoon = it
+                                        }
+                                    },
+                                    noAircondHotExplain = editNoAircondHotExplain,
+                                    onNoAircondHotExplainChange = { editNoAircondHotExplain = it },
+                                    noAircondLegFeeling = editNoAircondLegFeeling,
+                                    onNoAircondLegChange = { editNoAircondLegFeeling = it },
+                                    onNoAircondLegPrevious = {
+                                        activePreviousPicker = "when without aircond: leg feeling" to { editNoAircondLegFeeling = it }
+                                    },
+                                    noAircondLegExplain = editNoAircondLegExplain,
+                                    onNoAircondLegExplainChange = { editNoAircondLegExplain = it },
+
+                                    fanSleepHotFeeling = editFanSleepHotFeeling,
+                                    onFanSleepHotChange = { editFanSleepHotFeeling = it },
+                                    onFanSleepHotPrevious = {
+                                        activePreviousPicker = "when sleep under fan: hot feeling" to { editFanSleepHotFeeling = it }
+                                    },
+                                    fanSleepHotExplain = editFanSleepHotExplain,
+                                    onFanSleepHotExplainChange = { editFanSleepHotExplain = it },
+                                    fanSleepLegFeeling = editFanSleepLegFeeling,
+                                    onFanSleepLegChange = { editFanSleepLegFeeling = it },
+                                    onFanSleepLegPrevious = {
+                                        activePreviousPicker = "when sleep under fan: leg feeling" to { editFanSleepLegFeeling = it }
+                                    },
+                                    fanSleepLegExplain = editFanSleepLegExplain,
+                                    onFanSleepLegExplainChange = { editFanSleepLegExplain = it },
+
+                                    allClothes = existingClothes,
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // diao dai
@@ -778,18 +1018,45 @@ fun GarmentDetailDialog(
                                     onValueChange = { editDiaoDai = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "diao dai" to { editDiaoDai = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["diao dai"] ?: "",
+                                    onExplainChange = { editFieldExplanations["diao dai"] = it }
                                 )
 
-                                // side breast ok
+                                // side breast ok: with 聚拢 bra
                                 EditFieldWithPrevious(
-                                    label = "SIDE BREAST OK",
-                                    value = editSideBreast,
-                                    placeholder = "e.g. side breast shape ok",
-                                    onValueChange = { editSideBreast = it },
+                                    label = "SIDE BREAST OK: WITH 聚拢 BRA",
+                                    value = editSideBreastGatherBra,
+                                    placeholder = "e.g. side breast shape ok, no overflow",
+                                    onValueChange = { editSideBreastGatherBra = it },
                                     onOpenPrevious = {
-                                        activePreviousPicker = "side breast ok" to { editSideBreast = it }
-                                    }
+                                        activePreviousPicker = "side breast ok: with 聚拢 bra" to { editSideBreastGatherBra = it }
+                                    },
+                                    fieldKey = "side breast ok: with 聚拢 bra",
+                                    explainValue = editFieldExplanations["side breast ok: with 聚拢 bra"] ?: "",
+                                    onExplainChange = { editFieldExplanations["side breast ok: with 聚拢 bra"] = it },
+                                    allClothes = existingClothes,
+                                    isExplainExpanded = expandedExplainFields["side breast ok: with 聚拢 bra"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["side breast ok: with 聚拢 bra"] = !(expandedExplainFields["side breast ok: with 聚拢 bra"] ?: false) },
+                                    dictionaryService = dictionaryService
+                                )
+
+                                // side breast ok: with side out bra
+                                EditFieldWithPrevious(
+                                    label = "SIDE BREAST OK: WITH SIDE OUT BRA",
+                                    value = editSideBreastSideOutBra,
+                                    placeholder = "e.g. side breast shape ok, full coverage",
+                                    onValueChange = { editSideBreastSideOutBra = it },
+                                    onOpenPrevious = {
+                                        activePreviousPicker = "side breast ok: with side out bra" to { editSideBreastSideOutBra = it }
+                                    },
+                                    fieldKey = "side breast ok: with side out bra",
+                                    explainValue = editFieldExplanations["side breast ok: with side out bra"] ?: "",
+                                    onExplainChange = { editFieldExplanations["side breast ok: with side out bra"] = it },
+                                    allClothes = existingClothes,
+                                    isExplainExpanded = expandedExplainFields["side breast ok: with side out bra"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["side breast ok: with side out bra"] = !(expandedExplainFields["side breast ok: with side out bra"] ?: false) },
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // sit breast ok
@@ -800,7 +1067,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editSitBreast = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "sit breast ok" to { editSitBreast = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["sit breast ok"] ?: "",
+                                    onExplainChange = { editFieldExplanations["sit breast ok"] = it }
                                 )
 
                                 // center chest
@@ -811,7 +1080,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editCenterChest = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "center chest" to { editCenterChest = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["center chest"] ?: "",
+                                    onExplainChange = { editFieldExplanations["center chest"] = it }
                                 )
 
                                 // beautiful
@@ -822,7 +1093,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editBeautiful = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "beautiful" to { editBeautiful = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["beautiful"] ?: "",
+                                    onExplainChange = { editFieldExplanations["beautiful"] = it }
                                 )
 
                                 // beautiful reason
@@ -833,7 +1106,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editBeautifulReason = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "beautiful reason" to { editBeautifulReason = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["beautiful reason"] ?: "",
+                                    onExplainChange = { editFieldExplanations["beautiful reason"] = it }
                                 )
 
                                 // wet
@@ -844,7 +1119,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editWet = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "wet" to { editWet = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["wet"] ?: "",
+                                    onExplainChange = { editFieldExplanations["wet"] = it }
                                 )
 
                                 // wet reason
@@ -855,7 +1132,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editWetReason = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "wet reason" to { editWetReason = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["wet reason"] ?: "",
+                                    onExplainChange = { editFieldExplanations["wet reason"] = it }
                                 )
 
                                 // long dress
@@ -866,7 +1145,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editLongDress = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "long dress" to { editLongDress = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["long dress"] ?: "",
+                                    onExplainChange = { editFieldExplanations["long dress"] = it }
                                 )
 
                                 // may throw
@@ -877,7 +1158,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editMayThrow = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "may throw" to { editMayThrow = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["may throw"] ?: "",
+                                    onExplainChange = { editFieldExplanations["may throw"] = it }
                                 )
 
                                 // wearing frequency (legacy)
@@ -961,6 +1244,8 @@ fun GarmentDetailDialog(
                                     onOpenPrevious = {
                                         activePreviousPicker = "Descriptions" to { editDescriptions = it }
                                     },
+                                    explainValue = editFieldExplanations["Descriptions"] ?: "",
+                                    onExplainChange = { editFieldExplanations["Descriptions"] = it },
                                     isMultiline = true
                                 )
 
@@ -972,6 +1257,8 @@ fun GarmentDetailDialog(
                                     onOpenPrevious = {
                                         activePreviousPicker = "Descriptions 2" to { editDescriptions2 = it }
                                     },
+                                    explainValue = editFieldExplanations["Descriptions 2"] ?: "",
+                                    onExplainChange = { editFieldExplanations["Descriptions 2"] = it },
                                     isMultiline = true
                                 )
 
@@ -982,7 +1269,9 @@ fun GarmentDetailDialog(
                                     onValueChange = { editLastCommentAction = it },
                                     onOpenPrevious = {
                                         activePreviousPicker = "last comment or action" to { editLastCommentAction = it }
-                                    }
+                                    },
+                                    explainValue = editFieldExplanations["last comment or action"] ?: "",
+                                    onExplainChange = { editFieldExplanations["last comment or action"] = it }
                                 )
                             }
                         }
@@ -1222,29 +1511,36 @@ fun GarmentDetailDialog(
 
                                 HorizontalDivider(color = Color(0xFFF1F5F9))
 
-                                ErgonomicRow("Clothes Type:", garment.clothesType.ifBlank { "—" })
-                                ErgonomicRow("material:", garment.material.ifBlank { "—" })
-                                ErgonomicRow("thick clothes:", garment.thickClothes.ifBlank { "—" }, boldValue = true)
-                                ErgonomicRow("Hot at noon:", garment.hotAtNoon.ifBlank { "—" }, boldValue = true)
-                                ErgonomicRow("diao dai:", garment.diaoDai.ifBlank { "—" })
-                                ErgonomicRow("side breast ok:", garment.sideBreastOk.ifBlank { "—" })
-                                ErgonomicRow("sit breast ok:", garment.sitBreast.ifBlank { "—" })
-                                ErgonomicRow("center chest:", garment.standBreast.ifBlank { "—" })
-                                ErgonomicRow("beautiful:", garment.beautiful.ifBlank { "—" })
-                                ErgonomicRow("wet:", garment.wet.ifBlank { "—" })
-                                ErgonomicRow("long dress:", garment.longDress.ifBlank { "—" })
-                                ErgonomicRow("may throw:", garment.mayThrow.ifBlank { "—" })
-                                ErgonomicRow("price:", if (garment.price > 0) "$${garment.price}" else "$0")
+                                ErgonomicRow("Clothes Type:", garment.clothesType.ifBlank { "—" }, explanation = fieldExplanationsInView["Clothes Type"])
+                                ErgonomicRow("material:", garment.material.ifBlank { "—" }, explanation = fieldExplanationsInView["material"])
+                                ErgonomicRow("thick clothes:", garment.thickClothes.ifBlank { "—" }, boldValue = true, explanation = fieldExplanationsInView["thick clothes"])
+                                ErgonomicRow("Hot feeling (without AC):", (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "—" }, boldValue = true, explanation = fieldExplanationsInView["when without aircond: hot feeling"] ?: fieldExplanationsInView["Hot at noon"])
+                                ErgonomicRow("diao dai:", garment.diaoDai.ifBlank { "—" }, explanation = fieldExplanationsInView["diao dai"])
+                                ErgonomicRow("side breast ok: with 聚拢 bra:", (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "—" }, explanation = fieldExplanationsInView["side breast ok: with 聚拢 bra"] ?: fieldExplanationsInView["side breast ok"])
+                                ErgonomicRow("side breast ok: with side out bra:", garment.sideBreastSideOutBra.ifBlank { "—" }, explanation = fieldExplanationsInView["side breast ok: with side out bra"])
+                                ErgonomicRow("sit breast ok:", garment.sitBreast.ifBlank { "—" }, explanation = fieldExplanationsInView["sit breast ok"])
+                                ErgonomicRow("center chest:", garment.standBreast.ifBlank { "—" }, explanation = fieldExplanationsInView["center chest"])
+                                ErgonomicRow("beautiful:", garment.beautiful.ifBlank { "—" }, explanation = fieldExplanationsInView["beautiful"])
+                                ErgonomicRow("wet:", garment.wet.ifBlank { "—" }, explanation = fieldExplanationsInView["wet"])
+                                ErgonomicRow("long dress:", garment.longDress.ifBlank { "—" }, explanation = fieldExplanationsInView["long dress"])
+                                ErgonomicRow("may throw:", garment.mayThrow.ifBlank { "—" }, explanation = fieldExplanationsInView["may throw"])
+                                ErgonomicRow("price:", if (garment.price > 0) "$${garment.price}" else "$0", explanation = fieldExplanationsInView["price"])
                                 ErgonomicRow("wearing frequency(legacy):", garment.wearingFrequency.toString())
                                 ErgonomicRow("Total Washed Count:", totalWashesCount.toString(), boldValue = true)
                                 ErgonomicRow("Tracked App Washes:", garment.trackedAppWashes.toString())
-                                ErgonomicRow("Last Washed:", garment.lastWashed.ifBlank { "Never" })
+                                ErgonomicRow("Last Washed:", garment.lastWashed.ifBlank { "Never" }, explanation = fieldExplanationsInView["Last Washed"])
                                 ErgonomicRow("unwash time rollup:", if (garmentStats.unwashedSeconds > 0) "${garmentStats.unwashedHours}h (${garmentStats.unwashedSeconds}s)" else "0s")
                                 ErgonomicRow("created:", displayCreatedDate)
-                                ErgonomicRow("wet reason:", garment.wetReason.ifBlank { "No data" }, isItalic = garment.wetReason.isBlank())
-                                ErgonomicRow("beatiful reason:", garment.beautifulReason.ifBlank { "No data" }, isItalic = garment.beautifulReason.isBlank())
+                                ErgonomicRow("wet reason:", garment.wetReason.ifBlank { "No data" }, isItalic = garment.wetReason.isBlank(), explanation = fieldExplanationsInView["wet reason"])
+                                ErgonomicRow("beatiful reason:", garment.beautifulReason.ifBlank { "No data" }, isItalic = garment.beautifulReason.isBlank(), explanation = fieldExplanationsInView["beautiful reason"] ?: fieldExplanationsInView["beatiful reason"])
                             }
                         }
+
+                        // 3 Environmental Scenarios Expandable Cards in View Mode
+                        EnvironmentalScenariosViewSection(
+                            garment = garment,
+                            fieldExplanations = fieldExplanationsInView
+                        )
 
                         // Descriptions & Observations
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1278,6 +1574,34 @@ fun GarmentDetailDialog(
                                         fontSize = 13.sp,
                                         color = Slate800
                                     )
+                                    val descExplain = fieldExplanationsInView["Descriptions"]
+                                    if (!descExplain.isNullOrBlank()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = Color(0xFFFAF5FF),
+                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Lightbulb,
+                                                    contentDescription = null,
+                                                    tint = BrandPurple,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Text(
+                                                    text = descExplain,
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF6B21A8),
+                                                    lineHeight = 15.sp
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -1304,6 +1628,34 @@ fun GarmentDetailDialog(
                                         fontStyle = if (garment.descriptions2.isBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
                                         color = if (garment.descriptions2.isBlank()) Slate400 else Slate800
                                     )
+                                    val desc2Explain = fieldExplanationsInView["Descriptions 2"]
+                                    if (!desc2Explain.isNullOrBlank()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = Color(0xFFFAF5FF),
+                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Lightbulb,
+                                                    contentDescription = null,
+                                                    tint = BrandPurple,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Text(
+                                                    text = desc2Explain,
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF6B21A8),
+                                                    lineHeight = 15.sp
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
 
@@ -1330,6 +1682,34 @@ fun GarmentDetailDialog(
                                         fontWeight = FontWeight.SemiBold,
                                         color = Slate800
                                     )
+                                    val lastCommentExplain = fieldExplanationsInView["last comment or action"]
+                                    if (!lastCommentExplain.isNullOrBlank()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = Color(0xFFFAF5FF),
+                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Lightbulb,
+                                                    contentDescription = null,
+                                                    tint = BrandPurple,
+                                                    modifier = Modifier.size(12.dp)
+                                                )
+                                                Text(
+                                                    text = lastCommentExplain,
+                                                    fontSize = 11.sp,
+                                                    color = Color(0xFF6B21A8),
+                                                    lineHeight = 15.sp
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -1605,32 +1985,13 @@ fun GarmentDetailDialog(
                                             val nextNum = aiReportVersions.size + 1
                                             val dateLabel = SimpleDateFormat("MM/dd", Locale.US).format(Date())
                                             val fallbackBuilder = {
-                                                buildString {
-                                                    append("这是一份基于您个人穿着体验记录生成的**「${garment.name}」**深度人体工学与穿搭管理总结报告：\n\n---\n\n")
-                                                    append("### 一、 核心结论速览\n")
-                                                    append("* **款式定位**：高颜值但具热负荷特征的${garment.material.ifBlank { "精致" }}连衣裙（${garment.longDress.ifBlank { garment.clothesType.ifBlank { "Dress" } }} / ${garment.thickClothes.ifBlank { "02 normal" }}）。\n")
-                                                    append("* **人体工学总评**：**剪裁友好型单品**。肩部（${garment.diaoDai.ifBlank { "not diao dai" }}）与胸部包容度（${garment.sitBreast.ifBlank { "sit breast shape ok" }}）表现优异，但受限于材质与厚度，午间体感记录为 **${garment.hotAtNoon.ifBlank { "Neutral" }}**。\n")
-                                                    append("* **核心标签**：`#${garment.beautiful.ifBlank { "Beautiful" }}` `#${garment.diaoDai.ifBlank { "舒适肩带" }}` `#累计洗涤${totalWashesCount}次`\n\n---\n\n")
-                                                    append("### 二、 优势维度深度剖析（为什么值得留）\n")
-                                                    append("1. **极高的穿着转化率与性价比**：累计穿着/洗涤已达 **${totalWashesCount} 次**${if (garment.price > 0) "，单次穿着成本低至 **$$cpw/次**" else ""}。\n")
-                                                    append("2. **优秀的胸部与肩部人体工学设计**：\n")
-                                                    append("   * **零勒肩感（${garment.diaoDai.ifBlank { "not diao dai" }}）**：宽肩带或非细吊带结构有效分散肩部压力。\n")
-                                                    append("   * **动态坐姿胸型稳定（${garment.sitBreast.ifBlank { "sit breast shape ok" }}）**：久坐办公或聚餐时胸廓无压迫感，侧乳包裹自然（${garment.sideBreastOk.ifBlank { "good" }}）。\n")
-                                                    append("3. **出众的审美反馈（${garment.beautiful.ifBlank { "beautiful" }}）**：${garment.beautifulReason.ifBlank { "上身视觉修饰感极佳，大方得体。" }}\n\n---\n\n")
-                                                    append("### 三、 痛点与场景局限（为什么穿它有时会难受）\n")
-                                                    append("1. **午间高温积热（Hot at noon: ${garment.hotAtNoon.ifBlank { "Not hot" }}）**：${if (garment.hotAtNoon.contains("Hot", ignoreCase = true) && !garment.hotAtNoon.contains("Not", ignoreCase = true)) "正午阳光直射或无空调环境下易产生闷热感。" else "日常温和天气下透气良好。"}\n")
-                                                    append("2. **排汗与湿度表现（wet: ${garment.wet.ifBlank { "dry" }}）**：${garment.wetReason.ifBlank { "保持干爽，适合长时间穿着。" }}\n\n---\n\n")
-                                                    append("### 四、 科学穿搭与场景指南\n")
-                                                    append("* **推荐场景**：全天候冷气充足的办公环境、室内约会聚餐、早晚凉爽时段出行。\n")
-                                                    append("* **内搭建议**：搭配无痕肤色内衣或透气胸贴，最大化发挥其肩胸无压优势。\n\n---\n\n")
-                                                    append("### 五、 洗护与寿命管理建议\n")
-                                                    append("* **洗护备忘（${garment.lastComment.ifBlank { "常规轻柔护理" }}）**：建议使用细网眼洗衣袋冷水轻柔机洗或手洗，阴凉处平铺晾干以维持版型寿命。")
-                                                }
+                                                GeminiAiService.buildDefaultGarmentErgonomicReport(context, garment, totalWashesCount, "$$cpw")
                                             }
 
                                             coroutineScope.launch {
-                                                val aiResp = GeminiAiService.generateGarmentAuditReport(
-                                                    context = context,
+                                                try {
+                                                    val aiResp = GeminiAiService.generateGarmentAuditReport(
+                                                        context = context,
                                                         garment = garment,
                                                         stats = garmentStats,
                                                         garmentJunctions = garmentJunctions,
@@ -1638,39 +1999,44 @@ fun GarmentDetailDialog(
                                                         allClothes = existingClothes,
                                                         versionNumber = nextNum,
                                                         fallbackGenerator = fallbackBuilder
-                                                )
-                                                val generatedContent = aiResp.text
-                                                val newVersion = GarmentAiReportVersion(
-                                                    id = "rep_${System.currentTimeMillis()}",
-                                                    title = if (aiReportVersions.isEmpty()) "Initial Report $dateLabel" else "Report #$nextNum ($dateLabel)",
-                                                    timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(Date()),
-                                                    content = generatedContent,
-                                                    isPrimary = aiReportVersions.isEmpty()
-                                                )
-                                                val updatedList = listOf(newVersion) + aiReportVersions
-                                                aiReportVersions = updatedList
-                                                activeReportId = newVersion.id
+                                                    )
+                                                    val generatedContent = aiResp.text
+                                                    val newVersion = GarmentAiReportVersion(
+                                                        id = "rep_${System.currentTimeMillis()}",
+                                                        title = if (aiReportVersions.isEmpty()) "Initial Report $dateLabel" else "Report #$nextNum ($dateLabel)",
+                                                        timestamp = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(Date()),
+                                                        content = generatedContent,
+                                                        isPrimary = aiReportVersions.isEmpty()
+                                                    )
+                                                    val updatedList = listOf(newVersion) + aiReportVersions
+                                                    aiReportVersions = updatedList
+                                                    activeReportId = newVersion.id
 
-                                                val arr = JSONArray()
-                                                updatedList.forEach { v ->
-                                                    arr.put(
-                                                        JSONObject().apply {
-                                                            put("id", v.id)
-                                                            put("title", v.title)
-                                                            put("timestamp", v.timestamp)
-                                                            put("content", v.content)
-                                                            put("isPrimary", v.isPrimary)
-                                                        }
+                                                    val arr = JSONArray()
+                                                    updatedList.forEach { v ->
+                                                        arr.put(
+                                                            JSONObject().apply {
+                                                                put("id", v.id)
+                                                                put("title", v.title)
+                                                                put("timestamp", v.timestamp)
+                                                                put("content", v.content)
+                                                                put("isPrimary", v.isPrimary)
+                                                            }
+                                                        )
+                                                    }
+                                                    onSaveGarment?.invoke(
+                                                        garment.copy(
+                                                            aiClothesAnalysis = generatedContent,
+                                                            aiReports = arr.toString()
+                                                        )
                                                     )
+                                                    Toast.makeText(context, "已生成新版本 AI 诊断报告！", Toast.LENGTH_SHORT).show()
+                                                } catch (e: Exception) {
+                                                    android.util.Log.e("GarmentDetailDialog", "Failed to generate AI report", e)
+                                                    Toast.makeText(context, "生成报告失败: ${e.localizedMessage ?: "未知异常"}", Toast.LENGTH_SHORT).show()
+                                                } finally {
+                                                    isGeneratingAiReport = false
                                                 }
-                                                onSaveGarment?.invoke(
-                                                    garment.copy(
-                                                        aiClothesAnalysis = generatedContent,
-                                                        aiReports = arr.toString()
-                                                    )
-                                                )
-                                                isGeneratingAiReport = false
-                                                Toast.makeText(context, "已生成新版本 AI 诊断报告！", Toast.LENGTH_SHORT).show()
                                             }
                                         },
                                         enabled = !isGeneratingAiReport,
@@ -2091,7 +2457,8 @@ fun GarmentDetailDialog(
 }
 
 /**
- * Reusable edit field with label, Previous button, and outlined text field.
+ * Reusable edit field with label, Previous button, outlined text field,
+ * and ErgonomicExplainField directly underneath matching the webapp's xd component.
  */
 @Composable
 private fun EditFieldWithPrevious(
@@ -2100,8 +2467,20 @@ private fun EditFieldWithPrevious(
     placeholder: String,
     onValueChange: (String) -> Unit,
     onOpenPrevious: () -> Unit,
-    isMultiline: Boolean = false
+    explainValue: String = "",
+    onExplainChange: ((String) -> Unit)? = null,
+    isMultiline: Boolean = false,
+    fieldKey: String = label,
+    allClothes: List<GarmentEntity> = emptyList(),
+    isExplainExpanded: Boolean = false,
+    onToggleExplainExpand: (() -> Unit)? = null,
+    dictionaryService: FieldDictionaryService? = null,
+    explainPlaceholder: String? = null
 ) {
+    var localExplainExpanded by remember { mutableStateOf(false) }
+    val effectiveExpanded = onToggleExplainExpand?.let { isExplainExpanded } ?: localExplainExpanded
+    val effectiveToggle = onToggleExplainExpand ?: { localExplainExpanded = !localExplainExpanded }
+
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -2116,6 +2495,7 @@ private fun EditFieldWithPrevious(
                 color = Slate600
             )
 
+            // Previous Pill Button
             Surface(
                 shape = RoundedCornerShape(16.dp),
                 color = Color.White,
@@ -2158,6 +2538,21 @@ private fun EditFieldWithPrevious(
                 focusedBorderColor = BrandPurple
             )
         )
+
+        // Directly below input: Ergonomic Explain Field matching web app xd
+        if (onExplainChange != null) {
+            ErgonomicExplainField(
+                fieldKey = fieldKey,
+                fieldLabel = label,
+                value = explainValue,
+                onValueChange = onExplainChange,
+                isExpanded = effectiveExpanded,
+                onToggleExpand = effectiveToggle,
+                allClothes = allClothes,
+                customPlaceholder = explainPlaceholder,
+                dictionaryService = dictionaryService
+            )
+        }
     }
 }
 
@@ -2200,27 +2595,62 @@ private fun ErgonomicRow(
     label: String,
     value: String,
     boldValue: Boolean = false,
-    isItalic: Boolean = false
+    isItalic: Boolean = false,
+    explanation: String? = null
 ) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 2.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontFamily = FontFamily.Monospace,
-            color = Slate500
-        )
-        Text(
-            text = value,
-            fontSize = 12.sp,
-            fontWeight = if (boldValue) FontWeight.Bold else FontWeight.SemiBold,
-            fontStyle = if (isItalic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
-            color = if (isItalic) Slate400 else Slate800
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                fontFamily = FontFamily.Monospace,
+                color = Slate500
+            )
+            Text(
+                text = value,
+                fontSize = 12.sp,
+                fontWeight = if (boldValue) FontWeight.Bold else FontWeight.SemiBold,
+                fontStyle = if (isItalic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                color = if (isItalic) Slate400 else Slate800
+            )
+        }
+        if (!explanation.isNullOrBlank()) {
+            Surface(
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFFFAF5FF),
+                border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 2.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lightbulb,
+                        contentDescription = null,
+                        tint = BrandPurple,
+                        modifier = Modifier.size(12.dp)
+                    )
+                    Text(
+                        text = explanation,
+                        fontSize = 11.sp,
+                        color = Color(0xFF6B21A8),
+                        lineHeight = 15.sp
+                    )
+                }
+            }
+        }
     }
 }

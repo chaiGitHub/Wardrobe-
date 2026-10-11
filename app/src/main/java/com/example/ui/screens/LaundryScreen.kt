@@ -41,6 +41,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import com.example.ui.components.buttonMarquee
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -302,7 +303,14 @@ fun LaundryScreen(
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo", modifier = Modifier.size(15.dp))
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Undo Wash", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = "Undo Wash",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.buttonMarquee()
+                                    )
                                 }
                             }
 
@@ -331,7 +339,10 @@ fun LaundryScreen(
                                     Text(
                                         text = "Wash All (${needWashBundles.size})",
                                         fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        modifier = Modifier.buttonMarquee()
                                     )
                                 }
                             }
@@ -770,7 +781,10 @@ private fun GarmentLaundryCard(
                     Text(
                         text = "Mark as Washed & Clean ($washDateStr)",
                         fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false,
+                        modifier = Modifier.buttonMarquee()
                     )
                 }
             }

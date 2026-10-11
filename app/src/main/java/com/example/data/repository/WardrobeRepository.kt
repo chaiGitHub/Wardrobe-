@@ -365,6 +365,24 @@ class WardrobeRepository(private val context: Context) {
             val hotNoon = obj.optString("Hot at noon", obj.optString("hotAtNoon", ""))
             val diaoDai = obj.optString("diao dai", obj.optString("diaoDai", ""))
             val sideOk = obj.optString("side breast ok", obj.optString("side breast shape", obj.optString("sideBreastOk", "")))
+            val sideGather = obj.optString("sideBreastGatherBra", obj.optString("side breast ok: with 聚拢 bra", sideOk))
+            val sideSideOut = obj.optString("sideBreastSideOutBra", obj.optString("side breast ok: with side out bra", ""))
+
+            val aircondHot = obj.optString("aircondHotFeeling", obj.optString("when with aircond: hot feeling", ""))
+            val aircondHotExp = obj.optString("aircondHotExplain", obj.optString("when with aircond: hot explanation", ""))
+            val aircondLeg = obj.optString("aircondLegFeeling", obj.optString("when with aircond: leg feeling", ""))
+            val aircondLegExp = obj.optString("aircondLegExplain", obj.optString("when with aircond: leg explanation", ""))
+
+            val noAircondHot = obj.optString("noAircondHotFeeling", obj.optString("when without aircond: hot feeling", hotNoon))
+            val noAircondHotExp = obj.optString("noAircondHotExplain", obj.optString("when without aircond: hot explanation", ""))
+            val noAircondLeg = obj.optString("noAircondLegFeeling", obj.optString("when without aircond: leg feeling", ""))
+            val noAircondLegExp = obj.optString("noAircondLegExplain", obj.optString("when without aircond: leg explanation", ""))
+
+            val fanSleepHot = obj.optString("fanSleepHotFeeling", obj.optString("when sleep under fan: hot feeling", ""))
+            val fanSleepHotExp = obj.optString("fanSleepHotExplain", obj.optString("when sleep under fan: hot explanation", ""))
+            val fanSleepLeg = obj.optString("fanSleepLegFeeling", obj.optString("when sleep under fan: leg feeling", ""))
+            val fanSleepLegExp = obj.optString("fanSleepLegExplain", obj.optString("when sleep under fan: leg explanation", ""))
+
             val standOk = obj.optString("center chest", obj.optString("stand breast", obj.optString("standBreast", "")))
             val sitOk = obj.optString("sit breast ok", obj.optString("sit breast", obj.optString("sitBreast", "")))
             val beautiful = obj.optString("beautiful", "")
@@ -408,6 +426,20 @@ class WardrobeRepository(private val context: Context) {
                     hotAtNoon = hotNoon,
                     diaoDai = diaoDai,
                     sideBreastOk = sideOk,
+                    sideBreastGatherBra = sideGather,
+                    sideBreastSideOutBra = sideSideOut,
+                    aircondHotFeeling = aircondHot,
+                    aircondHotExplain = aircondHotExp,
+                    aircondLegFeeling = aircondLeg,
+                    aircondLegExplain = aircondLegExp,
+                    noAircondHotFeeling = noAircondHot,
+                    noAircondHotExplain = noAircondHotExp,
+                    noAircondLegFeeling = noAircondLeg,
+                    noAircondLegExplain = noAircondLegExp,
+                    fanSleepHotFeeling = fanSleepHot,
+                    fanSleepHotExplain = fanSleepHotExp,
+                    fanSleepLegFeeling = fanSleepLeg,
+                    fanSleepLegExplain = fanSleepLegExp,
                     standBreast = standOk,
                     sitBreast = sitOk,
                     beautiful = beautiful,
@@ -687,9 +719,26 @@ class WardrobeRepository(private val context: Context) {
             obj.put("Clothes Type", g.clothesType)
             obj.put("material", g.material)
             obj.put("thick clothes", g.thickClothes)
-            obj.put("Hot at noon", g.hotAtNoon)
+            obj.put("Hot at noon", if (g.noAircondHotFeeling.isNotBlank()) g.noAircondHotFeeling else g.hotAtNoon)
+            obj.put("noAircondHotFeeling", g.noAircondHotFeeling)
+            obj.put("noAircondHotExplain", g.noAircondHotExplain)
+            obj.put("noAircondLegFeeling", g.noAircondLegFeeling)
+            obj.put("noAircondLegExplain", g.noAircondLegExplain)
+
+            obj.put("aircondHotFeeling", g.aircondHotFeeling)
+            obj.put("aircondHotExplain", g.aircondHotExplain)
+            obj.put("aircondLegFeeling", g.aircondLegFeeling)
+            obj.put("aircondLegExplain", g.aircondLegExplain)
+
+            obj.put("fanSleepHotFeeling", g.fanSleepHotFeeling)
+            obj.put("fanSleepHotExplain", g.fanSleepHotExplain)
+            obj.put("fanSleepLegFeeling", g.fanSleepLegFeeling)
+            obj.put("fanSleepLegExplain", g.fanSleepLegExplain)
+
             obj.put("diao dai", g.diaoDai)
-            obj.put("side breast ok", g.sideBreastOk)
+            obj.put("side breast ok", if (g.sideBreastGatherBra.isNotBlank()) g.sideBreastGatherBra else g.sideBreastOk)
+            obj.put("sideBreastGatherBra", g.sideBreastGatherBra)
+            obj.put("sideBreastSideOutBra", g.sideBreastSideOutBra)
             obj.put("stand breast", g.standBreast)
             obj.put("sit breast ok", g.sitBreast)
             obj.put("beautiful", g.beautiful)

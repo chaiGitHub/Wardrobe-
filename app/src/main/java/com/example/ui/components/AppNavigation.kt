@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Button
@@ -66,6 +67,7 @@ import com.example.ui.theme.Slate900
 fun AppHeader(
     onLogWearClick: (() -> Unit)? = null,
     onAddItemClick: (() -> Unit)? = null,
+    onApkDownloadClick: (() -> Unit)? = null,
     clothesCount: Int = 0,
     reportsCount: Int = 0,
     modifier: Modifier = Modifier
@@ -133,11 +135,40 @@ fun AppHeader(
                         }
                     }
 
-                    // Right: [+ Log Wear] (dark button) and [+ Item] (emerald button)
+                    // Right: [APK Download], [+ Log Wear], [+ Item]
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        // APK Download button (Always visible and accessible)
+                        Button(
+                            onClick = { onApkDownloadClick?.invoke() },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF7C3AED),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(
+                                horizontal = if (isWide) 12.dp else 10.dp,
+                                vertical = 0.dp
+                            ),
+                            modifier = Modifier
+                                .height(36.dp)
+                                .testTag("header_apk_download_btn")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Download,
+                                contentDescription = "Download APK",
+                                modifier = Modifier.size(15.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            ScrollableButtonText(
+                                text = "APK / 下载",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
                         if (onLogWearClick != null) {
                             Button(
                                 onClick = onLogWearClick,
@@ -160,10 +191,11 @@ fun AppHeader(
                                     modifier = Modifier.size(15.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(
+                                ScrollableButtonText(
                                     text = "Log Wear",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
                                 )
                             }
                         }
@@ -190,10 +222,11 @@ fun AppHeader(
                                     modifier = Modifier.size(15.dp)
                                 )
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text(
+                                ScrollableButtonText(
                                     text = "Item",
                                     fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
                                 )
                             }
                         }
@@ -339,7 +372,9 @@ private fun TabPill(
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
                 fontSize = 12.sp,
                 color = if (isSelected) activeText else inactiveText,
-                maxLines = 1
+                maxLines = 1,
+                softWrap = false,
+                modifier = Modifier.buttonMarquee()
             )
 
             if (badge != null) {

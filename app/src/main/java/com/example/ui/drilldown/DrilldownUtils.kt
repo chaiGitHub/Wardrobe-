@@ -80,11 +80,17 @@ object DrilldownUtils {
             "Clothes Type", "clothesType" -> garment.clothesType.ifBlank { "(Not specified)" }
             "material" -> garment.material.ifBlank { "(Not specified)" }
             "thick clothes", "thickClothes" -> garment.thickClothes.ifBlank { "(Not specified)" }
-            "Hot at noon", "hotAtNoon" -> garment.hotAtNoon.ifBlank { "(Not specified)" }
+            "Hot at noon", "hotAtNoon", "when without aircond: hot feeling" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "(Not specified)" }
+            "when without aircond: leg feeling" -> garment.noAircondLegFeeling.ifBlank { "(Not specified)" }
+            "when with aircond: hot feeling" -> garment.aircondHotFeeling.ifBlank { "(Not specified)" }
+            "when with aircond: leg feeling" -> garment.aircondLegFeeling.ifBlank { "(Not specified)" }
+            "when sleep under fan: hot feeling" -> garment.fanSleepHotFeeling.ifBlank { "(Not specified)" }
+            "when sleep under fan: leg feeling" -> garment.fanSleepLegFeeling.ifBlank { "(Not specified)" }
             "beautiful" -> garment.beautiful.ifBlank { "(Not specified)" }
             "beatiful reason", "beautiful reason" -> garment.beautifulReason.ifBlank { "(Not specified)" }
             "diao dai", "diaoDai" -> garment.diaoDai.ifBlank { "(Not specified)" }
-            "side breast ok", "side breast shape", "sideBreastOk" -> garment.sideBreastOk.ifBlank { "(Not specified)" }
+            "side breast ok", "side breast shape", "sideBreastOk", "side breast ok: with 聚拢 bra" -> (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "(Not specified)" }
+            "side breast ok: with side out bra" -> garment.sideBreastSideOutBra.ifBlank { "(Not specified)" }
             "sit breast ok", "sit breast", "sitBreast" -> garment.sitBreast.ifBlank { "(Not specified)" }
             "center chest", "stand breast", "standBreast" -> garment.standBreast.ifBlank { "(Not specified)" }
             "wet" -> garment.wet.ifBlank { "(Not specified)" }

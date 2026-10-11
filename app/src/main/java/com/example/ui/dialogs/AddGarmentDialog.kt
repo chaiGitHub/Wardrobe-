@@ -54,9 +54,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.ui.components.ErgonomicExplainField
+import com.example.ui.components.EnvironmentalScenariosEditSection
+import org.json.JSONObject
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -107,7 +111,27 @@ fun AddGarmentDialog(
     var thickClothes by remember { mutableStateOf("01 not thick clothes") }
     var hotAtNoon by remember { mutableStateOf("Not hot") }
     var diaoDai by remember { mutableStateOf("diao dai") }
-    var sideBreast by remember { mutableStateOf("side breast shape ok") }
+
+    // Dedicated Side Breast Bra fields (2 fields with previous pickers and explain notes)
+    var sideBreastGatherBra by remember { mutableStateOf("side breast shape ok") }
+    var sideBreastSideOutBra by remember { mutableStateOf("side breast shape ok") }
+
+    // 3 Environmental Scenarios (With aircond, without aircond, sleep under fan)
+    var aircondHotFeeling by remember { mutableStateOf("not so cold") }
+    var aircondHotExplain by remember { mutableStateOf("due to thick chiffon material, thick clothes so no so cold.") }
+    var aircondLegFeeling by remember { mutableStateOf("not so cold") }
+    var aircondLegExplain by remember { mutableStateOf("due to middle long dress, thick chiffon material, thick clothes.") }
+
+    var noAircondHotFeeling by remember { mutableStateOf("hot") }
+    var noAircondHotExplain by remember { mutableStateOf("due to thick chiffon material, thick clothes.") }
+    var noAircondLegFeeling by remember { mutableStateOf("middle hot") }
+    var noAircondLegExplain by remember { mutableStateOf("due to middle long dress, thick chiffon material, thick clothes.little more swear") }
+
+    var fanSleepHotFeeling by remember { mutableStateOf("not hot") }
+    var fanSleepHotExplain by remember { mutableStateOf("under fan wind bigger and cold bed help reduce feeling of hot") }
+    var fanSleepLegFeeling by remember { mutableStateOf("middle cold") }
+    var fanSleepLegExplain by remember { mutableStateOf("due to middle long dress, inner thin, easy fold up 裙底，even it is thick clothes outer") }
+
     var sitBreast by remember { mutableStateOf("sit breast shape ok") }
     var centerChest by remember { mutableStateOf("no center chest") }
     var beautiful by remember { mutableStateOf("Beautiful") }
@@ -119,6 +143,11 @@ fun AddGarmentDialog(
     var longDress by remember { mutableStateOf("short dress") }
     var descriptions by remember { mutableStateOf("") }
     var lastComment by remember { mutableStateOf("") }
+
+    // Field-level explanations for new garments matching webapp _fieldExplanations
+    val fieldExplanations = remember { mutableStateMapOf<String, String>() }
+    val expandedExplainFields = remember { mutableStateMapOf<String, Boolean>() }
+    val dictionaryService = remember { FieldDictionaryService(context) }
 
     // Uploaded photo URIs/strings
     val photoUrls = remember { mutableStateListOf<String>() }
@@ -145,9 +174,16 @@ fun AddGarmentDialog(
                 "Clothes Type" -> g.clothesType
                 "material" -> g.material
                 "thick clothes" -> g.thickClothes
-                "Hot at noon" -> g.hotAtNoon
+                "Hot at noon" -> g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
                 "diao dai" -> g.diaoDai
-                "side breast ok" -> g.sideBreastOk
+                "side breast ok", "side breast ok: with 聚拢 bra" -> g.sideBreastGatherBra.ifBlank { g.sideBreastOk }
+                "side breast ok: with side out bra" -> g.sideBreastSideOutBra
+                "when with aircond: hot feeling" -> g.aircondHotFeeling
+                "when with aircond: leg feeling" -> g.aircondLegFeeling
+                "when without aircond: hot feeling" -> g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
+                "when without aircond: leg feeling" -> g.noAircondLegFeeling
+                "when sleep under fan: hot feeling" -> g.fanSleepHotFeeling
+                "when sleep under fan: leg feeling" -> g.fanSleepLegFeeling
                 "sit breast ok" -> g.sitBreast
                 "center chest" -> g.standBreast
                 "beautiful" -> g.beautiful
@@ -171,9 +207,15 @@ fun AddGarmentDialog(
             "Descriptions" -> if (map.isEmpty()) listOf("Styling notes, fit details...", "irrate body, beast no beautiful, hard to wear, hot, throw", "comfortable daily wear", "silk smooth breathable").forEach { map[it] = 1 }
             "last comment or action" -> if (map.isEmpty()) listOf("Needs gentle cycle", "hand wash only", "hang dry immediately", "iron reverse").forEach { map[it] = 1 }
             "Clothes Type" -> if (map.isEmpty()) listOf("Dress", "Pant", "Tshirt", "bra", "skirt", "sweater", "jacket", "coat", "top", "blouse", "cardigan", "shorts", "Other").forEach { map[it] = 1 }
-            "Hot at noon" -> if (map.isEmpty()) listOf("Not hot", "Very hot", "Warm", "Cool").forEach { map[it] = 1 }
+            "Hot at noon", "when without aircond: hot feeling" -> if (map.isEmpty()) listOf("hot", "middle hot", "not hot", "very hot", "stuffy").forEach { map[it] = 1 }
+            "when without aircond: leg feeling" -> if (map.isEmpty()) listOf("middle hot", "hot", "not hot", "sticky", "breathable").forEach { map[it] = 1 }
+            "when with aircond: hot feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable cool", "very cold", "not cold").forEach { map[it] = 1 }
+            "when with aircond: leg feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable", "chilly knees").forEach { map[it] = 1 }
+            "when sleep under fan: hot feeling" -> if (map.isEmpty()) listOf("not hot", "middle cold", "comfortable", "cool", "sweaty back").forEach { map[it] = 1 }
+            "when sleep under fan: leg feeling" -> if (map.isEmpty()) listOf("middle cold", "cold", "not hot", "comfortable", "breezy").forEach { map[it] = 1 }
             "diao dai" -> if (map.isEmpty()) listOf("diao dai", "not diao dai", "wide strap", "halter").forEach { map[it] = 1 }
-            "side breast ok" -> if (map.isEmpty()) listOf("side breast shape ok", "friction at armpit", "no friction").forEach { map[it] = 1 }
+            "side breast ok", "side breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { map[it] = 1 }
+            "side breast ok: with side out bra" -> if (map.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { map[it] = 1 }
             "sit breast ok" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose").forEach { map[it] = 1 }
             "beautiful" -> if (map.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { map[it] = 1 }
             "thick clothes" -> if (map.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { map[it] = 1 }
@@ -298,6 +340,17 @@ fun AddGarmentDialog(
                                         focusedBorderColor = BrandPurple
                                     )
                                 )
+                                ErgonomicExplainField(
+                                    fieldKey = "Name",
+                                    fieldLabel = "Garment Name",
+                                    value = fieldExplanations["Name"] ?: "",
+                                    onValueChange = { fieldExplanations["Name"] = it },
+                                    isExpanded = expandedExplainFields["Name"] == true,
+                                    onToggleExpand = { expandedExplainFields["Name"] = !(expandedExplainFields["Name"] ?: false) },
+                                    allClothes = existingClothes,
+                                    customPlaceholder = "补充命名原因或此单品特别备注...",
+                                    dictionaryService = dictionaryService
+                                )
                             }
 
                             // Clothes Type with Previous
@@ -308,7 +361,14 @@ fun AddGarmentDialog(
                                 onValueChange = { clothesType = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "Clothes Type" to { clothesType = it }
-                                }
+                                },
+                                fieldKey = "Clothes Type",
+                                explainValue = fieldExplanations["Clothes Type"] ?: "",
+                                onExplainChange = { fieldExplanations["Clothes Type"] = it },
+                                isExplainExpanded = expandedExplainFields["Clothes Type"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["Clothes Type"] = !(expandedExplainFields["Clothes Type"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Material with Previous
@@ -319,7 +379,14 @@ fun AddGarmentDialog(
                                 onValueChange = { material = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "material" to { material = it }
-                                }
+                                },
+                                fieldKey = "material",
+                                explainValue = fieldExplanations["material"] ?: "",
+                                onExplainChange = { fieldExplanations["material"] = it },
+                                isExplainExpanded = expandedExplainFields["material"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["material"] = !(expandedExplainFields["material"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Price
@@ -345,6 +412,17 @@ fun AddGarmentDialog(
                                         unfocusedBorderColor = Slate200,
                                         focusedBorderColor = BrandPurple
                                     )
+                                )
+                                ErgonomicExplainField(
+                                    fieldKey = "price",
+                                    fieldLabel = "Price",
+                                    value = fieldExplanations["price"] ?: "",
+                                    onValueChange = { fieldExplanations["price"] = it },
+                                    isExpanded = expandedExplainFields["price"] == true,
+                                    onToggleExpand = { expandedExplainFields["price"] = !(expandedExplainFields["price"] ?: false) },
+                                    allClothes = existingClothes,
+                                    customPlaceholder = "价格、购入渠道或性价比体感备注...",
+                                    dictionaryService = dictionaryService
                                 )
                             }
                         }
@@ -377,18 +455,71 @@ fun AddGarmentDialog(
                                 onValueChange = { thickClothes = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "thick clothes" to { thickClothes = it }
-                                }
+                                },
+                                fieldKey = "thick clothes",
+                                explainValue = fieldExplanations["thick clothes"] ?: "",
+                                onExplainChange = { fieldExplanations["thick clothes"] = it },
+                                isExplainExpanded = expandedExplainFields["thick clothes"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["thick clothes"] = !(expandedExplainFields["thick clothes"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
-                            // Hot at noon
-                            FieldWithPreviousButton(
-                                label = "HOT AT NOON",
-                                value = hotAtNoon,
-                                placeholder = "Not hot",
-                                onValueChange = { hotAtNoon = it },
-                                onOpenPrevious = {
-                                    activePreviousPicker = "Hot at noon" to { hotAtNoon = it }
-                                }
+                            // 3 Environmental Scenarios Expandable Cards
+                            EnvironmentalScenariosEditSection(
+                                aircondHotFeeling = aircondHotFeeling,
+                                onAircondHotChange = { aircondHotFeeling = it },
+                                onAircondHotPrevious = {
+                                    activePreviousPicker = "when with aircond: hot feeling" to { aircondHotFeeling = it }
+                                },
+                                aircondHotExplain = aircondHotExplain,
+                                onAircondHotExplainChange = { aircondHotExplain = it },
+                                aircondLegFeeling = aircondLegFeeling,
+                                onAircondLegChange = { aircondLegFeeling = it },
+                                onAircondLegPrevious = {
+                                    activePreviousPicker = "when with aircond: leg feeling" to { aircondLegFeeling = it }
+                                },
+                                aircondLegExplain = aircondLegExplain,
+                                onAircondLegExplainChange = { aircondLegExplain = it },
+
+                                noAircondHotFeeling = noAircondHotFeeling,
+                                onNoAircondHotChange = {
+                                    noAircondHotFeeling = it
+                                    hotAtNoon = it
+                                },
+                                onNoAircondHotPrevious = {
+                                    activePreviousPicker = "when without aircond: hot feeling" to {
+                                        noAircondHotFeeling = it
+                                        hotAtNoon = it
+                                    }
+                                },
+                                noAircondHotExplain = noAircondHotExplain,
+                                onNoAircondHotExplainChange = { noAircondHotExplain = it },
+                                noAircondLegFeeling = noAircondLegFeeling,
+                                onNoAircondLegChange = { noAircondLegFeeling = it },
+                                onNoAircondLegPrevious = {
+                                    activePreviousPicker = "when without aircond: leg feeling" to { noAircondLegFeeling = it }
+                                },
+                                noAircondLegExplain = noAircondLegExplain,
+                                onNoAircondLegExplainChange = { noAircondLegExplain = it },
+
+                                fanSleepHotFeeling = fanSleepHotFeeling,
+                                onFanSleepHotChange = { fanSleepHotFeeling = it },
+                                onFanSleepHotPrevious = {
+                                    activePreviousPicker = "when sleep under fan: hot feeling" to { fanSleepHotFeeling = it }
+                                },
+                                fanSleepHotExplain = fanSleepHotExplain,
+                                onFanSleepHotExplainChange = { fanSleepHotExplain = it },
+                                fanSleepLegFeeling = fanSleepLegFeeling,
+                                onFanSleepLegChange = { fanSleepLegFeeling = it },
+                                onFanSleepLegPrevious = {
+                                    activePreviousPicker = "when sleep under fan: leg feeling" to { fanSleepLegFeeling = it }
+                                },
+                                fanSleepLegExplain = fanSleepLegExplain,
+                                onFanSleepLegExplainChange = { fanSleepLegExplain = it },
+
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Diao dai
@@ -399,18 +530,50 @@ fun AddGarmentDialog(
                                 onValueChange = { diaoDai = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "diao dai" to { diaoDai = it }
-                                }
+                                },
+                                fieldKey = "diao dai",
+                                explainValue = fieldExplanations["diao dai"] ?: "",
+                                onExplainChange = { fieldExplanations["diao dai"] = it },
+                                isExplainExpanded = expandedExplainFields["diao dai"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["diao dai"] = !(expandedExplainFields["diao dai"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
-                            // Side breast ok
+                            // Side breast ok: with 聚拢 bra
                             FieldWithPreviousButton(
-                                label = "SIDE BREAST OK",
-                                value = sideBreast,
-                                placeholder = "side breast shape ok",
-                                onValueChange = { sideBreast = it },
+                                label = "SIDE BREAST OK: WITH 聚拢 BRA",
+                                value = sideBreastGatherBra,
+                                placeholder = "side breast shape ok, no overflow",
+                                onValueChange = { sideBreastGatherBra = it },
                                 onOpenPrevious = {
-                                    activePreviousPicker = "side breast ok" to { sideBreast = it }
-                                }
+                                    activePreviousPicker = "side breast ok: with 聚拢 bra" to { sideBreastGatherBra = it }
+                                },
+                                fieldKey = "side breast ok: with 聚拢 bra",
+                                explainValue = fieldExplanations["side breast ok: with 聚拢 bra"] ?: "",
+                                onExplainChange = { fieldExplanations["side breast ok: with 聚拢 bra"] = it },
+                                isExplainExpanded = expandedExplainFields["side breast ok: with 聚拢 bra"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["side breast ok: with 聚拢 bra"] = !(expandedExplainFields["side breast ok: with 聚拢 bra"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
+                            )
+
+                            // Side breast ok: with side out bra
+                            FieldWithPreviousButton(
+                                label = "SIDE BREAST OK: WITH SIDE OUT BRA",
+                                value = sideBreastSideOutBra,
+                                placeholder = "side breast shape ok, full coverage",
+                                onValueChange = { sideBreastSideOutBra = it },
+                                onOpenPrevious = {
+                                    activePreviousPicker = "side breast ok: with side out bra" to { sideBreastSideOutBra = it }
+                                },
+                                fieldKey = "side breast ok: with side out bra",
+                                explainValue = fieldExplanations["side breast ok: with side out bra"] ?: "",
+                                onExplainChange = { fieldExplanations["side breast ok: with side out bra"] = it },
+                                isExplainExpanded = expandedExplainFields["side breast ok: with side out bra"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["side breast ok: with side out bra"] = !(expandedExplainFields["side breast ok: with side out bra"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Sit breast ok
@@ -421,7 +584,14 @@ fun AddGarmentDialog(
                                 onValueChange = { sitBreast = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "sit breast ok" to { sitBreast = it }
-                                }
+                                },
+                                fieldKey = "sit breast ok",
+                                explainValue = fieldExplanations["sit breast ok"] ?: "",
+                                onExplainChange = { fieldExplanations["sit breast ok"] = it },
+                                isExplainExpanded = expandedExplainFields["sit breast ok"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["sit breast ok"] = !(expandedExplainFields["sit breast ok"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Center chest
@@ -432,7 +602,14 @@ fun AddGarmentDialog(
                                 onValueChange = { centerChest = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "center chest" to { centerChest = it }
-                                }
+                                },
+                                fieldKey = "center chest",
+                                explainValue = fieldExplanations["center chest"] ?: "",
+                                onExplainChange = { fieldExplanations["center chest"] = it },
+                                isExplainExpanded = expandedExplainFields["center chest"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["center chest"] = !(expandedExplainFields["center chest"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // Beautiful
@@ -443,7 +620,14 @@ fun AddGarmentDialog(
                                 onValueChange = { beautiful = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "beautiful" to { beautiful = it }
-                                }
+                                },
+                                fieldKey = "beautiful",
+                                explainValue = fieldExplanations["beautiful"] ?: "",
+                                onExplainChange = { fieldExplanations["beautiful"] = it },
+                                isExplainExpanded = expandedExplainFields["beautiful"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["beautiful"] = !(expandedExplainFields["beautiful"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
                         }
                     }
@@ -467,7 +651,14 @@ fun AddGarmentDialog(
                                 onValueChange = { wet = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "wet" to { wet = it }
-                                }
+                                },
+                                fieldKey = "wet",
+                                explainValue = fieldExplanations["wet"] ?: "",
+                                onExplainChange = { fieldExplanations["wet"] = it },
+                                isExplainExpanded = expandedExplainFields["wet"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["wet"] = !(expandedExplainFields["wet"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // WET REASON
@@ -478,7 +669,14 @@ fun AddGarmentDialog(
                                 onValueChange = { wetReason = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "wet reason" to { wetReason = it }
-                                }
+                                },
+                                fieldKey = "wet reason",
+                                explainValue = fieldExplanations["wet reason"] ?: "",
+                                onExplainChange = { fieldExplanations["wet reason"] = it },
+                                isExplainExpanded = expandedExplainFields["wet reason"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["wet reason"] = !(expandedExplainFields["wet reason"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // LONG DRESS
@@ -489,7 +687,14 @@ fun AddGarmentDialog(
                                 onValueChange = { longDress = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "long dress" to { longDress = it }
-                                }
+                                },
+                                fieldKey = "long dress",
+                                explainValue = fieldExplanations["long dress"] ?: "",
+                                onExplainChange = { fieldExplanations["long dress"] = it },
+                                isExplainExpanded = expandedExplainFields["long dress"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["long dress"] = !(expandedExplainFields["long dress"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
                         }
                     }
@@ -514,7 +719,14 @@ fun AddGarmentDialog(
                                 isMultiline = true,
                                 onOpenPrevious = {
                                     activePreviousPicker = "Descriptions" to { descriptions = it }
-                                }
+                                },
+                                fieldKey = "Descriptions",
+                                explainValue = fieldExplanations["Descriptions"] ?: "",
+                                onExplainChange = { fieldExplanations["Descriptions"] = it },
+                                isExplainExpanded = expandedExplainFields["Descriptions"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["Descriptions"] = !(expandedExplainFields["Descriptions"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
 
                             // LAST COMMENT OR ACTION
@@ -525,7 +737,14 @@ fun AddGarmentDialog(
                                 onValueChange = { lastComment = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "last comment or action" to { lastComment = it }
-                                }
+                                },
+                                fieldKey = "last comment or action",
+                                explainValue = fieldExplanations["last comment or action"] ?: "",
+                                onExplainChange = { fieldExplanations["last comment or action"] = it },
+                                isExplainExpanded = expandedExplainFields["last comment or action"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["last comment or action"] = !(expandedExplainFields["last comment or action"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
                             )
                         }
                     }
@@ -701,25 +920,63 @@ fun AddGarmentDialog(
 
                             val photoJson = JSONArray(photoUrls).toString()
 
+                            val customFieldsObj = JSONObject()
+                            val explainSubObj = JSONObject()
+                            fieldExplanations.forEach { (k, v) ->
+                                if (v.isNotBlank()) {
+                                    explainSubObj.put(k, v)
+                                    customFieldsObj.put("${k}_explain", v)
+                                }
+                            }
+                            // Save environmental scenario explanations
+                            if (aircondHotExplain.isNotBlank()) explainSubObj.put("when with aircond: hot feeling", aircondHotExplain)
+                            if (aircondLegExplain.isNotBlank()) explainSubObj.put("when with aircond: leg feeling", aircondLegExplain)
+                            if (noAircondHotExplain.isNotBlank()) explainSubObj.put("when without aircond: hot feeling", noAircondHotExplain)
+                            if (noAircondLegExplain.isNotBlank()) explainSubObj.put("when without aircond: leg feeling", noAircondLegExplain)
+                            if (fanSleepHotExplain.isNotBlank()) explainSubObj.put("when sleep under fan: hot feeling", fanSleepHotExplain)
+                            if (fanSleepLegExplain.isNotBlank()) explainSubObj.put("when sleep under fan: leg feeling", fanSleepLegExplain)
+
+                            if (explainSubObj.length() > 0) {
+                                customFieldsObj.put("_fieldExplanations", explainSubObj)
+                            }
+
                             val combinedComments = listOfNotNull(
                                 descriptions.trim().ifBlank { null },
                                 lastComment.trim().ifBlank { null }?.let { "Action: $it" },
                                 longDress.trim().ifBlank { null }?.let { "Length: $it" }
                             ).joinToString("; ")
 
+                            val effectiveHotAtNoon = noAircondHotFeeling.ifBlank { "Not hot" }
                             val newGarment = GarmentEntity(
                                 id = newId,
                                 name = name.ifBlank { "Untitled $clothesType" },
                                 clothesType = clothesType,
                                 material = material,
                                 thickClothes = thickClothes,
-                                hotAtNoon = hotAtNoon,
+                                hotAtNoon = effectiveHotAtNoon,
                                 diaoDai = diaoDai,
-                                sideBreastOk = sideBreast,
+                                sideBreastOk = sideBreastGatherBra,
+                                sideBreastGatherBra = sideBreastGatherBra,
+                                sideBreastSideOutBra = sideBreastSideOutBra,
+                                aircondHotFeeling = aircondHotFeeling,
+                                aircondHotExplain = aircondHotExplain,
+                                aircondLegFeeling = aircondLegFeeling,
+                                aircondLegExplain = aircondLegExplain,
+                                noAircondHotFeeling = noAircondHotFeeling,
+                                noAircondHotExplain = noAircondHotExplain,
+                                noAircondLegFeeling = noAircondLegFeeling,
+                                noAircondLegExplain = noAircondLegExplain,
+                                fanSleepHotFeeling = fanSleepHotFeeling,
+                                fanSleepHotExplain = fanSleepHotExplain,
+                                fanSleepLegFeeling = fanSleepLegFeeling,
+                                fanSleepLegExplain = fanSleepLegExplain,
                                 standBreast = centerChest,
                                 sitBreast = sitBreast,
                                 beautiful = beautiful,
                                 wet = wet,
+                                wetReason = wetReason,
+                                descriptions = descriptions,
+                                longDress = longDress,
                                 price = parsedPrice,
                                 wearingFrequency = 0,
                                 trackedAppWashes = 0,
@@ -728,7 +985,8 @@ fun AddGarmentDialog(
                                 lastComment = combinedComments,
                                 pictures = photoJson,
                                 tags = "[]",
-                                created = createdDate
+                                created = createdDate,
+                                customFields = customFieldsObj.toString()
                             )
                             onSave(newGarment)
                         },
@@ -775,7 +1033,15 @@ private fun FieldWithPreviousButton(
     placeholder: String,
     onValueChange: (String) -> Unit,
     onOpenPrevious: () -> Unit,
-    isMultiline: Boolean = false
+    isMultiline: Boolean = false,
+    fieldKey: String = label,
+    explainValue: String = "",
+    onExplainChange: ((String) -> Unit)? = null,
+    isExplainExpanded: Boolean = false,
+    onToggleExplainExpand: (() -> Unit)? = null,
+    allClothes: List<GarmentEntity> = emptyList(),
+    dictionaryService: FieldDictionaryService? = null,
+    explainPlaceholder: String? = null
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(
@@ -833,6 +1099,20 @@ private fun FieldWithPreviousButton(
                 focusedBorderColor = BrandPurple
             )
         )
+
+        if (onExplainChange != null) {
+            ErgonomicExplainField(
+                fieldKey = fieldKey,
+                fieldLabel = label,
+                value = explainValue,
+                onValueChange = onExplainChange,
+                isExpanded = isExplainExpanded,
+                onToggleExpand = onToggleExplainExpand ?: {},
+                allClothes = allClothes,
+                customPlaceholder = explainPlaceholder,
+                dictionaryService = dictionaryService
+            )
+        }
     }
 }
 
@@ -846,7 +1126,15 @@ private fun DropdownFieldWithPrevious(
     selectedValue: String,
     options: List<String>,
     onValueChange: (String) -> Unit,
-    onOpenPrevious: () -> Unit
+    onOpenPrevious: () -> Unit,
+    fieldKey: String = label,
+    explainValue: String = "",
+    onExplainChange: ((String) -> Unit)? = null,
+    isExplainExpanded: Boolean = false,
+    onToggleExplainExpand: (() -> Unit)? = null,
+    allClothes: List<GarmentEntity> = emptyList(),
+    dictionaryService: FieldDictionaryService? = null,
+    explainPlaceholder: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -934,6 +1222,20 @@ private fun DropdownFieldWithPrevious(
                     )
                 }
             }
+        }
+
+        if (onExplainChange != null) {
+            ErgonomicExplainField(
+                fieldKey = fieldKey,
+                fieldLabel = label,
+                value = explainValue,
+                onValueChange = onExplainChange,
+                isExpanded = isExplainExpanded,
+                onToggleExpand = onToggleExplainExpand ?: {},
+                allClothes = allClothes,
+                customPlaceholder = explainPlaceholder,
+                dictionaryService = dictionaryService
+            )
         }
     }
 }

@@ -77,6 +77,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.example.data.model.GarmentEntity
+import com.example.data.model.ReportEntity
 import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
@@ -89,6 +91,7 @@ import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.Locale
 
 data class TypicalValueItem(
     val valueEn: String = "",
@@ -210,6 +213,107 @@ class FieldDictionaryService(context: Context) {
     fun resetDefaults(): List<DictionaryFieldItem> {
         prefs.edit().remove("fields_v3").apply()
         return DEFAULT_DICTIONARY_FIELDS
+    }
+
+    fun getFieldPreviousValues(
+        fieldName: String,
+        clothes: List<GarmentEntity>,
+        reports: List<ReportEntity>
+    ): List<Pair<String, Int>> {
+        val counts = mutableMapOf<String, Int>()
+        val targetName = fieldName.trim().lowercase(Locale.ROOT)
+
+        // 1. Scan clothes
+        clothes.forEach { g ->
+            val v = when (targetName) {
+                "hot at noon" -> g.hotAtNoon
+                "diao dai" -> g.diaoDai
+                "side breast ok" -> g.sideBreastOk
+                "stand breast" -> g.standBreast
+                "sit breast ok", "sit breast" -> g.sitBreast
+                "material" -> g.material
+                "thick clothes" -> g.thickClothes
+                "wet" -> g.wet
+                "wet reason" -> g.wetReason
+                "beautiful" -> g.beautiful
+                "beatiful reason", "beautiful reason" -> g.beautifulReason
+                "descriptions" -> g.descriptions
+                "descriptions 2", "descriptions2" -> g.descriptions2
+                "long dress" -> g.longDress
+                "may throw" -> g.mayThrow
+                else -> {
+                    try {
+                        JSONObject(g.customFields).optString(fieldName, "")
+                    } catch (_: Exception) { "" }
+                }
+            }.trim()
+            if (v.isNotBlank()) {
+                counts[v] = (counts[v] ?: 0) + 1
+            }
+        }
+
+        // 2. Scan wearing reports
+        reports.forEach { r ->
+            val v = when (targetName) {
+                "shoulder feel" -> r.shoulderFeel
+                "mid breast" -> r.midBreast
+                "night mid breast" -> r.nightMidBreast
+                "sweat" -> r.sweat
+                "night sweat" -> r.nightSweat
+                "leg feel" -> r.legFeel
+                "night leg feel" -> r.nightLegFeel
+                "report detail" -> r.reportDetail
+                else -> {
+                    try {
+                        JSONObject(r.customFields).optString(fieldName, "")
+                    } catch (_: Exception) { "" }
+                }
+            }.trim()
+            if (v.isNotBlank()) {
+                counts[v] = (counts[v] ?: 0) + 1
+            }
+        }
+
+        return counts.entries.sortedByDescending { it.value }.map { it.key to it.value }
+    }
+
+    fun syncHistoricalValues(
+        clothes: List<GarmentEntity>,
+        reports: List<ReportEntity>
+    ): Pair<Int, List<DictionaryFieldItem>> {
+        var totalAdded = 0
+        val currentFields = getFields()
+        val updatedFields = currentFields.map { field ->
+            val historical = getFieldPreviousValues(field.name, clothes, reports)
+            if (historical.isEmpty()) {
+                field
+            } else {
+                val existingMap = field.typicalValues.associateBy { it.valueEn.trim().lowercase(Locale.ROOT) }.toMutableMap()
+                var fieldAdded = 0
+                historical.forEach { (histVal, count) ->
+                    val key = histVal.trim().lowercase(Locale.ROOT)
+                    if (!existingMap.containsKey(key)) {
+                        existingMap[key] = TypicalValueItem(
+                            valueEn = histVal,
+                            valueCn = histVal,
+                            meaningEn = "Real historical record (${count}x)",
+                            meaningCn = "真实穿搭历史记录 (出现 ${count} 次)"
+                        )
+                        fieldAdded++
+                    }
+                }
+                if (fieldAdded > 0) {
+                    totalAdded += fieldAdded
+                    field.copy(typicalValues = existingMap.values.toList())
+                } else {
+                    field
+                }
+            }
+        }
+        if (totalAdded > 0) {
+            saveFields(updatedFields)
+        }
+        return totalAdded to updatedFields
     }
 
     fun buildAiDictionaryPrompt(scope: String = "all"): String {
@@ -409,8 +513,117 @@ class FieldDictionaryService(context: Context) {
         labelCn = "累计洗涤总次数",
         descriptionCn = "历史累计水洗总次数。结合买入价格可计算出每次穿着的真实使用成本（性价比）。",
         descriptionEn = "Total number of washes across all wear history. Used with price to compute true cost-per-wear ($/wear).",
+        typicalValues = listOf()
+    ),
+    DictionaryFieldItem(
+        name = "May Throw / Retain",
+        category = "clothes",
+        labelCn = "去留决策 / 断舍离状态",
+        descriptionCn = "明确衣物的去留处置：保留日常穿、特定场景备用候补、或淘汰丢弃断舍离。",
+        descriptionEn = "Wardrobe lifecycle retention status: keep in rotation, backup for specific occasions, or discard/donate.",
         typicalValues = listOf(
+            TypicalValueItem(
+                valueEn = "keep",
+                valueCn = "保留日常穿",
+                meaningEn = "Active in routine seasonal rotation",
+                meaningCn = "主力服饰，各维度表现满意，积极保留"
+            ),
+            TypicalValueItem(
+                valueEn = "may throw",
+                valueCn = "考虑淘汰 / 观察期",
+                meaningEn = "Probation period due to comfort/aesthetic issues",
+                meaningCn = "存在明显短板（如勒胸、滑肩、闷热），若无法改造则淘汰"
+            ),
+            TypicalValueItem(
+                valueEn = "throw",
+                valueCn = "淘汰断舍离",
+                meaningEn = "Discarded, donated, or removed from wardrobe",
+                meaningCn = "彻底移出衣橱，不再穿着"
+            )
         )
+    ),
+    DictionaryFieldItem(
+        name = "Beautiful",
+        category = "clothes",
+        labelCn = "美观度与胸型视觉评分",
+        descriptionCn = "穿上后整体造型美观度、胸型聚拢挺拔度及视觉出片效果评价。",
+        descriptionEn = "Aesthetic evaluation, bust contouring beauty, and visual appeal.",
+        typicalValues = listOf(
+            TypicalValueItem(
+                valueEn = "Beautiful",
+                valueCn = "美观出片 / 胸型挺拔",
+                meaningEn = "Flattering fit, visually appealing bust contour",
+                meaningCn = "胸型好看聚拢，版型优美，拍照或出门满意"
+            ),
+            TypicalValueItem(
+                valueEn = "Middle",
+                valueCn = "中等平淡 / 尚可接受",
+                meaningEn = "Average look, acceptable for non-formal occasions",
+                meaningCn = "外观中规中矩，无惊艳点，日常可穿但不出彩"
+            ),
+            TypicalValueItem(
+                valueEn = "not so beautiful",
+                valueCn = "不够美观 / 胸型欠佳",
+                meaningEn = "Unflattering silhouette, flattening or creasing",
+                meaningCn = "容易显平坦、起皱或外溢，需特定内搭挽救"
+            )
+        )
+    ),
+    DictionaryFieldItem(
+        name = "Wet",
+        category = "clothes",
+        labelCn = "干爽度与吸湿速干表现",
+        descriptionCn = "衣物在出汗或潮湿环境下的排湿透气表现，是否易发潮发重。",
+        descriptionEn = "Moisture management, breathability, and quick-dry characteristics.",
+        typicalValues = listOf(
+            TypicalValueItem(
+                valueEn = "dry",
+                valueCn = "干爽舒适 / 不黏身",
+                meaningEn = "Remains dry and non-sticky even during prolonged wear",
+                meaningCn = "排汗透气良好或面料有蓄湿储备，体感干爽"
+            ),
+            TypicalValueItem(
+                valueEn = "wet",
+                valueCn = "闷湿出汗 / 黏腻发重",
+                meaningEn = "Absorbs sweat poorly or clings to body uncomfortably",
+                meaningCn = "排汗差，汗液积聚形成湿冷黏腻感"
+            )
+        )
+    ),
+    DictionaryFieldItem(
+        name = "Long dress",
+        category = "clothes",
+        labelCn = "裙长裤长与下身活动版型",
+        descriptionCn = "下身裁剪长度对行动便利度、坐姿防走光与腿部防晒透气的影响。",
+        descriptionEn = "Garment length affecting mobility, seated coverage, and leg breathability.",
+        typicalValues = listOf(
+            TypicalValueItem(
+                valueEn = "long dress",
+                valueCn = "过膝长款 / 防走光防晒",
+                meaningEn = "Maxi length providing complete coverage and UV protection",
+                meaningCn = "长度充裕，防走光与防空调冷风，但需防绊脚"
+            ),
+            TypicalValueItem(
+                valueEn = "short dress",
+                valueCn = "短款 / 轻便活泼",
+                meaningEn = "Above knee, light and highly mobile",
+                meaningCn = "行动极为方便，透气凉爽，但坐姿需注意防走光"
+            ),
+            TypicalValueItem(
+                valueEn = "middle dress",
+                valueCn = "中长款 / 齐膝通勤",
+                meaningEn = "Knee length, balanced versatility for office and casual",
+                meaningCn = "齐膝适中，适合办公通勤各场景"
+            )
+        )
+    ),
+    DictionaryFieldItem(
+        name = "Last Washed",
+        category = "clothes",
+        labelCn = "最后洗涤时间 / 洗护周期",
+        descriptionCn = "记录该单品最近一次水洗清洁日期，用于评估纤维疲劳硬化程度与待洗周期。",
+        descriptionEn = "Date of last laundry cycle, used to track fabric fatigue and hygiene schedule.",
+        typicalValues = listOf()
     ),
     DictionaryFieldItem(
         name = "shoulder feel",
@@ -887,6 +1100,8 @@ class FieldDictionaryService(context: Context) {
 fun InlineFieldDictionaryCard(
     dictionaryService: FieldDictionaryService,
     modifier: Modifier = Modifier,
+    clothes: List<GarmentEntity> = emptyList(),
+    reports: List<ReportEntity> = emptyList(),
     fields: List<DictionaryFieldItem> = dictionaryService.getFields(),
     onFieldsUpdated: ((List<DictionaryFieldItem>) -> Unit)? = null
 ) {
@@ -1059,21 +1274,42 @@ fun InlineFieldDictionaryCard(
                             }
                         }
 
-                        // Right: Add New Field & Reset Default Buttons
+                        // Right: Sync Historical + Add New Field & Reset Default Buttons
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Button(
+                                onClick = {
+                                    val (addedCount, updatedFields) = dictionaryService.syncHistoricalValues(clothes, reports)
+                                    currentFields = updatedFields
+                                    onFieldsUpdated?.invoke(updatedFields)
+                                    if (addedCount > 0) {
+                                        Toast.makeText(context, "已成功将 $addedCount 条真实输入值同步至 AI 字段定义中！", Toast.LENGTH_LONG).show()
+                                    } else {
+                                        Toast.makeText(context, "所有真实穿搭历史记录已在字典中，无新增条目。", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
+                                shape = RoundedCornerShape(12.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                                modifier = Modifier.height(34.dp).testTag("sync_historical_values_btn")
+                            ) {
+                                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(13.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("同步穿搭输入值", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            }
+
+                            Button(
                                 onClick = { isCreatingNew = true },
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9333EA)),
                                 shape = RoundedCornerShape(12.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
                                 modifier = Modifier.height(34.dp).testTag("add_field_def_btn")
                             ) {
                                 Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(13.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
-                                Text("添加新字段定义", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                Text("添加字段", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                             }
 
                             IconButton(
@@ -1890,3 +2126,18 @@ fun FieldDictionaryModal(
         }
     }
 }
+
+@Composable
+fun InlineFieldDictionarySection(
+    highlightScope: String = "all",
+    defaultExpanded: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val dictionaryService = remember { FieldDictionaryService(context) }
+    InlineFieldDictionaryCard(
+        dictionaryService = dictionaryService,
+        modifier = modifier
+    )
+}
+

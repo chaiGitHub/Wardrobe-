@@ -188,10 +188,7 @@ fun JournalScreen(
                     groupMode = groupMode,
                     onGroupModeChange = { groupMode = it },
                     onLogOutfitClick = onAddReportClick,
-                    onDeduplicateClick = {
-                        onDeduplicateClick?.invoke()
-                        Toast.makeText(context, "Deduplicated wearing reports", Toast.LENGTH_SHORT).show()
-                    }
+                    onDeduplicateClick = { onDeduplicateClick?.invoke() }
                 )
                 WearCalendar(
                     reports = reports,
@@ -209,7 +206,7 @@ fun JournalScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 90.dp),
+                contentPadding = PaddingValues(bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 // 1. Top Header Card (IMG_9718)
@@ -222,10 +219,7 @@ fun JournalScreen(
                         groupMode = groupMode,
                         onGroupModeChange = { groupMode = it },
                         onLogOutfitClick = onAddReportClick,
-                        onDeduplicateClick = {
-                            onDeduplicateClick?.invoke()
-                            Toast.makeText(context, "Deduplicated wearing reports", Toast.LENGTH_SHORT).show()
-                        }
+                        onDeduplicateClick = { onDeduplicateClick?.invoke() }
                     )
                 }
 

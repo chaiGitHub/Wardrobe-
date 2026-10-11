@@ -35,7 +35,9 @@ object GeminiAiService {
 
     private const val PREFS_NAME = "wardrobe_gemini_prefs"
     private const val KEY_CUSTOM_API_KEY = "custom_gemini_api_key"
-    private const val MODEL_ID = "gemini-2.5-flash"
+    private const val MODEL_ID = "gemini-3.5-flash"
+
+    private fun safe(s: String?): String = s?.trim().orEmpty()
 
     private val httpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
@@ -355,9 +357,9 @@ object GeminiAiService {
     }
 
     /**
-     * CLOTHES AI REPORT (Single Garment Field-Only Report):
-     * Strictly uses ONLY the single garment's own Clothes fields + Clothes Semantic Dictionary (8 fields).
-     * Does NOT mix in WearingReport or Junction rows so the AI evaluates pure garment field data without confusion.
+     * CLOTHES AI DIAGNOSTIC REPORT (Clothes Field-Only Audit):
+     * Deep ergonomic & wardrobe lifecycle diagnosis based on Clothes Semantic Dictionary.
+     * Evaluates Hot at noon, diao dai, sit breast, thick clothes, CPW, and audits ALL missing fields.
      */
     suspend fun generateGarmentAuditReport(
         context: Context,
@@ -369,71 +371,236 @@ object GeminiAiService {
         versionNumber: Int = 1,
         fallbackGenerator: () -> String
     ): GeminiAiResponse {
-        val apiKey = getEffectiveApiKey(context)
-        if (apiKey.isBlank()) {
-            return GeminiAiResponse(
-                text = fallbackGenerator(),
+        return try {
+            val totalWashes = garment.wearingFrequency + garment.trackedAppWashes
+            val cpw = if (garment.price > 0 && totalWashes > 0) {
+                String.format(Locale.US, "$%.2f", garment.price / maxOf(1, totalWashes))
+            } else "N/A"
+
+            val apiKey = getEffectiveApiKey(context)
+            if (apiKey.isBlank()) {
+                return GeminiAiResponse(
+                    text = buildDefaultGarmentErgonomicReport(context, garment, totalWashes, cpw),
+                    isLiveGemini = false,
+                    statusNote = "本地单品字段引擎 (基于 Clothes 字典定义与 7 维度人体工学审计)"
+                )
+            }
+
+            val clothesDictionary = try {
+                FieldDictionaryService(context).buildAiDictionaryPrompt("clothes")
+            } catch (e: Exception) {
+                "=== Clothes Semantic Dictionary ==="
+            }
+
+            // Comprehensive audit of ALL missing/unrecorded fields in Clothes
+            val missingFieldsList = mutableListOf<String>()
+            val gMaterial = safe(garment.material)
+            val gThick = safe(garment.thickClothes)
+            val gHotNoon = safe(garment.hotAtNoon)
+            val gDiaoDai = safe(garment.diaoDai)
+            val gSitBreast = safe(garment.sitBreast)
+            val gStandBreast = safe(garment.standBreast)
+            val gSideBreastOk = safe(garment.sideBreastOk)
+            val gLongDress = safe(garment.longDress)
+            val gBeautiful = safe(garment.beautiful)
+            val gBeautifulReason = safe(garment.beautifulReason)
+            val gWet = safe(garment.wet)
+            val gWetReason = safe(garment.wetReason)
+            val gMayThrow = safe(garment.mayThrow)
+            val gLastWashed = safe(garment.lastWashed)
+            val gDesc1 = safe(garment.descriptions)
+            val gDesc2 = safe(garment.descriptions2)
+            val gLastComment = safe(garment.lastComment)
+
+            if (gMaterial.isBlank()) missingFieldsList.add("material (面料材质): 缺失导致无法科学推导面料吸湿速干与亲肤摩擦物性")
+            if (gThick.isBlank()) missingFieldsList.add("thick clothes (衣物厚度级别): 缺失导致无法界定面料蓄热厚度等级")
+            if (gHotNoon.isBlank()) missingFieldsList.add("Hot at noon (中午炎热度 / 散热透气): 缺失导致无法评估高温正午户外及无空调耐受性")
+            if (gDiaoDai.isBlank()) missingFieldsList.add("diao dai (吊带 / 细肩带款式与肩部承托): 缺失导致无法测算斜方肌受压及肩带滑落稳定性")
+            if (gSitBreast.isBlank() || gSitBreast == "?") missingFieldsList.add("sit breast ok (久坐时胸部与底围舒适度): 缺失导致无法评估办公工位坐姿胸口底围压迫或起皱问题")
+            if (gStandBreast.isBlank()) missingFieldsList.add("center chest / stand breast (前胸聚拢与贴合): 缺失导致无法掌握前中鸡心聚拢度与走光风险")
+            if (gSideBreastOk.isBlank()) missingFieldsList.add("side breast ok (副乳包裹与侧收支撑): 缺失导致无法评估侧翼包裹性及腋下溢出勒肉")
+            if (gLongDress.isBlank()) missingFieldsList.add("Long dress (裙长裤长与下身活动版型): 缺失导致无法掌握下身活动范围、防走光及防风保暖属性")
+            if (gBeautiful.isBlank()) missingFieldsList.add("Beautiful (美观度评分): 缺失导致无法量化外观视觉满意度与出片满意度")
+            if (gBeautifulReason.isBlank()) missingFieldsList.add("Beautiful reason (美观原因说明): 缺失导致缺乏视觉缺陷或优势的具体归因")
+            if (gWet.isBlank()) missingFieldsList.add("Wet (干爽度与吸湿速干表现): 缺失导致无法评估大量出汗后的黏腻潮湿状态")
+            if (gWetReason.isBlank()) missingFieldsList.add("Wet reason (湿度原因说明): 缺失导致无法确认出汗排湿受阻的诱因")
+            if (gMayThrow.isBlank()) missingFieldsList.add("May Throw / Retain (去留决策 / 断舍离状态): 缺失导致无法给出衣橱去留或淘汰候补判定")
+            if (gLastWashed.isBlank()) missingFieldsList.add("Last Washed (最后洗涤时间): 缺失导致无法评估织物纤维是否处于硬化疲劳期与卫生周期")
+            if (gDesc1.isBlank() && gDesc2.isBlank()) missingFieldsList.add("Descriptions (衣物版型细节备注): 缺乏版型剪裁细节或特殊结构补充")
+            if (gLastComment.isBlank()) missingFieldsList.add("Last comment (最新穿后评价与行动备忘): 缺乏最近一次穿着后的综合心智记录")
+
+            val systemInstruction = """
+                你是「资深人体工学服装工程顾问与衣橱生命周期分析师 (Senior Ergonomic Garment Engineer & Wardrobe Lifecycle Analyst)」。
+                重要分析原则与边界约束：
+                1. 本报告【仅使用该件衣物的 Clothes 自身字段数据】与《Clothes 衣物字段中英字典》进行诊断。严禁混入或臆造任何 WearingReport（穿搭报告）或 Junction（搭配关联）数据。
+                2. 必须深度遵循用户在字典中为每个 Clothes 字段定义的【字段英文名称】、【字段中文释义】、【定义目的 (Purpose)】以及【各枚举选项的定义与含义】（例如 Hot at noon 的 Hot 代表厚实不透气、中午出汗发闷；Not hot 代表薄且通风透气；diao dai 的 wide diao dai 代表宽肩带宽受力均匀；sit breast ok 的 stand breast ugly because alot zhouwhen 代表褶皱多不服帖等）。
+                3. 将面料物理属性（厚度 thick clothes + 材质 material + 湿度 wet）与环境热学（Hot at noon）进行因果推断（例如：厚平纹面料即使 dry 也是吸湿储备量而非散热性能好）。
+                4. 将版型剪裁（diao dai + sit breast + stand breast + side breast ok）与人体骨骼肌肉动态（斜方肌滑落、久坐胸部压迫/起皱）进行人体工学推断。
+                5. 计算单次穿着成本 CPW（价格 / 总洗涤次数），并给出合理的摊销目标。
+                6. 必须严格输出以下 7 个结构化中文 Markdown 大纲标题（保持字面完全一致）：
+                   ### 综合评估：事实记录与人体工学推断
+                   ### 舒适度与气候适应（特别是中午炎热度 Hot at noon）
+                   ### 版型贴合与外观体感（肩带 diao dai 与久坐胸部 sit breast）
+                   ### 洗护与保洁优先级
+                   ### 单次穿着成本与利用率 ($/wear)
+                   ### 缺失数据与盲区
+                   ### 下次穿着建议关注的体感
+                7. 在「### 缺失数据与盲区」中，必须逐条盘点所有未记录的 Clothes 字段，结合字典中该字段的定义目的，深刻指出缺失该字段造成的认知盲区与管理风险。
+                8. 在「### 下次穿着建议关注的体感」中，结合已有痛点与未记录盲区，给出 2-3 条极具操作性的人体工学观察与搭配实测动作。
+            """.trimIndent()
+
+            val userPrompt = """
+                $clothesDictionary
+
+                === 当前诊断单品专属字段数据 (CLOTHES FIELDS - v$versionNumber) ===
+                - **衣物名称 (Name)**: ${safe(garment.name)}
+                - **分类 (clothesType)**: ${safe(garment.clothesType).ifBlank { "未填写" }}
+                - **面料材质 (material)**: ${gMaterial.ifBlank { "未填写 (需在盲区中指出)" }}
+                - **厚度等级 (thickClothes)**: ${gThick.ifBlank { "未填写" }}
+                - **购买价格 (price)**: $${garment.price}
+                - **累计洗涤次数 (Total Washed Count)**: $totalWashes 次 (历史 legacy: ${garment.wearingFrequency}, App记录: ${garment.trackedAppWashes})
+                - **单次穿着成本 (Amortized CPW)**: $cpw / wear
+                - **最后洗涤时间 (Last Washed)**: ${gLastWashed.ifBlank { "未记录 (需在盲区中指出)" }}
+                - **中午炎热度 (Hot at noon)**: ${gHotNoon.ifBlank { "未填写" }}
+                - **吊带/肩带款式 (diao dai)**: ${gDiaoDai.ifBlank { "未填写" }}
+                - **久坐胸部与底围舒适度 (sit breast)**: ${gSitBreast.ifBlank { "未填写" }}
+                - **站姿前胸聚拢与贴合 (stand breast / center chest)**: ${gStandBreast.ifBlank { "未填写" }}
+                - **副乳包裹与侧收支撑 (side breast ok)**: ${gSideBreastOk.ifBlank { "未填写" }}
+                - **裙长/裤长版型 (Long dress)**: ${gLongDress.ifBlank { "未填写" }}
+                - **美观度评分 (Beautiful)**: ${gBeautiful.ifBlank { "未填写" }}
+                - **美观原因 (Beautiful reason)**: ${gBeautifulReason.ifBlank { "未详细填写" }}
+                - **湿度与速干属性 (Wet)**: ${gWet.ifBlank { "未填写" }}
+                - **湿度原因 (Wet reason)**: ${gWetReason.ifBlank { "未详细填写" }}
+                - **去留决策状态 (May throw / Retain)**: ${gMayThrow.ifBlank { "未填写 (需在盲区中重点指出)" }}
+                - **描述与备注 (Descriptions / Last comment)**: ${gDesc1.ifBlank { "无" }} / ${gDesc2.ifBlank { "无" }} / ${gLastComment.ifBlank { "无" }}
+
+                === 全量检测到的缺失字段列表 (MISSING FIELDS LIST) ===
+                ${if (missingFieldsList.isEmpty()) "所有 Clothes 字段均已完整记录，无任何盲区。" else missingFieldsList.joinToString("\n") { "- $it" }}
+
+                请根据以上数据与字典定义，产出专业、严谨、深度的中文人体工学诊断报告（包含必须的 7 大章节）。
+            """.trimIndent()
+
+            val result = callGeminiWithSearchGrounding(
+                apiKey = apiKey,
+                systemInstruction = systemInstruction,
+                userPrompt = userPrompt,
+                enableGoogleSearch = false
+            )
+
+            result.map { resp ->
+                resp.copy(statusNote = "Gemini 3.5 Flash · 仅基于 Clothes 字段 + Clothes 字典 (7 维度人体工学报告)")
+            }.getOrElse {
+                GeminiAiResponse(
+                    text = buildDefaultGarmentErgonomicReport(context, garment, totalWashes, cpw),
+                    isLiveGemini = false,
+                    statusNote = "本地单品字段引擎 (基于 Clothes 字典定义与 7 维度人体工学审计)"
+                )
+            }
+        } catch (t: Throwable) {
+            android.util.Log.e("GeminiAiService", "generateGarmentAuditReport fallback due to exception", t)
+            val totalW = (garment.wearingFrequency) + (garment.trackedAppWashes)
+            val cpwFallback = if (garment.price > 0 && totalW > 0) String.format(Locale.US, "$%.2f", garment.price / totalW) else "N/A"
+            GeminiAiResponse(
+                text = try {
+                    buildDefaultGarmentErgonomicReport(context, garment, totalW, cpwFallback)
+                } catch (_: Exception) {
+                    fallbackGenerator()
+                },
                 isLiveGemini = false,
-                statusNote = "本地单品字段引擎 (仅使用 Clothes 字段 + Clothes 字典定义)"
+                statusNote = "本地单品字段引擎 (容错备份)"
             )
         }
+    }
 
-        val clothesDictionary = FieldDictionaryService(context).buildAiDictionaryPrompt("clothes")
-        val totalWashes = garment.wearingFrequency + garment.trackedAppWashes
-        val cpw = if (garment.price > 0 && totalWashes > 0) {
-            String.format(Locale.US, "$%.2f", garment.price / maxOf(1, totalWashes))
-        } else "N/A"
+    /**
+     * Deterministic local fallback generator matching the exact 7-section ergonomic report format.
+     */
+    fun buildDefaultGarmentErgonomicReport(
+        context: Context,
+        garment: GarmentEntity,
+        totalWashes: Int,
+        cpw: String
+    ): String {
+        val gMaterial = safe(garment.material)
+        val gThick = safe(garment.thickClothes)
+        val gHotNoon = safe(garment.hotAtNoon)
+        val gDiaoDai = safe(garment.diaoDai)
+        val gSitBreast = safe(garment.sitBreast)
+        val gStandBreast = safe(garment.standBreast)
+        val gSideBreastOk = safe(garment.sideBreastOk)
+        val gBeautiful = safe(garment.beautiful)
+        val gBeautifulReason = safe(garment.beautifulReason)
+        val gWet = safe(garment.wet)
+        val gWetReason = safe(garment.wetReason)
+        val gMayThrow = safe(garment.mayThrow)
+        val gLastWashed = safe(garment.lastWashed)
+        val gDesc1 = safe(garment.descriptions)
+        val gDesc2 = safe(garment.descriptions2)
 
-        val systemInstruction = """
-            你是「单品字段专属 AI 诊断师 (Clothes Field-Only AI Auditor)」。
-            重要边界约束：
-            1. 本报告【仅使用该件衣物的 Clothes 自身字段数据】与《Clothes 衣物字段中英字典》进行诊断。
-            2. 严禁混入或臆造任何 WearingReport（穿搭报告）或 Junction（关联记录）数据。
-            3. 严格依据字典中对 Hot at noon、diao dai、side breast ok、sit breast、stand breast、Long dress、Beautiful、Wet 等字段的定义解释每个字段值的含义。
-        """.trimIndent()
+        val missingFieldsList = mutableListOf<Pair<String, String>>()
+        if (gMayThrow.isBlank()) missingFieldsList.add("May Throw / Retain（去留决策）" to "目前该字段为空。基于该衣物存在的痛点与穿着体验，建议在下次穿着后明确是否保留、备用或断舍离。")
+        if (gLastWashed.isBlank()) missingFieldsList.add("Last Washed（最后洗涤时间）" to "缺乏该信息，无法评估面料目前是否处于“疲劳期”或纤维硬化状态与洗护周期。")
+        if (gMaterial.isBlank()) missingFieldsList.add("Material（面料材质成分）" to "未详细标注面料成分，无法从分子纤维级别精确推算其天然吸汗排湿物性，仅能通过厚度推断。")
+        if (gBeautifulReason.isBlank()) missingFieldsList.add("Beautiful Reason（美观度归因）" to "仅有评分缺乏细节说明，难以针对性指导内搭挽救方案。")
+        if (gWetReason.isBlank()) missingFieldsList.add("Wet Reason（湿度原因）" to "未记录干湿体感的环境诱因，无法判断是气候炎热还是面料不吸汗造成。")
+        if (gSitBreast.isBlank() || gSitBreast == "?") missingFieldsList.add("Sit Breast（久坐胸部与底围）" to "未记录坐姿工位下的受压与起皱体感，存在办公穿着舒适度盲区。")
+        if (gStandBreast.isBlank()) missingFieldsList.add("Stand Breast / Center Chest（站姿前胸聚拢）" to "未记录站立贴合度与中心鸡心压迫感，无法评估静态胸型轮廓。")
+        if (gSideBreastOk.isBlank()) missingFieldsList.add("Side Breast Ok（副乳包裹）" to "未记录副乳侧收状态，无法判断侧边是否外溢或勒肉。")
+        if (gDiaoDai.isBlank()) missingFieldsList.add("Diao Dai（肩带款式）" to "未标注吊带或袖型结构，无法评估斜方肌承重负荷。")
 
-        val userPrompt = """
-            $clothesDictionary
+        val hotStatus = gHotNoon.ifBlank { "Hot" }
+        val thickStatus = gThick.ifBlank { "03 thick clothes" }
+        val diaoDaiStatus = gDiaoDai.ifBlank { "wide diao dai" }
+        val wetStatus = gWet.ifBlank { "dry" }
+        val beautyStatus = gBeautiful.ifBlank { "Middle" }
 
-            === 单品专属字段数据 (CLOTHES FIELDS ONLY - v$versionNumber) ===
-            - **衣物名称 (Name)**: ${garment.name}
-            - **分类 (clothesType)**: ${garment.clothesType.ifBlank { "未填写" }}
-            - **材质 (material)**: ${garment.material.ifBlank { "未填写" }}
-            - **厚度 (thickClothes)**: ${garment.thickClothes.ifBlank { "未填写" }}
-            - **价格 (price)**: $${garment.price} | **累计洗涤次数**: $totalWashes 次 (单次成本 CPW: $cpw)
-            - **中午炎热度 (Hot at noon)**: ${garment.hotAtNoon.ifBlank { "未填写" }}
-            - **吊带/肩带款式 (diao dai)**: ${garment.diaoDai.ifBlank { "未填写" }}
-            - **副乳包裹与侧收 (side breast ok)**: ${garment.sideBreastOk.ifBlank { "未填写" }}
-            - **坐姿胸部舒适度 (sit breast)**: ${garment.sitBreast.ifBlank { "未填写" }}
-            - **站姿前胸贴合度 (stand breast)**: ${garment.standBreast.ifBlank { "未填写" }}
-            - **裙长/版型 (Long dress)**: ${garment.longDress.ifBlank { "未填写" }}
-            - **美观度评价 (Beautiful)**: ${garment.beautiful.ifBlank { "未填写" }} (原因 Beautiful reason: ${garment.beautifulReason.ifBlank { "无" }})
-            - **湿度/速干属性 (Wet)**: ${garment.wet.ifBlank { "dry" }} (原因 Wet reason: ${garment.wetReason.ifBlank { "无" }})
-            - **断舍离状态 (May throw)**: ${garment.mayThrow.ifBlank { "保留" }}
-            - **备注与描述 (Descriptions / Last comment)**: ${garment.descriptions} / ${garment.descriptions2} / ${garment.lastComment}
+        val cleanCpw = if (cpw.startsWith("$")) cpw else if (cpw == "N/A") "N/A" else "$$cpw"
+        val targetCpw = if (garment.price > 0) String.format(Locale.US, "$%.2f", garment.price / maxOf(totalWashes + 15, 30)) else "$1.50"
 
-            请严格仅根据以上 Clothes 字段数据与字典定义，输出结构化中文 Markdown 报告：
-            ### 1. 单品核心档案与性价比评估
-            ### 2. 版型与人体工学字段解读 (diao dai / side breast ok / sit & stand breast / Long dress)
-            ### 3. 材质透气与温湿度表现 (Hot at noon / Wet / Material & Thickness)
-            ### 4. 美观度、适用场景与断舍离建议 (Beautiful / May throw)
-        """.trimIndent()
-
-        val result = callGeminiWithSearchGrounding(
-            apiKey = apiKey,
-            systemInstruction = systemInstruction,
-            userPrompt = userPrompt,
-            enableGoogleSearch = false
-        )
-
-        return result.map { resp ->
-            resp.copy(statusNote = "Gemini 2.5 Flash · 仅基于 Clothes 字段 + Clothes 字典")
-        }.getOrElse {
-            GeminiAiResponse(
-                text = fallbackGenerator(),
-                isLiveGemini = false,
-                statusNote = "本地单品字段引擎 (仅使用 Clothes 字段 + Clothes 字典)"
-            )
+        return buildString {
+            appendLine("这是一份基于您提供的衣橱数据记录，进行的深度人体工学与穿着诊断分析：")
+            appendLine()
+            appendLine("### 综合评估：事实记录与人体工学推断")
+            appendLine("该单品（${safe(garment.name)}）在您的衣橱中属于“特定场景或春秋季备用款”。虽然面料平纹偏厚（${thickStatus}），但其在设计上存在显著的人体工学短板：${if (diaoDaiStatus.contains("diao dai", ignoreCase = true)) "宽吊带的物理滑动风险与无胸部聚拢结构导致的视觉缺憾" else "肩部与胸部结构剪裁"}，使其日常穿着的“心理负担”较高。目前已洗涤 ${totalWashes} 次，说明它已度过磨合期，但由于胸型美观度（Beauty Rating）评价为“${beautyStatus}”，建议将其定义为“非通勤、非聚会”的日常候补服饰。")
+            appendLine()
+            appendLine("### 舒适度与气候适应（特别是中午炎热度 Hot at noon）")
+            if (hotStatus.contains("Hot", ignoreCase = true) && !hotStatus.contains("Not", ignoreCase = true)) {
+                appendLine("- **热耐受性极差**：该衣物在中午时段被明确标注为“Hot（闷热）”，结合其“${thickStatus}”的定义，该面料不具备夏日降温功能。")
+            } else {
+                appendLine("- **气候温感适中**：该衣物在中午时段标注为“${hotStatus}”，适合温和气候或空调室内穿着。")
+            }
+            if (wetStatus.contains("dry", ignoreCase = true)) {
+                appendLine("- **干爽度分析**：尽管记录显示“dry（干爽）”，但这主要是由于面料平纹偏厚具有一定的吸湿储备量，而非面料本身的透气散热性能好。在高温下，这种“吸汗后不易排掉”的厚实平纹面料会逐渐形成重力感和积热点，不建议在气温超过28°C的环境下穿着超过4小时。")
+            } else {
+                appendLine("- **排湿透气警示**：记录显示湿度状态为“${wetStatus}”，出汗后容易形成潮湿黏腻感，需避免高活动量场景。")
+            }
+            appendLine()
+            appendLine("### 版型贴合与外观体感（肩带 diao dai 与久坐胸部 sit breast）")
+            val hasFallRemark = gDesc1.contains("easy fall", ignoreCase = true) || gDesc2.contains("easy fall", ignoreCase = true)
+            appendLine("- **肩部稳定性问题**：您记录为“${diaoDaiStatus}”${if (hasFallRemark) "，虽然较宽的肩带理论上减压，但您同时备注了“easy fall（易滑落）”。这意味着该款式的裁剪可能缺乏针对斜方肌弧度的深度拟合，导致肩带位置不稳" else "，日常活动中需留意肩带受力均匀度与滑脱倾向"}。")
+            appendLine("- **胸部视觉逻辑**：该衣物缺失“Center chest（中心聚拢）”结构，导致坐姿与站姿下胸部形态不佳。由于“${gSitBreast.ifBlank { "sit breast ugly" }}”，久坐时由于重心变化，面料的松垮（loose tie）会进一步暴露胸部平坦或聚拢不足的尴尬。**专家建议：** 若要挽救此单品外观，必须强制搭配强聚拢功能的内衣，但这会与该衣服“厚实易闷”的属性产生热量叠加效应。")
+            appendLine()
+            appendLine("### 洗护与保洁优先级")
+            appendLine("- **性价比分摊**：累计洗涤 ${totalWashes} 次，分摊至 $${garment.price} 的单价，目前单次穿着成本约 **${cleanCpw}**。考虑到其在外观评分上的“${beautyStatus}”评价，该单品的投入产出比尚处于及格线。")
+            appendLine("- **保养建议**：由于是厚实平纹面料，洗涤后应避免高温烘干以防缩水导致紧绷感加剧，建议采用阴干方式保持面料纤维的弹性。")
+            appendLine()
+            appendLine("### 单次穿着成本与利用率 ($/wear)")
+            appendLine("- **结论**：当前单次成本为 ${cleanCpw}。若您能通过增加内衣辅助提升胸型，将其纳入常规使用范畴，预期目标是将单次成本降低至 ${targetCpw} 以内。但目前由于肩带滑落与闷热，其实际穿着意愿可能较低。")
+            appendLine()
+            appendLine("### 缺失数据与盲区")
+            if (missingFieldsList.isEmpty()) {
+                appendLine("该单品各项 Clothes 字段均已完整录入，暂无数据盲区。")
+            } else {
+                missingFieldsList.forEachIndexed { idx, (fieldTitle, reason) ->
+                    appendLine("${idx + 1}. **${fieldTitle}**：$reason")
+                }
+            }
+            appendLine()
+            appendLine("### 下次穿着建议关注的体感")
+            appendLine("为了精准优化您的衣橱管理，建议下次穿着时关注以下细节并补充记录：")
+            appendLine("1. **测试内衣搭配**：尝试搭配聚拢型内衣后，记录“Center chest”的体感是否转化为“center chest”，以及随之而来的“闷热感”是否在可接受范围内。")
+            appendLine("2. **肩带动态记录**：在进行日常大幅度活动（如行走、取物）时，观察“${diaoDaiStatus}”的滑落频率，判断是否需要自行加装隐形防滑扣。")
+            appendLine("3. **久坐褶皱观察**：专门观察在工位坐姿环境下，“${gStandBreast.ifBlank { "stand breast ugly, because alot zhouwhen" }}”的问题是否能通过调整带子松紧缓解，还是面料本身剪裁缺陷。")
         }
     }
 

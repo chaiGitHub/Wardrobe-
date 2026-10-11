@@ -346,6 +346,8 @@ fun AdvisorScreen(
         // 2. INLINE COLLAPSIBLE FIELD & DATA DICTIONARY (30 CONFIG ITEMS: Clothes 8 + WearingReport 20 + Junction 2)
         InlineFieldDictionaryCard(
             dictionaryService = dictionaryService,
+            clothes = clothes,
+            reports = reports,
             fields = dictionaryFields,
             onFieldsUpdated = { dictionaryFields = it }
         )
@@ -769,7 +771,7 @@ fun AdvisorScreen(
                                         val cpw = if (g.price > 0 && totalW > 0) String.format(Locale.US, "$%.2f", g.price / totalW) else "N/A"
                                         appendLine(
                                             "${index + 1}. **${g.name}** (${g.clothesType.ifBlank { "Dress" }} · ${g.material.ifBlank { "棉" }})\n" +
-                                                "   - **Clothes 字段**: Hot at noon=`${g.hotAtNoon.ifBlank { "Not hot" }}` | diao dai=`${g.diaoDai.ifBlank { "not diao dai" }}` | sit breast=`${g.sitBreast.ifBlank { "ok" }}` | side breast=`${g.sideBreastOk.ifBlank { "ok" }}` | Wet=`${g.wet.ifBlank { "dry" }}`\n" +
+                                                "   - **Clothes 字段**: Without AC hot=`${(g.noAircondHotFeeling.ifBlank { g.hotAtNoon }).ifBlank { "Not hot" }}` | With AC=`${g.aircondHotFeeling.ifBlank { "-" }}` | Fan Sleep=`${g.fanSleepHotFeeling.ifBlank { "-" }}` | diao dai=`${g.diaoDai.ifBlank { "not diao dai" }}` | sit breast=`${g.sitBreast.ifBlank { "ok" }}` | side breast 聚拢=`${(g.sideBreastGatherBra.ifBlank { g.sideBreastOk }).ifBlank { "ok" }}` | side breast side out=`${g.sideBreastSideOutBra.ifBlank { "ok" }}` | Wet=`${g.wet.ifBlank { "dry" }}`\n" +
                                                 "   - **Junction & 成本**: 累计洗涤 $totalW 次 (CPW $cpw) · 关联记录 ${st.totalWears} 次 (${st.totalDurationHours}h) · 状态: **${if (st.needWash) "待清洗 (need wash)" else "干净 (washed)"}**"
                                         )
                                     }
@@ -1285,9 +1287,12 @@ fun AdvisorScreen(
                                         "Type" to target.clothesType.ifBlank { "Dress" },
                                         "Material" to target.material.ifBlank { "-" },
                                         "Thick" to target.thickClothes.ifBlank { "-" },
-                                        "Hot at noon" to target.hotAtNoon.ifBlank { "-" },
+                                        "Without AC Hot" to (target.noAircondHotFeeling.ifBlank { target.hotAtNoon }).ifBlank { "-" },
+                                        "With AC Hot" to target.aircondHotFeeling.ifBlank { "-" },
+                                        "Fan Sleep" to target.fanSleepHotFeeling.ifBlank { "-" },
                                         "diao dai" to target.diaoDai.ifBlank { "-" },
-                                        "side breast ok" to target.sideBreastOk.ifBlank { "-" },
+                                        "side breast 聚拢" to (target.sideBreastGatherBra.ifBlank { target.sideBreastOk }).ifBlank { "-" },
+                                        "side breast side out" to target.sideBreastSideOutBra.ifBlank { "-" },
                                         "sit breast" to target.sitBreast.ifBlank { "-" },
                                         "stand breast" to target.standBreast.ifBlank { "-" },
                                         "Long dress" to target.longDress.ifBlank { "-" },
@@ -1318,40 +1323,30 @@ fun AdvisorScreen(
                                 if (isGeneratingClothesAi) return@Button
                                 isGeneratingClothesAi = true
                                 val fallbackBuilder = {
-                                    buildString {
-                                        appendLine("### 👗 单品字段专属 AI 诊断报告: ${target.name}")
-                                        appendLine("*(数据范围：仅使用该单品 Clothes 字段 + Clothes 字典定义)*")
-                                        appendLine()
-                                        appendLine("#### 1. 核心档案与性价比")
-                                        appendLine("- **分类与材质**: `${target.clothesType.ifBlank { "Dress" }}` · 材质 `${target.material.ifBlank { "未注" }}` · 厚度 `${target.thickClothes.ifBlank { "常规" }}`")
-                                        appendLine("- **购入价格与洗涤频次**: 价格 **$${target.price}**，累计洗涤 **$totalWashes** 次，单次穿着成本 **$cpw**。")
-                                        appendLine()
-                                        appendLine("#### 2. 版型与人体工学字段解读")
-                                        appendLine("- **吊带属性 (diao dai = `${target.diaoDai.ifBlank { "not diao dai" }}`)**: ${if (target.diaoDai == "diao dai") "细吊带设计，长时间穿着需注意斜方肌承托" else "非细吊带/宽肩带，肩部承托友好"}。")
-                                        appendLine("- **副乳与胸部贴合**: `side breast ok` = `${target.sideBreastOk.ifBlank { "常规" }}`，`sit breast` = `${target.sitBreast.ifBlank { "常规" }}`，`stand breast` = `${target.standBreast.ifBlank { "常规" }}`。")
-                                        appendLine("- **裙长与行动便利 (`Long dress` = `${target.longDress.ifBlank { "常规" }}`)**: 版型剪裁评估良好。")
-                                        appendLine()
-                                        appendLine("#### 3. 散热透气与美观度 (`Hot at noon` & `Beautiful`)")
-                                        appendLine("- **午间炎热度 (`Hot at noon` = `${target.hotAtNoon.ifBlank { "Not hot" }}`)** · **湿度属性 (`Wet` = `${target.wet.ifBlank { "dry" }}`)**")
-                                        appendLine("- **美观评价 (`Beautiful` = `${target.beautiful.ifBlank { "ok" }}`)**: ${target.beautifulReason.ifBlank { target.descriptions.ifBlank { "日常实穿百搭" } }}")
-                                    }
+                                    GeminiAiService.buildDefaultGarmentErgonomicReport(context, target, totalWashes, cpw)
                                 }
                                 coroutineScope.launch {
-                                    val resp = GeminiAiService.generateGarmentAuditReport(
-                                        context = context,
-                                        garment = target,
-                                        versionNumber = 1,
-                                        fallbackGenerator = fallbackBuilder
-                                    )
-                                    generatedClothesReport = resp.text
-                                    generatedClothesNote = resp.statusNote
-                                    isGeneratingClothesAi = false
-                                    if (resp.text.isNotBlank()) {
-                                        viewModel?.addGarmentAiReportVersion(
-                                            garmentId = target.id,
-                                            content = resp.text,
-                                            model = "gemini-3.6-flash"
+                                    try {
+                                        val resp = GeminiAiService.generateGarmentAuditReport(
+                                            context = context,
+                                            garment = target,
+                                            versionNumber = 1,
+                                            fallbackGenerator = fallbackBuilder
                                         )
+                                        generatedClothesReport = resp.text
+                                        generatedClothesNote = resp.statusNote
+                                        if (resp.text.isNotBlank()) {
+                                            viewModel?.addGarmentAiReportVersion(
+                                                garmentId = target.id,
+                                                content = resp.text,
+                                                model = "gemini-3.5-flash"
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("AdvisorScreen", "Error generating clothes AI report", e)
+                                        Toast.makeText(context, "生成报告失败: ${e.localizedMessage ?: "未知异常"}", Toast.LENGTH_SHORT).show()
+                                    } finally {
+                                        isGeneratingClothesAi = false
                                     }
                                 }
                             },
@@ -1569,21 +1564,27 @@ fun AdvisorScreen(
                                     }
                                 }
                                 coroutineScope.launch {
-                                    val resp = GeminiAiService.generateSessionReportAnalysis(
-                                        context = context,
-                                        report = rep,
-                                        versionNumber = 1,
-                                        fallbackGenerator = fallbackBuilder
-                                    )
-                                    generatedReportAnalysis = resp.text
-                                    generatedReportNote = resp.statusNote
-                                    isGeneratingReportAi = false
-                                    if (resp.text.isNotBlank()) {
-                                        viewModel?.addWearingAiReportVersion(
-                                            reportId = rep.id,
-                                            content = resp.text,
-                                            model = "gemini-3.6-flash"
+                                    try {
+                                        val resp = GeminiAiService.generateSessionReportAnalysis(
+                                            context = context,
+                                            report = rep,
+                                            versionNumber = 1,
+                                            fallbackGenerator = fallbackBuilder
                                         )
+                                        generatedReportAnalysis = resp.text
+                                        generatedReportNote = resp.statusNote
+                                        isGeneratingReportAi = false
+                                        if (resp.text.isNotBlank()) {
+                                            viewModel?.addWearingAiReportVersion(
+                                                reportId = rep.id,
+                                                content = resp.text,
+                                                model = "gemini-3.6-flash"
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        isGeneratingReportAi = false
+                                        android.util.Log.e("AdvisorScreen", "Error generating wearing AI report", e)
+                                        Toast.makeText(context, "生成穿着报告失败: ${e.localizedMessage ?: "未知异常"}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -1722,20 +1723,26 @@ fun AdvisorScreen(
                                     "### 🔗 关联记录字段诊断 (${junc.clothesTitle})\n- **穿着时长 (`duration`)**: ${junc.duration} 秒（约 $hrs 小时）\n- **洗涤状态 (`washStated`)**: `${junc.washStated.ifBlank { "need wash" }}`\n- **建议**: ${if (junc.washStated.contains("need", true)) "处于待清洗状态，建议尽快安排洗护。" else "已完成清洗归档。"}"
                                 }
                                 coroutineScope.launch {
-                                    val resp = GeminiAiService.generateJunctionAnalysis(
-                                        context = context,
-                                        junction = junc,
-                                        fallbackGenerator = fallbackBuilder
-                                    )
-                                    generatedJunctionAnalysis = resp.text
-                                    generatedJunctionNote = resp.statusNote
-                                    isGeneratingJunctionAi = false
-                                    if (resp.text.isNotBlank()) {
-                                        viewModel?.addJunctionAiReportVersion(
-                                            junctionId = junc.id,
-                                            content = resp.text,
-                                            model = "gemini-3.6-flash"
+                                    try {
+                                        val resp = GeminiAiService.generateJunctionAnalysis(
+                                            context = context,
+                                            junction = junc,
+                                            fallbackGenerator = fallbackBuilder
                                         )
+                                        generatedJunctionAnalysis = resp.text
+                                        generatedJunctionNote = resp.statusNote
+                                        isGeneratingJunctionAi = false
+                                        if (resp.text.isNotBlank()) {
+                                            viewModel?.addJunctionAiReportVersion(
+                                                junctionId = junc.id,
+                                                content = resp.text,
+                                                model = "gemini-3.6-flash"
+                                            )
+                                        }
+                                    } catch (e: Exception) {
+                                        isGeneratingJunctionAi = false
+                                        android.util.Log.e("AdvisorScreen", "Error generating junction AI report", e)
+                                        Toast.makeText(context, "生成搭配诊断失败: ${e.localizedMessage ?: "未知异常"}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
                             },
@@ -1783,11 +1790,10 @@ fun AdvisorScreen(
                 }
             }
         }
-    }
 
         // =====================================================================
         // TAB 5 CONTENT: 全维度 AI 报告管理归档中心 (All AI Reports Archive)
-        // Matching Screenshot_20261003-122012.png, 122016.png, 122019.png
+        // Inside main scrollable column so all reports can be scrolled smoothly!
         // =====================================================================
         if (activeAdvisorTab == "archive") {
             AllAiReportsArchiveView(
@@ -1822,8 +1828,9 @@ fun AdvisorScreen(
                 onSelectReport = onSelectReport
             )
         }
+    }
 
-        if (showSavedReportsModal) {
+    if (showSavedReportsModal) {
         SavedReportsListModal(
             reports = savedReports,
             onDeleteReport = { id -> onDeleteSavedReport?.invoke(id) },

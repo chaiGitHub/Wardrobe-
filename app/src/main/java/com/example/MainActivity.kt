@@ -27,6 +27,7 @@ import com.example.ui.components.AppHeader
 import com.example.ui.components.TopNavigationBar
 import com.example.ui.dialogs.AddGarmentDialog
 import com.example.ui.dialogs.AddReportDialog
+import com.example.ui.dialogs.ApkExportModal
 import com.example.ui.dialogs.ConfirmModal
 import com.example.ui.dialogs.GarmentDetailDialog
 import com.example.ui.dialogs.JunctionAIModal
@@ -87,6 +88,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
     // Dialog states
     var showAddGarmentDialog by remember { mutableStateOf(false) }
     var showAddReportDialog by remember { mutableStateOf(false) }
+    var showApkModal by remember { mutableStateOf(false) }
     var selectedGarmentDetail by remember { mutableStateOf<GarmentEntity?>(null) }
     var pendingWashGarment by remember { mutableStateOf<GarmentEntity?>(null) }
 
@@ -103,7 +105,13 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
         modifier = Modifier.fillMaxSize(),
         topBar = {
             Column {
-                AppHeader()
+                AppHeader(
+                    onLogWearClick = { showAddReportDialog = true },
+                    onAddItemClick = { showAddGarmentDialog = true },
+                    onApkDownloadClick = { showApkModal = true },
+                    clothesCount = clothes.size,
+                    reportsCount = reports.size
+                )
                 TopNavigationBar(
                     activeTab = activeTab,
                     clothesCount = clothes.size,
@@ -140,6 +148,9 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                             viewModel.addOrUpdateGarment(
                                 garment.copy(pictures = JSONArray().put(savedUri).toString())
                             )
+                        },
+                        onBatchUpdateTags = { ids, tag, isAdd, cb ->
+                            viewModel.batchUpdateTags(ids, tag, isAdd, cb)
                         }
                     )
                 }
@@ -187,7 +198,16 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                         onSelectGarment = { selectedGarmentDetail = it },
                         onUpdateWashStatus = { id, status -> viewModel.markJunctionWashStatus(id, status) },
                         onMarkGarmentWashed = { gId, wDate -> viewModel.markGarmentWashed(gId, wDate) },
-                        onDeduplicateClick = { viewModel.deduplicateReports() },
+                        onDeduplicateClick = {
+                            viewModel.deduplicateReports { totalCleaned ->
+                                val msg = if (totalCleaned > 0) {
+                                    "已清理 $totalCleaned 条重复穿搭日记与冗余单品关联！"
+                                } else {
+                                    "未发现重复记录，穿搭数据十分干净！"
+                                }
+                                android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_LONG).show()
+                            }
+                        },
                         onSaveOrUpdateReport = { report, links, washMap ->
                             viewModel.addWearingReport(report, links, washMap)
                         },
@@ -331,6 +351,13 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                     pendingWashGarment = null
                 },
                 onDismiss = { pendingWashGarment = null }
+            )
+        }
+
+        // Dedicated In-App APK Download & Export Modal
+        if (showApkModal) {
+            ApkExportModal(
+                onDismiss = { showApkModal = false }
             )
         }
     }

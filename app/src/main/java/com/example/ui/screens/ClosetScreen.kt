@@ -27,37 +27,48 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.ImageNotSupported
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.TableRows
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import android.widget.Toast
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +84,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.*
-import com.example.ui.dialogs.InlineFieldDictionarySection
 import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.drilldown.GarmentStats
 import com.example.ui.theme.BrandAmber
@@ -110,8 +120,9 @@ private fun deriveComfortRating(g: GarmentEntity): Int {
 }
 
 private fun deriveBreathabilityRating(g: GarmentEntity): Int {
-    if (g.hotAtNoon.contains("Not hot", ignoreCase = true)) return 5
-    if (g.hotAtNoon.contains("Hot", ignoreCase = true)) return 3
+    val heat = g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
+    if (heat.contains("Not hot", ignoreCase = true) || heat.contains("not so cold", ignoreCase = true)) return 5
+    if (heat.contains("Hot", ignoreCase = true)) return 3
     if (g.wet.contains("dry", ignoreCase = true)) return 4
     return 4
 }
@@ -143,13 +154,20 @@ fun ClosetScreen(
     onGarmentClick: (GarmentEntity) -> Unit,
     onAddGarmentClick: () -> Unit,
     onUpdateGarmentPhoto: ((GarmentEntity, String) -> Unit)? = null,
+    onBatchUpdateTags: ((List<String>, String, Boolean, (Int) -> Unit) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     var selectedCategory by remember { mutableStateOf("All") }
     var selectedPreset by remember { mutableStateOf("all") }
     var currentSort by remember { mutableStateOf(GarmentSortOption.TOTAL_WASHES) }
     var isSortMenuOpen by remember { mutableStateOf(false) }
     var closetViewMode by remember { mutableStateOf("cards") } // "cards", "grid", "table"
+
+    // Multi-select / Batch Tag Manager state (matching web app "Select Mode" / "Exit Select")
+    var isSelectMode by remember { mutableStateOf(false) }
+    val selectedGarmentIds = remember { mutableStateListOf<String>() }
+    var targetTag by remember { mutableStateOf("") }
 
     // Precompute stats per garment
     val statsById = remember(clothes, junctions) {
@@ -281,18 +299,76 @@ fun ClosetScreen(
             // 1. HEADER ROW: Title + Stats on Left, [Cards | Grid | Table] Switcher on Right (Screenshot 222706)
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
+                    if (isWide) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
+                                Text(
+                                    text = "Garment Inventory",
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Slate900
+                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Text(
+                                        text = "${filteredGarments.size} of ${clothes.size} items displayed · Total Value: $$totalValueFormatted",
+                                        fontSize = 12.sp,
+                                        color = Slate600
+                                    )
+                                    if (dirtyCount > 0) {
+                                        Surface(
+                                            shape = RoundedCornerShape(999.dp),
+                                            color = Color(0xFFFEF3C7)
+                                        ) {
+                                            Text(
+                                                text = "$dirtyCount items need washing",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFFB45309),
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Top-Right: Select Mode Button + View Mode Switcher
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                ClosetSelectModeButton(
+                                    isSelectMode = isSelectMode,
+                                    selectedCount = selectedGarmentIds.size,
+                                    onClick = {
+                                        isSelectMode = !isSelectMode
+                                        if (!isSelectMode) selectedGarmentIds.clear()
+                                    }
+                                )
+                                ClosetViewModeSwitcher(
+                                    closetViewMode = closetViewMode,
+                                    onModeChange = { closetViewMode = it }
+                                )
+                            }
+                        }
+                    } else {
+                        // Phone/Compact: Stack title/stats on top, clean full-width action bar below
                         Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
                                 text = "Garment Inventory",
-                                fontSize = if (isWide) 24.sp else 20.sp,
+                                fontSize = 20.sp,
                                 fontWeight = FontWeight.ExtraBold,
                                 color = Slate900
                             )
@@ -320,20 +396,27 @@ fun ClosetScreen(
                                     }
                                 }
                             }
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                ClosetSelectModeButton(
+                                    isSelectMode = isSelectMode,
+                                    selectedCount = selectedGarmentIds.size,
+                                    onClick = {
+                                        isSelectMode = !isSelectMode
+                                        if (!isSelectMode) selectedGarmentIds.clear()
+                                    }
+                                )
+                                ClosetViewModeSwitcher(
+                                    closetViewMode = closetViewMode,
+                                    onModeChange = { closetViewMode = it }
+                                )
+                            }
                         }
-
-                        // Top-Right View Mode Switcher: Cards | Grid | Table (Screenshot 222706)
-                        ClosetViewModeSwitcher(
-                            closetViewMode = closetViewMode,
-                            onModeChange = { closetViewMode = it }
-                        )
                     }
-
-                    // 2. INLINE COLLAPSIBLE FIELD DICTIONARY (Screenshot 222706)
-                    InlineFieldDictionarySection(
-                        highlightScope = "clothes",
-                        defaultExpanded = false
-                    )
                 }
             }
 
@@ -350,52 +433,140 @@ fun ClosetScreen(
                         modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        if (isLaptop) {
-                            // On Laptop/Big screen: Category Tabs + Search Bar side by side
+                        // Category Pills + [Select Mode] + [Add Clothes] Buttons (Responsive for Compact/Wide)
+                        if (isWide) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 CategoryPillsFlow(
                                     categoryTabs = categoryTabs,
                                     selectedCategory = selectedCategory,
                                     onSelect = { selectedCategory = it },
-                                    modifier = Modifier.weight(1.4f)
-                                )
-                                ClosetSearchField(
-                                    searchQuery = searchQuery,
-                                    onSearchChanged = onSearchChanged,
                                     modifier = Modifier.weight(1f)
                                 )
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.padding(start = 10.dp)
+                                ) {
+                                    ClosetSelectModeButton(
+                                        isSelectMode = isSelectMode,
+                                        selectedCount = selectedGarmentIds.size,
+                                        onClick = {
+                                            isSelectMode = !isSelectMode
+                                            if (!isSelectMode) selectedGarmentIds.clear()
+                                        }
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFF9333EA),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable { onAddGarmentClick() }
+                                            .testTag("add_garment_button")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add Clothes",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Text(
+                                                text = "Add Clothes",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         } else {
-                            // Mobile & Tablet: Category Tabs on top, Search Bar below
-                            CategoryPillsFlow(
-                                categoryTabs = categoryTabs,
-                                selectedCategory = selectedCategory,
-                                onSelect = { selectedCategory = it },
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            ClosetSearchField(
-                                searchQuery = searchQuery,
-                                onSearchChanged = onSearchChanged,
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            // Phone/Compact: Dedicated category pills row + clean prominent Action Row
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
+                            ) {
+                                CategoryPillsFlow(
+                                    categoryTabs = categoryTabs,
+                                    selectedCategory = selectedCategory,
+                                    onSelect = { selectedCategory = it },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    ClosetSelectModeButton(
+                                        isSelectMode = isSelectMode,
+                                        selectedCount = selectedGarmentIds.size,
+                                        onClick = {
+                                            isSelectMode = !isSelectMode
+                                            if (!isSelectMode) selectedGarmentIds.clear()
+                                        }
+                                    )
+
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFF9333EA),
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .clickable { onAddGarmentClick() }
+                                            .testTag("add_garment_button")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add Clothes",
+                                                tint = Color.White,
+                                                modifier = Modifier.size(15.dp)
+                                            )
+                                            Text(
+                                                text = "Add Clothes",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
+
+                        ClosetSearchField(
+                            searchQuery = searchQuery,
+                            onSearchChanged = onSearchChanged,
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
                         HorizontalDivider(color = Slate100)
 
-                        // Smart Filter Presets + Sort By Dropdown Row (Screenshot 222706)
-                        FlowRow(
+                        // Smart Filter Presets + Sort By Dropdown (Column with horizontal scroll)
+                        Column(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // Left: SMART FILTER pills
-                            FlowRow(
+                            // Row 1: SMART FILTER horizontal scrollable chips
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .horizontalScroll(rememberScrollState()),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
@@ -436,7 +607,7 @@ fun ClosetScreen(
                                 }
                             }
 
-                            // Right: Sort by Dropdown
+                            // Row 2: Sort by Dropdown
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -515,6 +686,43 @@ fun ClosetScreen(
                 }
             }
 
+            // 2. BATCH TAG MANAGER PANEL (Shown when Select Mode is active)
+            if (isSelectMode) {
+                item {
+                    BatchTagManagerCard(
+                        totalCount = filteredGarments.size,
+                        selectedCount = selectedGarmentIds.size,
+                        targetTag = targetTag,
+                        onTargetTagChange = { targetTag = it },
+                        onSelectAll = {
+                            selectedGarmentIds.clear()
+                            selectedGarmentIds.addAll(filteredGarments.map { it.id })
+                        },
+                        onDeselectAll = {
+                            selectedGarmentIds.clear()
+                        },
+                        onExitSelect = {
+                            isSelectMode = false
+                            selectedGarmentIds.clear()
+                        },
+                        onAddTag = {
+                            if (selectedGarmentIds.isNotEmpty() && targetTag.isNotBlank()) {
+                                onBatchUpdateTags?.invoke(selectedGarmentIds.toList(), targetTag, true) { count ->
+                                    Toast.makeText(context, "Added tag \"$targetTag\" to $count items!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        },
+                        onRemoveTag = {
+                            if (selectedGarmentIds.isNotEmpty() && targetTag.isNotBlank()) {
+                                onBatchUpdateTags?.invoke(selectedGarmentIds.toList(), targetTag, false) { count ->
+                                    Toast.makeText(context, "Removed tag \"$targetTag\" from $count items!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                    )
+                }
+            }
+
             // 4. GARMENT DISPLAY MODES: Responsive Cards (1/2/3-col), Grid (2/3/4/5-col), or Table
             when (closetViewMode) {
                 "grid" -> {
@@ -527,11 +735,23 @@ fun ClosetScreen(
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             rowItems.forEach { garment ->
+                                val isSelected = selectedGarmentIds.contains(garment.id)
                                 GarmentCompactGridCard(
                                     garment = garment,
                                     stats = statsById[garment.id],
                                     washRank = washRankById[garment.id],
-                                    onClick = { onGarmentClick(garment) },
+                                    isSelectMode = isSelectMode,
+                                    isSelected = isSelected,
+                                    onToggleSelect = {
+                                        if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                    },
+                                    onClick = {
+                                        if (isSelectMode) {
+                                            if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                        } else {
+                                            onGarmentClick(garment)
+                                        }
+                                    },
                                     onUploadPhoto = { uriStr ->
                                         onUpdateGarmentPhoto?.invoke(garment, uriStr)
                                     },
@@ -550,8 +770,19 @@ fun ClosetScreen(
                         GarmentClosetTable(
                             garments = filteredGarments,
                             statsById = statsById,
+                            isSelectMode = isSelectMode,
+                            selectedIds = selectedGarmentIds.toSet(),
+                            onToggleSelect = { gId ->
+                                if (selectedGarmentIds.contains(gId)) selectedGarmentIds.remove(gId) else selectedGarmentIds.add(gId)
+                            },
                             minTableWidth = if (isWide) (screenWidth - 48.dp).coerceAtLeast(860.dp) else 860.dp,
-                            onGarmentClick = onGarmentClick
+                            onGarmentClick = { garment ->
+                                if (isSelectMode) {
+                                    if (selectedGarmentIds.contains(garment.id)) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                } else {
+                                    onGarmentClick(garment)
+                                }
+                            }
                         )
                     }
                 }
@@ -559,11 +790,23 @@ fun ClosetScreen(
                 else -> {
                     if (cardsColumns == 1) {
                         items(filteredGarments, key = { it.id }) { garment ->
+                            val isSelected = selectedGarmentIds.contains(garment.id)
                             GarmentStudioCard(
                                 garment = garment,
                                 stats = statsById[garment.id],
                                 washRank = washRankById[garment.id],
-                                onClick = { onGarmentClick(garment) },
+                                isSelectMode = isSelectMode,
+                                isSelected = isSelected,
+                                onToggleSelect = {
+                                    if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                },
+                                onClick = {
+                                    if (isSelectMode) {
+                                        if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                    } else {
+                                        onGarmentClick(garment)
+                                    }
+                                },
                                 onUploadPhoto = { uriStr ->
                                     onUpdateGarmentPhoto?.invoke(garment, uriStr)
                                 }
@@ -580,11 +823,23 @@ fun ClosetScreen(
                                 verticalAlignment = Alignment.Top
                             ) {
                                 rowItems.forEach { garment ->
+                                    val isSelected = selectedGarmentIds.contains(garment.id)
                                     GarmentStudioCard(
                                         garment = garment,
                                         stats = statsById[garment.id],
                                         washRank = washRankById[garment.id],
-                                        onClick = { onGarmentClick(garment) },
+                                        isSelectMode = isSelectMode,
+                                        isSelected = isSelected,
+                                        onToggleSelect = {
+                                            if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                        },
+                                        onClick = {
+                                            if (isSelectMode) {
+                                                if (isSelected) selectedGarmentIds.remove(garment.id) else selectedGarmentIds.add(garment.id)
+                                            } else {
+                                                onGarmentClick(garment)
+                                            }
+                                        },
                                         onUploadPhoto = { uriStr ->
                                             onUpdateGarmentPhoto?.invoke(garment, uriStr)
                                         },
@@ -602,6 +857,57 @@ fun ClosetScreen(
 
             item {
                 Spacer(modifier = Modifier.height(30.dp))
+            }
+        }
+    }
+}
+
+@Composable
+private fun ClosetSelectModeButton(
+    isSelectMode: Boolean,
+    selectedCount: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = if (isSelectMode) Color(0xFF7E22CE) else Color.White,
+        border = BorderStroke(1.dp, if (isSelectMode) Color(0xFF6B21A8) else Slate200),
+        modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .clickable { onClick() }
+            .testTag("closet_select_mode_btn")
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
+            Icon(
+                imageVector = if (isSelectMode) Icons.Default.CheckCircle else Icons.Default.Checklist,
+                contentDescription = null,
+                tint = if (isSelectMode) Color.White else Slate700,
+                modifier = Modifier.size(15.dp)
+            )
+            Text(
+                text = if (isSelectMode) "Exit Select" else "Select Mode",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (isSelectMode) Color.White else Slate700
+            )
+            if (isSelectMode && selectedCount > 0) {
+                Surface(
+                    shape = CircleShape,
+                    color = Color.White
+                ) {
+                    Text(
+                        text = selectedCount.toString(),
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color(0xFF7E22CE),
+                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                    )
+                }
             }
         }
     }
@@ -661,7 +967,6 @@ private fun ClosetViewModeSwitcher(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryPillsFlow(
     categoryTabs: List<CategoryTab>,
@@ -669,10 +974,10 @@ private fun CategoryPillsFlow(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    FlowRow(
-        modifier = modifier,
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
         categoryTabs.forEach { tab ->
             val isSelected = selectedCategory == tab.id
@@ -772,6 +1077,9 @@ fun GarmentStudioCard(
     junction: JunctionEntity? = null,
     stats: GarmentStats? = null,
     washRank: Int? = null,
+    isSelectMode: Boolean = false,
+    isSelected: Boolean = false,
+    onToggleSelect: (() -> Unit)? = null,
     onClick: () -> Unit,
     onUploadPhoto: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -812,7 +1120,7 @@ fun GarmentStudioCard(
             .testTag("garment_studio_card_${garment.id}"),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Slate200),
+        border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) Color(0xFF9333EA) else Slate200),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -823,6 +1131,30 @@ fun GarmentStudioCard(
                     .height(220.dp)
                     .background(Color(0xFFF1F5F9))
             ) {
+                // Selection Checkbox in Select Mode
+                if (isSelectMode) {
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isSelected) Color(0xFF7E22CE) else Color.White.copy(alpha = 0.9f),
+                        border = BorderStroke(2.dp, if (isSelected) Color.White else Color(0xFF9333EA)),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(10.dp)
+                            .size(30.dp)
+                            .clickable { onToggleSelect?.invoke() }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
                 if (resolvedPhotoModel != null) {
                     AsyncImage(
                         model = resolvedPhotoModel,
@@ -1016,7 +1348,7 @@ fun GarmentStudioCard(
                         val mat = garment.material.ifBlank { "100% Cotton" }
                         val thick = garment.thickClothes.ifBlank { "Year-round" }
                         val extra = listOfNotNull(
-                            garment.hotAtNoon.takeIf { it.isNotBlank() },
+                            (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).takeIf { it.isNotBlank() },
                             garment.sitBreast.takeIf { it.isNotBlank() }
                         ).joinToString(", ")
                         Text(
@@ -1176,6 +1508,9 @@ fun GarmentCompactGridCard(
     garment: GarmentEntity,
     stats: GarmentStats? = null,
     washRank: Int? = null,
+    isSelectMode: Boolean = false,
+    isSelected: Boolean = false,
+    onToggleSelect: (() -> Unit)? = null,
     onClick: () -> Unit,
     onUploadPhoto: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -1206,7 +1541,7 @@ fun GarmentCompactGridCard(
             .testTag("garment_grid_card_${garment.id}"),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = BorderStroke(1.dp, Slate200),
+        border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) Color(0xFF9333EA) else Slate200),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -1216,6 +1551,30 @@ fun GarmentCompactGridCard(
                     .height(155.dp)
                     .background(Color(0xFFF1F5F9))
             ) {
+                // Selection Checkbox in Select Mode
+                if (isSelectMode) {
+                    Surface(
+                        shape = CircleShape,
+                        color = if (isSelected) Color(0xFF7E22CE) else Color.White.copy(alpha = 0.9f),
+                        border = BorderStroke(2.dp, if (isSelected) Color.White else Color(0xFF9333EA)),
+                        modifier = Modifier
+                            .align(Alignment.TopStart)
+                            .padding(8.dp)
+                            .size(24.dp)
+                            .clickable { onToggleSelect?.invoke() }
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
+                    }
+                }
                 if (resolvedPhotoModel != null) {
                     AsyncImage(
                         model = resolvedPhotoModel,
@@ -1369,6 +1728,9 @@ fun GarmentCompactGridCard(
 fun GarmentClosetTable(
     garments: List<GarmentEntity>,
     statsById: Map<String, GarmentStats>,
+    isSelectMode: Boolean = false,
+    selectedIds: Set<String> = emptySet(),
+    onToggleSelect: ((String) -> Unit)? = null,
     minTableWidth: Dp = 860.dp,
     onGarmentClick: (GarmentEntity) -> Unit
 ) {
@@ -1395,6 +1757,9 @@ fun GarmentClosetTable(
                     .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                if (isSelectMode) {
+                    Text("SEL", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.width(36.dp))
+                }
                 Text("ITEM", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(2.2f))
                 Text("CATEGORY", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.0f))
                 Text("STATUS", fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, color = Slate500, modifier = Modifier.weight(1.1f))
@@ -1417,14 +1782,38 @@ fun GarmentClosetTable(
                     ImageUtils.resolveImageModel(it, context)
                 }
                 val isDirty = stats?.needWash == true
+                val isSelected = selectedIds.contains(garment.id)
 
                 Row(
                     modifier = Modifier
                         .width(minTableWidth)
+                        .background(if (isSelected) Color(0xFFFAF5FF) else Color.Transparent)
                         .clickable { onGarmentClick(garment) }
                         .padding(horizontal = 16.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    if (isSelectMode) {
+                        Surface(
+                            shape = CircleShape,
+                            color = if (isSelected) Color(0xFF7E22CE) else Color.White,
+                            border = BorderStroke(1.5.dp, if (isSelected) Color(0xFF7E22CE) else Slate400),
+                            modifier = Modifier
+                                .size(20.dp)
+                                .clickable { onToggleSelect?.invoke(garment.id) }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                if (isSelected) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(13.dp)
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                    }
                     // ITEM (Avatar + Name + Material)
                     Row(
                         modifier = Modifier.weight(2.2f).padding(end = 8.dp),
@@ -1557,6 +1946,242 @@ fun GarmentClosetTable(
                     )
                 }
                 HorizontalDivider(color = Slate100)
+            }
+        }
+    }
+}
+
+/**
+ * Batch Tag Manager Banner Card (matching web app A2 selection toolbar).
+ * Allows batch selecting clothes and adding/removing tags like "ai", "unai", etc.
+ */
+@Composable
+fun BatchTagManagerCard(
+    totalCount: Int,
+    selectedCount: Int,
+    targetTag: String,
+    onTargetTagChange: (String) -> Unit,
+    onSelectAll: () -> Unit,
+    onDeselectAll: () -> Unit,
+    onExitSelect: () -> Unit,
+    onAddTag: () -> Unit,
+    onRemoveTag: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(2.dp, Color(0xFF9333EA)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Row 1: Selected counter + Select All / Deselect All + Exit
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = Color(0xFFF3E8FF)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF7E22CE),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "$selectedCount of $totalCount Selected",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color(0xFF6B21A8)
+                            )
+                        }
+                    }
+
+                    TextButton(
+                        onClick = onSelectAll,
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("Select All ($totalCount)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF7E22CE))
+                    }
+
+                    Text("•", color = Slate400, fontSize = 12.sp)
+
+                    TextButton(
+                        onClick = onDeselectAll,
+                        contentPadding = PaddingValues(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text("Deselect All", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = Slate600)
+                    }
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Slate100,
+                    modifier = Modifier.clickable { onExitSelect() }
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = null,
+                            tint = Slate600,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = "Exit Selection",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Slate700
+                        )
+                    }
+                }
+            }
+
+            // Row 2: Target Tag Controls
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = Color(0xFFFAF5FF),
+                border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Label,
+                                contentDescription = null,
+                                tint = Color(0xFF7E22CE),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Text(
+                                text = "Target Tag:",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate800
+                            )
+                        }
+
+                        // Preset chips: 🤖 ai, unai
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (targetTag.equals("ai", ignoreCase = true)) Color(0xFF7E22CE) else Color.White,
+                                border = BorderStroke(1.dp, if (targetTag.equals("ai", ignoreCase = true)) Color(0xFF7E22CE) else Color(0xFFE9D5FF)),
+                                modifier = Modifier.clickable { onTargetTagChange("ai") }
+                            ) {
+                                Text(
+                                    text = "🤖 ai",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (targetTag.equals("ai", ignoreCase = true)) Color.White else Color(0xFF6B21A8),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (targetTag.equals("unai", ignoreCase = true)) Slate800 else Color.White,
+                                border = BorderStroke(1.dp, if (targetTag.equals("unai", ignoreCase = true)) Slate800 else Slate400),
+                                modifier = Modifier.clickable { onTargetTagChange("unai") }
+                            ) {
+                                Text(
+                                    text = "unai",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (targetTag.equals("unai", ignoreCase = true)) Color.White else Slate700,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        OutlinedTextField(
+                            value = targetTag,
+                            onValueChange = onTargetTagChange,
+                            placeholder = { Text("Type tag name...", fontSize = 11.sp, color = Slate400) },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f).height(46.dp),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedContainerColor = Color.White,
+                                focusedContainerColor = Color.White,
+                                unfocusedBorderColor = Slate200,
+                                focusedBorderColor = Color(0xFF7E22CE)
+                            )
+                        )
+                    }
+
+                    // Action buttons: Add Tag, Remove Tag
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = onAddTag,
+                            enabled = selectedCount > 0 && targetTag.isNotBlank(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF7E22CE),
+                                contentColor = Color.White
+                            ),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "Add Tag \"${targetTag.ifBlank { "..." }}\"",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        OutlinedButton(
+                            onClick = onRemoveTag,
+                            enabled = selectedCount > 0 && targetTag.isNotBlank(),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color(0xFFBE123C)
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFFECDD3)),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(
+                                text = "Remove Tag",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
             }
         }
     }

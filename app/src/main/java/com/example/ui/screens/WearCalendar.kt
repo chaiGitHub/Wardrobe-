@@ -218,7 +218,7 @@ fun WearCalendar(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC)),
-        contentPadding = PaddingValues(bottom = 90.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // =========================================================================

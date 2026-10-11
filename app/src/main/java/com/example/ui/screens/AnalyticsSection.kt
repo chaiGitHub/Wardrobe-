@@ -148,8 +148,11 @@ fun WardrobeAnalyticsSection(
 
     // Comfort & Ergonomics Breakdown (matching IMG_9740 & IMG_9741)
     val ergonomicBars = remember(clothes) {
-        val middayCoolPos = clothes.count { it.hotAtNoon.contains("not hot", ignoreCase = true) || it.hotAtNoon.contains("cool", ignoreCase = true) }
-        val middayCoolNeg = clothes.count { it.hotAtNoon.isNotBlank() } - middayCoolPos
+        val middayCoolPos = clothes.count {
+            val heat = it.noAircondHotFeeling.ifBlank { it.hotAtNoon }
+            heat.contains("not hot", ignoreCase = true) || heat.contains("cool", ignoreCase = true) || heat.contains("not so cold", ignoreCase = true)
+        }
+        val middayCoolNeg = clothes.count { (it.noAircondHotFeeling.ifBlank { it.hotAtNoon }).isNotBlank() } - middayCoolPos
 
         val braFreePos = clothes.count { it.diaoDai.contains("not diao dai", ignoreCase = true) }
         val braFreeNeg = clothes.count { it.diaoDai.isNotBlank() } - braFreePos

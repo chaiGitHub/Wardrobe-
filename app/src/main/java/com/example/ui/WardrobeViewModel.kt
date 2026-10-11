@@ -240,25 +240,29 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
     val macroAiReports: StateFlow<List<UniversalAiReportItem>> = _macroAiReports.asStateFlow()
 
     fun addMacroAiReport(title: String, occasion: String, content: String, model: String = "gemini-3.1-flash-lite", metaInfo: String = "") {
-        val now = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
-        val id = "macro_${System.currentTimeMillis()}"
-        val item = UniversalAiReportItem(
-            id = id,
-            type = "macro",
-            typeLabel = "全局穿搭顾问",
-            sourceEntityId = id,
-            sourceEntityTitle = occasion.ifBlank { "不限温度/常规天气" },
-            versionId = id,
-            title = title.ifBlank { "穿搭体感报告 - ${occasion.ifBlank { "常规天气" }} (${java.time.LocalDate.now()})" },
-            timestamp = now,
-            model = model,
-            isPrimary = true,
-            content = content,
-            metaInfo = metaInfo.ifBlank { "全衣橱智能扫描" }
-        )
-        val updated = listOf(item) + _macroAiReports.value
-        _macroAiReports.value = updated
-        saveMacroReports(updated)
+        try {
+            val now = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+            val id = "macro_${System.currentTimeMillis()}"
+            val item = UniversalAiReportItem(
+                id = id,
+                type = "macro",
+                typeLabel = "全局穿搭顾问",
+                sourceEntityId = id,
+                sourceEntityTitle = occasion.ifBlank { "不限温度/常规天气" },
+                versionId = id,
+                title = title.ifBlank { "穿搭体感报告 - ${occasion.ifBlank { "常规天气" }} (${java.time.LocalDate.now()})" },
+                timestamp = now,
+                model = model,
+                isPrimary = true,
+                content = content,
+                metaInfo = metaInfo.ifBlank { "全衣橱智能扫描" }
+            )
+            val updated = listOf(item) + _macroAiReports.value
+            _macroAiReports.value = updated
+            saveMacroReports(updated)
+        } catch (e: Exception) {
+            android.util.Log.e("WardrobeViewModel", "Failed to add macro AI report", e)
+        }
     }
 
     fun updateMacroAiReport(id: String, newTitle: String, newContent: String) {
@@ -278,67 +282,79 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
     // 1. Garment AI Multi-Version Methods
     fun addGarmentAiReportVersion(garmentId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
         viewModelScope.launch {
-            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
-            val primaryFlag = isPrimary ?: existing.isEmpty()
-            val newVer = AiReportVersion(
-                id = "garment_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
-                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                title = title ?: "Report #${existing.size + 1}",
-                model = model,
-                content = content,
-                isPrimary = primaryFlag
-            )
-            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
-            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
-            val updatedGarment = garment.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
-                aiClothesAnalysis = primary?.content ?: ""
-            )
-            repository.updateGarment(updatedGarment)
+            try {
+                val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+                val primaryFlag = isPrimary ?: existing.isEmpty()
+                val newVer = AiReportVersion(
+                    id = "garment_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                    timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                    title = title ?: "Report #${existing.size + 1}",
+                    model = model,
+                    content = content,
+                    isPrimary = primaryFlag
+                )
+                val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+                val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+                val updatedGarment = garment.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                    aiClothesAnalysis = primary?.content ?: ""
+                )
+                repository.updateGarment(updatedGarment)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to add garment AI report version", e)
+            }
         }
     }
 
     fun updateGarmentAiReportVersion(garmentId: String, versionId: String, title: String? = null, content: String? = null, isPrimary: Boolean? = null) {
         viewModelScope.launch {
-            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
-            val updatedList = existing.map { v ->
-                if (v.id == versionId) {
-                    v.copy(
-                        title = title ?: v.title,
-                        content = content ?: v.content,
-                        isPrimary = isPrimary ?: v.isPrimary
-                    )
-                } else if (isPrimary == true) {
-                    v.copy(isPrimary = false)
-                } else {
-                    v
+            try {
+                val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+                val updatedList = existing.map { v ->
+                    if (v.id == versionId) {
+                        v.copy(
+                            title = title ?: v.title,
+                            content = content ?: v.content,
+                            isPrimary = isPrimary ?: v.isPrimary
+                        )
+                    } else if (isPrimary == true) {
+                        v.copy(isPrimary = false)
+                    } else {
+                        v
+                    }
                 }
+                val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+                val updatedGarment = garment.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                    aiClothesAnalysis = primary?.content ?: ""
+                )
+                repository.updateGarment(updatedGarment)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to update garment AI report version", e)
             }
-            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
-            val updatedGarment = garment.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
-                aiClothesAnalysis = primary?.content ?: ""
-            )
-            repository.updateGarment(updatedGarment)
         }
     }
 
     fun deleteGarmentAiReportVersion(garmentId: String, versionId: String) {
         viewModelScope.launch {
-            val garment = clothes.value.find { it.id == garmentId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
-            val remaining = existing.filterNot { it.id == versionId }.toMutableList()
-            if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
-                remaining[0] = remaining[0].copy(isPrimary = true)
+            try {
+                val garment = clothes.value.find { it.id == garmentId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(garment.aiReports, garment.aiClothesAnalysis, "Initial Report")
+                val remaining = existing.filterNot { it.id == versionId }.toMutableList()
+                if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
+                    remaining[0] = remaining[0].copy(isPrimary = true)
+                }
+                val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
+                val updatedGarment = garment.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(remaining),
+                    aiClothesAnalysis = primary?.content ?: ""
+                )
+                repository.updateGarment(updatedGarment)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to delete garment AI report version", e)
             }
-            val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
-            val updatedGarment = garment.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(remaining),
-                aiClothesAnalysis = primary?.content ?: ""
-            )
-            repository.updateGarment(updatedGarment)
         }
     }
 
@@ -349,67 +365,79 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
     // 2. Wearing Report AI Multi-Version Methods
     fun addWearingAiReportVersion(reportId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
         viewModelScope.launch {
-            val rep = reports.value.find { it.id == reportId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
-            val primaryFlag = isPrimary ?: existing.isEmpty()
-            val newVer = AiReportVersion(
-                id = "wearing_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
-                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                title = title ?: "Report #${existing.size + 1}",
-                model = model,
-                content = content,
-                isPrimary = primaryFlag
-            )
-            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
-            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
-            val updatedReport = rep.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
-                aiWearingAnalysis = primary?.content ?: ""
-            )
-            repository.insertReport(updatedReport)
+            try {
+                val rep = reports.value.find { it.id == reportId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+                val primaryFlag = isPrimary ?: existing.isEmpty()
+                val newVer = AiReportVersion(
+                    id = "wearing_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                    timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                    title = title ?: "Report #${existing.size + 1}",
+                    model = model,
+                    content = content,
+                    isPrimary = primaryFlag
+                )
+                val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+                val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+                val updatedReport = rep.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                    aiWearingAnalysis = primary?.content ?: ""
+                )
+                repository.insertReport(updatedReport)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to add wearing AI report version", e)
+            }
         }
     }
 
     fun updateWearingAiReportVersion(reportId: String, versionId: String, title: String? = null, content: String? = null, isPrimary: Boolean? = null) {
         viewModelScope.launch {
-            val rep = reports.value.find { it.id == reportId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
-            val updatedList = existing.map { v ->
-                if (v.id == versionId) {
-                    v.copy(
-                        title = title ?: v.title,
-                        content = content ?: v.content,
-                        isPrimary = isPrimary ?: v.isPrimary
-                    )
-                } else if (isPrimary == true) {
-                    v.copy(isPrimary = false)
-                } else {
-                    v
+            try {
+                val rep = reports.value.find { it.id == reportId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+                val updatedList = existing.map { v ->
+                    if (v.id == versionId) {
+                        v.copy(
+                            title = title ?: v.title,
+                            content = content ?: v.content,
+                            isPrimary = isPrimary ?: v.isPrimary
+                        )
+                    } else if (isPrimary == true) {
+                        v.copy(isPrimary = false)
+                    } else {
+                        v
+                    }
                 }
+                val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+                val updatedReport = rep.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(updatedList),
+                    aiWearingAnalysis = primary?.content ?: ""
+                )
+                repository.insertReport(updatedReport)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to update wearing AI report version", e)
             }
-            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
-            val updatedReport = rep.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(updatedList),
-                aiWearingAnalysis = primary?.content ?: ""
-            )
-            repository.insertReport(updatedReport)
         }
     }
 
     fun deleteWearingAiReportVersion(reportId: String, versionId: String) {
         viewModelScope.launch {
-            val rep = reports.value.find { it.id == reportId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
-            val remaining = existing.filterNot { it.id == versionId }.toMutableList()
-            if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
-                remaining[0] = remaining[0].copy(isPrimary = true)
+            try {
+                val rep = reports.value.find { it.id == reportId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions(rep.aiReports, rep.aiWearingAnalysis, "Initial Report")
+                val remaining = existing.filterNot { it.id == versionId }.toMutableList()
+                if (remaining.isNotEmpty() && !remaining.any { it.isPrimary }) {
+                    remaining[0] = remaining[0].copy(isPrimary = true)
+                }
+                val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
+                val updatedReport = rep.copy(
+                    aiReports = AiReportVersionHelper.serializeVersions(remaining),
+                    aiWearingAnalysis = primary?.content ?: ""
+                )
+                repository.insertReport(updatedReport)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to delete wearing AI report version", e)
             }
-            val primary = remaining.find { it.isPrimary } ?: remaining.firstOrNull()
-            val updatedReport = rep.copy(
-                aiReports = AiReportVersionHelper.serializeVersions(remaining),
-                aiWearingAnalysis = primary?.content ?: ""
-            )
-            repository.insertReport(updatedReport)
         }
     }
 
@@ -420,23 +448,27 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
     // 3. Junction AI Multi-Version Methods
     fun addJunctionAiReportVersion(junctionId: String, content: String, title: String? = null, model: String = "gemini-3.6-flash", isPrimary: Boolean? = null) {
         viewModelScope.launch {
-            val junc = junctions.value.find { it.id == junctionId } ?: return@launch
-            val existing = AiReportVersionHelper.parseVersions("", junc.aiJunctionAnalysis, "搭配诊断 #1")
-            val primaryFlag = isPrimary ?: existing.isEmpty()
-            val newVer = AiReportVersion(
-                id = "junction_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
-                timestamp = java.text.SimpleDateFormat("yyyy-MM-ddTHH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-                title = title ?: "搭配诊断 #${existing.size + 1}",
-                model = model,
-                content = content,
-                isPrimary = primaryFlag
-            )
-            val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
-            val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
-            val updatedJunction = junc.copy(
-                aiJunctionAnalysis = primary?.content ?: ""
-            )
-            repository.updateJunction(updatedJunction)
+            try {
+                val junc = junctions.value.find { it.id == junctionId } ?: return@launch
+                val existing = AiReportVersionHelper.parseVersions("", junc.aiJunctionAnalysis, "搭配诊断 #1")
+                val primaryFlag = isPrimary ?: existing.isEmpty()
+                val newVer = AiReportVersion(
+                    id = "junction_ai_${System.currentTimeMillis()}_${(1000..9999).random()}",
+                    timestamp = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
+                    title = title ?: "搭配诊断 #${existing.size + 1}",
+                    model = model,
+                    content = content,
+                    isPrimary = primaryFlag
+                )
+                val updatedList = listOf(newVer) + existing.map { if (primaryFlag) it.copy(isPrimary = false) else it }
+                val primary = updatedList.find { it.isPrimary } ?: updatedList.firstOrNull()
+                val updatedJunction = junc.copy(
+                    aiJunctionAnalysis = primary?.content ?: ""
+                )
+                repository.updateJunction(updatedJunction)
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to add junction AI report version", e)
+            }
         }
     }
 
@@ -556,6 +588,56 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val ok = repository.undoLastWash()
             onComplete?.invoke(ok)
+        }
+    }
+
+    fun batchUpdateTags(
+        garmentIds: List<String>,
+        tag: String,
+        isAdd: Boolean,
+        onComplete: ((Int) -> Unit)? = null
+    ) {
+        val cleanTag = tag.trim()
+        if (cleanTag.isBlank() || garmentIds.isEmpty()) {
+            onComplete?.invoke(0)
+            return
+        }
+        viewModelScope.launch {
+            var updatedCount = 0
+            val currentClothes = clothes.value
+            currentClothes.filter { it.id in garmentIds }.forEach { garment ->
+                val currentTags = try {
+                    val arr = org.json.JSONArray(garment.tags)
+                    val list = mutableListOf<String>()
+                    for (i in 0 until arr.length()) {
+                        val t = arr.optString(i).trim()
+                        if (t.isNotBlank()) list.add(t)
+                    }
+                    list
+                } catch (_: Exception) {
+                    mutableListOf<String>()
+                }
+
+                val hasTag = currentTags.any { it.equals(cleanTag, ignoreCase = true) }
+                val changed = if (isAdd) {
+                    if (!hasTag) {
+                        currentTags.add(cleanTag)
+                        true
+                    } else false
+                } else {
+                    if (hasTag) {
+                        currentTags.removeAll { it.equals(cleanTag, ignoreCase = true) }
+                        true
+                    } else false
+                }
+
+                if (changed) {
+                    val newTagsJson = org.json.JSONArray(currentTags).toString()
+                    repository.updateGarment(garment.copy(tags = newTagsJson))
+                    updatedCount++
+                }
+            }
+            onComplete?.invoke(updatedCount)
         }
     }
 
@@ -728,60 +810,51 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    // AI Advice Generator (Option B: Live Gemini 2.5 Flash + Google Search Grounding + Garment & Wearing Report History)
+    // AI Advice Generator (Option B: Live Gemini 3.5 Flash + Garment & Wearing Report History)
     fun generateAIAdvice(garment: GarmentEntity) {
         viewModelScope.launch {
-            _isGeneratingAdvice.value = true
-            _aiAdviceText.value = null
+            try {
+                _isGeneratingAdvice.value = true
+                _aiAdviceText.value = null
 
-            val appContext = getApplication<Application>()
-            val allJunctions = junctions.value
-            val allReports = reports.value
-            val allClothes = clothes.value
-            val stats = com.example.ui.drilldown.DrilldownUtils.calculateGarmentStats(garment.id, allJunctions)
-            val garmentJunctions = allJunctions.filter { it.clothesId == garment.id }
-            val reportsById = allReports.associateBy { it.id }
-
-            val fallbackBuilder = {
-                val totalWears = maxOf(1, garment.wearingFrequency + garment.trackedAppWashes)
-                val cpw = String.format(java.util.Locale.US, "%.2f", garment.price / totalWears)
-
-                buildString {
-                    append("### 🌟 Overall Assessment: Observed vs. Inference\n\n")
-                    append("- **Observed Facts:** **${garment.name}** is a $${garment.price} ${garment.material.ifBlank { "apparel" }} (${garment.clothesType}). Thickness rating: \"${garment.thickClothes.ifBlank { "standard" }}\". Logged wears/washes: **$totalWears** (${garmentJunctions.size} tracked wearing report sessions).\n")
-                    append("- **Sensory Profiles:** Rated **${garment.hotAtNoon.ifBlank { "Neutral" }}** at midday; strap style: **\"${garment.diaoDai.ifBlank { "Standard" }}\"**; bust comfort sitting: **${garment.sitBreast.ifBlank { "OK" }}**, standing: **${garment.standBreast.ifBlank { "Standard" }}**.\n")
-                    append("- **Declutter Stance:** ${if (garment.mayThrow.contains("throw", ignoreCase = true)) "Flagged for declutter evaluation (${garment.mayThrow})." else "Active wardrobe keeper."}\n\n")
-                    append("---\n\n### 🌡️ Comfort & Climate Diagnosis\n")
-                    append("- **Thermal Behavior:** ${if (garment.hotAtNoon.contains("Hot", ignoreCase = true)) "High heat accumulation at midday. Pair with cool linen layers or reserve for air-conditioned settings." else "Comfortable thermal dissipation throughout daytime."}\n")
-                    append("- **Fabric & Moisture:** Fabric breathability: ${garment.wet.ifBlank { "Dry / breathable" }}. Inner seam tactile contact: ${if (garment.material.contains("chiffon", ignoreCase = true)) "Synthetic fibers may cause micro-friction during walking." else "Soft daily hand-feel."}\n\n")
-                    append("---\n\n### 👗 Ergonomic Fit & Support\n")
-                    append("- **Chest & Shoulder Strain:** ${garment.diaoDai.ifBlank { "No shoulder tension recorded." }}\n")
-                    append("- **Sitting vs. Standing Posture:** ${garment.sitBreast.ifBlank { "Neutral sitting posture." }}\n\n")
-                    append("---\n\n### 💰 Cost-Per-Wear (CPW) & Value\n")
-                    append("- **Original Price:** $${garment.price}\n")
-                    append("- **Total Wear Cycles:** $totalWears\n")
-                    append("- **Amortized Cost Per Wear:** **$$cpw / wear**\n")
-                    append("- **Value Score:** ${if (garment.price / totalWears < 5.0) "Excellent value amortized." else "Room for higher wear frequency to maximize utility."}\n\n")
-                    append("---\n\n### 📋 Recommended Next Actions\n")
-                    append("1. **Rotation Cycle:** Wear during morning or indoor air-conditioned activities to mitigate midday heat.\n")
-                    append("2. **Care & Softening:** Gentle cycle cold wash with fabric softener to maximize tactile softness.\n")
-                    append("3. **Disposition:** ${if (garment.mayThrow.contains("throw", ignoreCase = true)) "Evaluate after 2 more test wears whether sensory comfort matches styling expectations." else "Retain firmly in active seasonal rotation."}")
+                val appContext = getApplication<Application>()
+                val allJunctions = junctions.value
+                val allReports = reports.value
+                val allClothes = clothes.value
+                val stats = try {
+                    com.example.ui.drilldown.DrilldownUtils.calculateGarmentStats(garment.id, allJunctions)
+                } catch (e: Exception) {
+                    null
                 }
+                val garmentJunctions = allJunctions.filter { it.clothesId == garment.id }
+                val reportsById = allReports.associateBy { it.id }
+
+                val fallbackBuilder = {
+                    val totalWears = maxOf(1, garment.wearingFrequency + garment.trackedAppWashes)
+                    val cpw = String.format(java.util.Locale.US, "$%.2f", garment.price / totalWears)
+                    com.example.util.GeminiAiService.buildDefaultGarmentErgonomicReport(appContext, garment, totalWears, cpw)
+                }
+
+                val aiResponse = com.example.util.GeminiAiService.generateGarmentAuditReport(
+                    context = appContext,
+                    garment = garment,
+                    stats = stats,
+                    garmentJunctions = garmentJunctions,
+                    reportsById = reportsById,
+                    allClothes = allClothes,
+                    versionNumber = 1,
+                    fallbackGenerator = fallbackBuilder
+                )
+
+                _aiAdviceText.value = aiResponse.text
+            } catch (e: Exception) {
+                android.util.Log.e("WardrobeViewModel", "Failed to generate AI advice", e)
+                val totalWears = maxOf(1, garment.wearingFrequency + garment.trackedAppWashes)
+                val cpw = String.format(java.util.Locale.US, "$%.2f", garment.price / totalWears)
+                _aiAdviceText.value = com.example.util.GeminiAiService.buildDefaultGarmentErgonomicReport(getApplication(), garment, totalWears, cpw)
+            } finally {
+                _isGeneratingAdvice.value = false
             }
-
-            val aiResponse = com.example.util.GeminiAiService.generateGarmentAuditReport(
-                context = appContext,
-                garment = garment,
-                stats = stats,
-                garmentJunctions = garmentJunctions,
-                reportsById = reportsById,
-                allClothes = allClothes,
-                versionNumber = 1,
-                fallbackGenerator = fallbackBuilder
-            )
-
-            _aiAdviceText.value = aiResponse.text
-            _isGeneratingAdvice.value = false
         }
     }
 }
