@@ -23,6 +23,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.data.model.GarmentEntity
 import com.example.ui.AppTab
 import com.example.ui.WardrobeViewModel
+import com.example.ui.components.AppBottomNavigationBar
 import com.example.ui.components.AppHeader
 import com.example.ui.components.TopNavigationBar
 import com.example.ui.dialogs.AddGarmentDialog
@@ -82,6 +83,10 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
     val exportStatus by viewModel.exportStatus.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
 
+    val isSyncing by viewModel.isSyncing.collectAsStateWithLifecycle()
+    val syncProgress by viewModel.syncProgress.collectAsStateWithLifecycle()
+    val syncMessage by viewModel.syncMessage.collectAsStateWithLifecycle()
+
     val savedAiReports by viewModel.savedAiReports.collectAsStateWithLifecycle()
     val activeJunctionForAi by viewModel.activeJunctionForAi.collectAsStateWithLifecycle()
 
@@ -101,18 +106,40 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
         }
     }
 
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isWideScreen = configuration.screenWidthDp >= 600
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Column {
-                AppHeader(
-                    onLogWearClick = { showAddReportDialog = true },
-                    onAddItemClick = { showAddGarmentDialog = true },
-                    onApkDownloadClick = { showApkModal = true },
-                    clothesCount = clothes.size,
-                    reportsCount = reports.size
-                )
-                TopNavigationBar(
+            AppHeader(
+                onLogWearClick = { showAddReportDialog = true },
+                onAddItemClick = { showAddGarmentDialog = true },
+                onApkDownloadClick = { showApkModal = true },
+                onPullFromCloudClick = {
+                    viewModel.pullFromCloud { msg ->
+                        android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPushToCloudClick = {
+                    viewModel.pushToCloud { msg ->
+                        android.widget.Toast.makeText(context, msg, android.widget.Toast.LENGTH_SHORT).show()
+                    }
+                },
+                isCloudConnected = true,
+                isSyncing = isSyncing,
+                syncProgress = syncProgress,
+                syncMessage = syncMessage,
+                clothesCount = clothes.size,
+                reportsCount = reports.size,
+                activeTab = activeTab,
+                onTabSelected = { viewModel.setTab(it) },
+                dirtyCount = dirtyCount
+            )
+        },
+        bottomBar = {
+            if (!isWideScreen) {
+                AppBottomNavigationBar(
                     activeTab = activeTab,
                     clothesCount = clothes.size,
                     dirtyCount = dirtyCount,
@@ -250,7 +277,7 @@ fun WardrobeApp(viewModel: WardrobeViewModel) {
                         junctions = junctions,
                         restoreStatus = restoreStatus,
                         isRestoring = isRestoring,
-                        onRestoreFromZip = { viewModel.restoreFromZip(it) },
+                        onRestoreFromZip = { uri, clearExisting -> viewModel.restoreFromZip(uri, clearExisting) },
                         exportStatus = exportStatus,
                         isExporting = isExporting,
                         onExportFullBackup = { viewModel.exportFullBackup(it) },

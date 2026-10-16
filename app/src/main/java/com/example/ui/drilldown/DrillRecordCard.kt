@@ -282,14 +282,17 @@ fun DrillRecordCard(
                         extraFields.take(4).forEach { fieldKey ->
                             val value = DrilldownUtils.getFieldValue(garment, fieldKey, junctions)
                             if (value != "(Not specified)" && value.isNotBlank()) {
+                                val fieldLabel = ALL_AVAILABLE_FIELDS.find { it.key == fieldKey }?.label ?: fieldKey
+                                val isUndefined = value.equals("undefined", ignoreCase = true)
                                 Surface(
-                                    color = Color(0xFFF1F5F9),
+                                    color = if (isUndefined) Color(0xFFF8FAFC) else Color(0xFFF1F5F9),
                                     shape = RoundedCornerShape(6.dp)
                                 ) {
                                     Text(
-                                        text = "$fieldKey: $value",
+                                        text = "$fieldLabel: $value",
                                         fontSize = 10.sp,
-                                        color = Slate600,
+                                        fontStyle = if (isUndefined) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                                        color = if (isUndefined) Slate400 else Slate600,
                                         modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis

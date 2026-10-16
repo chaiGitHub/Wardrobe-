@@ -2,10 +2,13 @@ package com.example.ui.drilldown
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import com.example.data.model.GarmentEntity
 import com.example.data.model.JunctionEntity
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.Locale
 
 /**
@@ -54,7 +57,8 @@ object DrilldownUtils {
     }
 
     /**
-     * Get formatted display string for any attribute key
+     * Get formatted display string for any attribute key.
+     * Returns "undefined" if empty, blank, or missing.
      */
     fun getFieldValue(garment: GarmentEntity, fieldKey: String, junctions: List<JunctionEntity>): String {
         return when (fieldKey) {
@@ -72,36 +76,43 @@ object DrilldownUtils {
                 garment.wearingFrequency.toString()
             }
             "Last Washed" -> {
-                garment.lastWashed.ifBlank { "(Never washed)" }
+                garment.lastWashed.ifBlank { "undefined" }
+            }
+            "created" -> {
+                garment.created.ifBlank { "undefined" }
             }
             "price" -> {
                 if (garment.price > 0) String.format(Locale.US, "$%.2f", garment.price) else "$0.00"
             }
-            "Clothes Type", "clothesType" -> garment.clothesType.ifBlank { "(Not specified)" }
-            "material" -> garment.material.ifBlank { "(Not specified)" }
-            "thick clothes", "thickClothes" -> garment.thickClothes.ifBlank { "(Not specified)" }
-            "Hot at noon", "hotAtNoon", "when without aircond: hot feeling" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "(Not specified)" }
-            "when without aircond: leg feeling" -> garment.noAircondLegFeeling.ifBlank { "(Not specified)" }
-            "when with aircond: hot feeling" -> garment.aircondHotFeeling.ifBlank { "(Not specified)" }
-            "when with aircond: leg feeling" -> garment.aircondLegFeeling.ifBlank { "(Not specified)" }
-            "when sleep under fan: hot feeling" -> garment.fanSleepHotFeeling.ifBlank { "(Not specified)" }
-            "when sleep under fan: leg feeling" -> garment.fanSleepLegFeeling.ifBlank { "(Not specified)" }
-            "beautiful" -> garment.beautiful.ifBlank { "(Not specified)" }
-            "beatiful reason", "beautiful reason" -> garment.beautifulReason.ifBlank { "(Not specified)" }
-            "diao dai", "diaoDai" -> garment.diaoDai.ifBlank { "(Not specified)" }
-            "side breast ok", "side breast shape", "sideBreastOk", "side breast ok: with 聚拢 bra" -> (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "(Not specified)" }
-            "side breast ok: with side out bra" -> garment.sideBreastSideOutBra.ifBlank { "(Not specified)" }
-            "sit breast ok", "sit breast", "sitBreast" -> garment.sitBreast.ifBlank { "(Not specified)" }
-            "center chest", "stand breast", "standBreast" -> garment.standBreast.ifBlank { "(Not specified)" }
-            "wet" -> garment.wet.ifBlank { "(Not specified)" }
-            "wet reason" -> garment.wetReason.ifBlank { "(Not specified)" }
-            "may throw", "mayThrow" -> garment.mayThrow.ifBlank { "(Not specified)" }
-            "long dress", "longDress" -> garment.longDress.ifBlank { "(Not specified)" }
+            "Clothes Type", "clothesType" -> garment.clothesType.ifBlank { "undefined" }
+            "material", "materialProp" -> garment.material.ifBlank { "undefined" }
+            "thick clothes", "thickClothes" -> garment.thickClothes.ifBlank { "undefined" }
+            "Hot at noon", "hotAtNoon" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "undefined" }
+            "when without aircond: hot feeling" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "undefined" }
+            "when without aircond: leg feeling" -> garment.noAircondLegFeeling.ifBlank { "undefined" }
+            "when with aircond: hot feeling" -> garment.aircondHotFeeling.ifBlank { "undefined" }
+            "when with aircond: leg feeling" -> garment.aircondLegFeeling.ifBlank { "undefined" }
+            "when sleep under fan: hot feeling" -> garment.fanSleepHotFeeling.ifBlank { "undefined" }
+            "when sleep under fan: leg feeling" -> garment.fanSleepLegFeeling.ifBlank { "undefined" }
+            "beautiful" -> garment.beautiful.ifBlank { "undefined" }
+            "beatiful reason", "beautiful reason", "beautifulReason" -> garment.beautifulReason.ifBlank { "undefined" }
+            "diao dai", "diaoDai" -> garment.diaoDai.ifBlank { "undefined" }
+            "side breast ok", "side breast shape", "sideBreastOk" -> (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "undefined" }
+            "side breast ok: with 聚拢 bra" -> (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "undefined" }
+            "side breast ok: with side out bra" -> garment.sideBreastSideOutBra.ifBlank { "undefined" }
+            "sit breast ok", "sit breast", "sitBreast" -> (garment.sitBreastGatherBra.ifBlank { garment.sitBreast }).ifBlank { "undefined" }
+            "sit breast ok: With 聚拢bra", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> (garment.sitBreastGatherBra.ifBlank { garment.sitBreast }).ifBlank { "undefined" }
+            "sit breast ok: with side out bra" -> garment.sitBreastSideOutBra.ifBlank { "undefined" }
+            "center chest", "stand breast", "standBreast" -> garment.standBreast.ifBlank { "undefined" }
+            "wet" -> garment.wet.ifBlank { "undefined" }
+            "wet reason", "wetReason" -> garment.wetReason.ifBlank { "undefined" }
+            "may throw", "mayThrow" -> garment.mayThrow.ifBlank { "undefined" }
+            "long dress", "longDress" -> garment.longDress.ifBlank { "undefined" }
             "Name", "name" -> garment.name.ifBlank { "(Unnamed Garment)" }
-            "Descriptions" -> garment.descriptions.ifBlank { "(No notes)" }
-            "Descriptions 2" -> garment.descriptions2.ifBlank { "(No notes)" }
-            "last comment or action" -> garment.lastComment.ifBlank { "(No notes)" }
-            else -> "(Not specified)"
+            "Descriptions", "descriptions" -> garment.descriptions.ifBlank { "undefined" }
+            "Descriptions 2", "descriptions2" -> garment.descriptions2.ifBlank { "undefined" }
+            "last comment or action", "lastComment" -> garment.lastComment.ifBlank { "undefined" }
+            else -> "undefined"
         }
     }
 
@@ -129,17 +140,28 @@ object DrilldownUtils {
 /**
  * Service to persist and manage report presets matching webapp ReportPresetService
  */
-class ReportPresetService(context: Context) {
+class ReportPresetService(private val context: Context) {
     private val prefs: SharedPreferences =
-        context.getSharedPreferences("wardrobe_drilldown_presets_v2", Context.MODE_PRIVATE)
+        context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
 
     companion object {
-        private const val PRESETS_KEY = "custom_presets_json"
-        private const val ACTIVE_PRESET_ID_KEY = "active_preset_id"
+        private const val PRESETS_KEY = "custom_presets_json_v3"
+        private const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v3"
     }
 
-    fun getPresets(): List<DrillPreset> {
-        val jsonStr = prefs.getString(PRESETS_KEY, null) ?: return DEFAULT_DRILL_PRESETS
+    private fun loadPresetsFromAsset(): List<DrillPreset> {
+        return try {
+            context.assets.open("drilldown_presets.json").use { stream ->
+                val reader = BufferedReader(InputStreamReader(stream))
+                val jsonStr = reader.readText()
+                parsePresetsJson(jsonStr)
+            }
+        } catch (e: Exception) {
+            DEFAULT_DRILL_PRESETS
+        }
+    }
+
+    private fun parsePresetsJson(jsonStr: String): List<DrillPreset> {
         return try {
             val jsonArray = JSONArray(jsonStr)
             val list = mutableListOf<DrillPreset>()
@@ -155,24 +177,37 @@ class ReportPresetService(context: Context) {
                 if (visibleArray != null) {
                     for (v in 0 until visibleArray.length()) visible.add(visibleArray.getString(v))
                 }
-
                 list.add(
                     DrillPreset(
                         id = obj.getString("id"),
                         name = obj.getString("name"),
                         description = obj.optString("description", ""),
                         groupTiers = if (tiers.isNotEmpty()) tiers else listOf("Clothes Type"),
-                        sortField = obj.optString("sortField", "wearing frequency(how many times legacy washed)"),
-                        sortOrder = obj.optString("sortOrder", "desc"),
+                        sortField = obj.optString("sortField", "Name"),
+                        sortOrder = obj.optString("sortOrder", "asc"),
                         visibleFields = if (visible.isNotEmpty()) visible else listOf("Clothes Type", "material", "Hot at noon"),
                         isCustom = obj.optBoolean("isCustom", false)
                     )
                 )
             }
-            if (list.isNotEmpty()) list else DEFAULT_DRILL_PRESETS
+            val baseList = if (list.isNotEmpty()) list else DEFAULT_DRILL_PRESETS
+            val savedIds = baseList.map { it.id }.toSet()
+            val missingDefaults = DEFAULT_DRILL_PRESETS.filter { it.id !in savedIds }
+            baseList + missingDefaults
         } catch (e: Exception) {
             DEFAULT_DRILL_PRESETS
         }
+    }
+
+    fun getPresets(): List<DrillPreset> {
+        val jsonStr = prefs.getString(PRESETS_KEY, null)
+        if (jsonStr != null) {
+            val parsed = parsePresetsJson(jsonStr)
+            if (parsed.isNotEmpty()) return parsed
+        }
+        val fromAsset = loadPresetsFromAsset()
+        savePresets(fromAsset)
+        return fromAsset
     }
 
     fun savePresets(presets: List<DrillPreset>) {
@@ -185,15 +220,12 @@ class ReportPresetService(context: Context) {
             obj.put("sortField", p.sortField)
             obj.put("sortOrder", p.sortOrder)
             obj.put("isCustom", p.isCustom)
-
             val tiers = JSONArray()
             p.groupTiers.forEach { tiers.put(it) }
             obj.put("groupTiers", tiers)
-
             val visible = JSONArray()
             p.visibleFields.forEach { visible.put(it) }
             obj.put("visibleFields", visible)
-
             array.put(obj)
         }
         prefs.edit().putString(PRESETS_KEY, array.toString()).apply()
@@ -219,8 +251,9 @@ class ReportPresetService(context: Context) {
     }
 
     fun resetToDefaults(): List<DrillPreset> {
-        savePresets(DEFAULT_DRILL_PRESETS)
-        return DEFAULT_DRILL_PRESETS
+        val defaults = loadPresetsFromAsset()
+        savePresets(defaults)
+        return defaults
     }
 
     fun getActivePresetId(): String {

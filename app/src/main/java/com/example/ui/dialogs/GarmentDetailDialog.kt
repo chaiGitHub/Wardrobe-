@@ -15,6 +15,8 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -122,6 +124,7 @@ data class GarmentAiReportVersion(
     val isPrimary: Boolean = false
 )
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GarmentDetailDialog(
     garment: GarmentEntity,
@@ -170,7 +173,9 @@ fun GarmentDetailDialog(
     var editFanSleepHotExplain by remember(garment) { mutableStateOf(garment.fanSleepHotExplain) }
     var editFanSleepLegFeeling by remember(garment) { mutableStateOf(garment.fanSleepLegFeeling) }
     var editFanSleepLegExplain by remember(garment) { mutableStateOf(garment.fanSleepLegExplain) }
-    var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreast) }
+    var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
+    var editSitBreastGatherBra by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
+    var editSitBreastSideOutBra by remember(garment) { mutableStateOf(garment.sitBreastSideOutBra) }
     var editCenterChest by remember(garment) { mutableStateOf(garment.standBreast) }
     var editBeautiful by remember(garment) { mutableStateOf(garment.beautiful) }
     var editBeautifulReason by remember(garment) { mutableStateOf(garment.beautifulReason) }
@@ -316,7 +321,8 @@ fun GarmentDetailDialog(
                 "when without aircond: leg feeling" -> g.noAircondLegFeeling
                 "when sleep under fan: hot feeling" -> g.fanSleepHotFeeling
                 "when sleep under fan: leg feeling" -> g.fanSleepLegFeeling
-                "sit breast ok" -> g.sitBreast
+                "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> g.sitBreastGatherBra.ifBlank { g.sitBreast }
+                "sit breast ok: with side out bra" -> g.sitBreastSideOutBra
                 "center chest" -> g.standBreast
                 "beautiful" -> g.beautiful
                 "wet" -> g.wet
@@ -343,7 +349,8 @@ fun GarmentDetailDialog(
             "diao dai" -> if (map.isEmpty()) listOf("not diao dai", "diao dai", "wide strap", "halter").forEach { map[it] = 1 }
             "side breast ok", "side breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { map[it] = 1 }
             "side breast ok: with side out bra" -> if (map.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { map[it] = 1 }
-            "sit breast ok" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose").forEach { map[it] = 1 }
+            "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose", "no underwire pressure", "comfortable when seated").forEach { map[it] = 1 }
+            "sit breast ok: with side out bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "full coverage relaxed", "no side bulge when seated", "tight underwire", "relaxed fit").forEach { map[it] = 1 }
             "center chest" -> if (map.isEmpty()) listOf("center chest", "no center chest", "low cut", "modest").forEach { map[it] = 1 }
             "beautiful" -> if (map.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { map[it] = 1 }
             "wet" -> if (map.isEmpty()) listOf("dry", "wet", "quick-dry", "semi-dry").forEach { map[it] = 1 }
@@ -405,7 +412,9 @@ fun GarmentDetailDialog(
             fanSleepHotExplain = editFanSleepHotExplain,
             fanSleepLegFeeling = editFanSleepLegFeeling,
             fanSleepLegExplain = editFanSleepLegExplain,
-            sitBreast = editSitBreast,
+            sitBreast = editSitBreastGatherBra.ifBlank { editSitBreast },
+            sitBreastGatherBra = editSitBreastGatherBra,
+            sitBreastSideOutBra = editSitBreastSideOutBra,
             standBreast = editCenterChest,
             beautiful = editBeautiful,
             beautifulReason = editBeautifulReason,
@@ -448,7 +457,9 @@ fun GarmentDetailDialog(
         editFanSleepHotExplain = garment.fanSleepHotExplain
         editFanSleepLegFeeling = garment.fanSleepLegFeeling
         editFanSleepLegExplain = garment.fanSleepLegExplain
-        editSitBreast = garment.sitBreast
+        editSitBreast = garment.sitBreastGatherBra.ifBlank { garment.sitBreast }
+        editSitBreastGatherBra = garment.sitBreastGatherBra.ifBlank { garment.sitBreast }
+        editSitBreastSideOutBra = garment.sitBreastSideOutBra
         editCenterChest = garment.standBreast
         editBeautiful = garment.beautiful
         editBeautifulReason = garment.beautifulReason
@@ -506,18 +517,19 @@ fun GarmentDetailDialog(
                 // ==============================
                 if (isEditing) {
                     // EDIT MODE HEADER (Matching screenshot IMG_9642 top)
-                    Row(
+                    FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // Left: Editing Garment Record
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.padding(vertical = 4.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Edit,
@@ -529,7 +541,9 @@ fun GarmentDetailDialog(
                                 text = "Editing Garment Record",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Slate900
+                                color = Slate900,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
 
@@ -562,6 +576,8 @@ fun GarmentDetailDialog(
                                     fontSize = 12.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Slate600,
+                                    maxLines = 1,
+                                    softWrap = false,
                                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                                 )
                             }
@@ -590,7 +606,9 @@ fun GarmentDetailDialog(
                                         text = "Save Changes",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Slate900
+                                        color = Slate900,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 }
                             }
@@ -598,24 +616,27 @@ fun GarmentDetailDialog(
                     }
                 } else {
                     // VIEW MODE HEADER
-                    Row(
+                    FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                            .padding(horizontal = 16.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             color = Color(0xFFF1F5F9),
-                            border = BorderStroke(1.dp, Slate200)
+                            border = BorderStroke(1.dp, Slate200),
+                            modifier = Modifier.padding(vertical = 2.dp)
                         ) {
                             Text(
                                 text = garment.clothesType.ifBlank { "Dress" },
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Slate700,
+                                maxLines = 1,
+                                softWrap = false,
                                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                             )
                         }
@@ -664,7 +685,9 @@ fun GarmentDetailDialog(
                                         text = "Edit Garment",
                                         fontSize = 12.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Slate800
+                                        color = Slate800,
+                                        maxLines = 1,
+                                        softWrap = false
                                     )
                                 }
                             }
@@ -1059,17 +1082,49 @@ fun GarmentDetailDialog(
                                     dictionaryService = dictionaryService
                                 )
 
-                                // sit breast ok
+                                // sit breast ok: With 聚拢bra:
                                 EditFieldWithPrevious(
-                                    label = "SIT BREAST OK",
-                                    value = editSitBreast,
-                                    placeholder = "e.g. sit breast shape ok",
-                                    onValueChange = { editSitBreast = it },
-                                    onOpenPrevious = {
-                                        activePreviousPicker = "sit breast ok" to { editSitBreast = it }
+                                    label = "SIT BREAST OK: WITH 聚拢BRA:",
+                                    value = editSitBreastGatherBra,
+                                    placeholder = "e.g. sit breast shape ok, comfortable when seated",
+                                    onValueChange = {
+                                        editSitBreastGatherBra = it
+                                        editSitBreast = it
                                     },
-                                    explainValue = editFieldExplanations["sit breast ok"] ?: "",
-                                    onExplainChange = { editFieldExplanations["sit breast ok"] = it }
+                                    onOpenPrevious = {
+                                        activePreviousPicker = "sit breast ok: With 聚拢bra:" to {
+                                            editSitBreastGatherBra = it
+                                            editSitBreast = it
+                                        }
+                                    },
+                                    fieldKey = "sit breast ok: With 聚拢bra:",
+                                    explainValue = editFieldExplanations["sit breast ok: With 聚拢bra:"] ?: editFieldExplanations["sit breast ok"] ?: "",
+                                    onExplainChange = {
+                                        editFieldExplanations["sit breast ok: With 聚拢bra:"] = it
+                                        editFieldExplanations["sit breast ok"] = it
+                                    },
+                                    allClothes = existingClothes,
+                                    isExplainExpanded = expandedExplainFields["sit breast ok: With 聚拢bra:"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["sit breast ok: With 聚拢bra:"] = !(expandedExplainFields["sit breast ok: With 聚拢bra:"] ?: false) },
+                                    dictionaryService = dictionaryService
+                                )
+
+                                // sit breast ok: with side out bra
+                                EditFieldWithPrevious(
+                                    label = "SIT BREAST OK: WITH SIDE OUT BRA",
+                                    value = editSitBreastSideOutBra,
+                                    placeholder = "e.g. sit breast shape ok, relaxed fit",
+                                    onValueChange = { editSitBreastSideOutBra = it },
+                                    onOpenPrevious = {
+                                        activePreviousPicker = "sit breast ok: with side out bra" to { editSitBreastSideOutBra = it }
+                                    },
+                                    fieldKey = "sit breast ok: with side out bra",
+                                    explainValue = editFieldExplanations["sit breast ok: with side out bra"] ?: "",
+                                    onExplainChange = { editFieldExplanations["sit breast ok: with side out bra"] = it },
+                                    allClothes = existingClothes,
+                                    isExplainExpanded = expandedExplainFields["sit breast ok: with side out bra"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["sit breast ok: with side out bra"] = !(expandedExplainFields["sit breast ok: with side out bra"] ?: false) },
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // center chest
@@ -1518,7 +1573,8 @@ fun GarmentDetailDialog(
                                 ErgonomicRow("diao dai:", garment.diaoDai.ifBlank { "—" }, explanation = fieldExplanationsInView["diao dai"])
                                 ErgonomicRow("side breast ok: with 聚拢 bra:", (garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }).ifBlank { "—" }, explanation = fieldExplanationsInView["side breast ok: with 聚拢 bra"] ?: fieldExplanationsInView["side breast ok"])
                                 ErgonomicRow("side breast ok: with side out bra:", garment.sideBreastSideOutBra.ifBlank { "—" }, explanation = fieldExplanationsInView["side breast ok: with side out bra"])
-                                ErgonomicRow("sit breast ok:", garment.sitBreast.ifBlank { "—" }, explanation = fieldExplanationsInView["sit breast ok"])
+                                ErgonomicRow("sit breast ok: With 聚拢bra:", (garment.sitBreastGatherBra.ifBlank { garment.sitBreast }).ifBlank { "—" }, explanation = fieldExplanationsInView["sit breast ok: With 聚拢bra:"] ?: fieldExplanationsInView["sit breast ok"])
+                                ErgonomicRow("sit breast ok: with side out bra:", garment.sitBreastSideOutBra.ifBlank { "—" }, explanation = fieldExplanationsInView["sit breast ok: with side out bra"])
                                 ErgonomicRow("center chest:", garment.standBreast.ifBlank { "—" }, explanation = fieldExplanationsInView["center chest"])
                                 ErgonomicRow("beautiful:", garment.beautiful.ifBlank { "—" }, explanation = fieldExplanationsInView["beautiful"])
                                 ErgonomicRow("wet:", garment.wet.ifBlank { "—" }, explanation = fieldExplanationsInView["wet"])
@@ -2374,19 +2430,20 @@ fun GarmentDetailDialog(
                 // ==============================
                 // BOTTOM BAR (ID on left, Action on right matching screenshot)
                 // ==============================
-                Row(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 10.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Text(
                         text = "ID: ${garment.id}",
                         fontSize = 11.sp,
                         fontFamily = FontFamily.Monospace,
-                        color = Slate400
+                        color = Slate400,
+                        modifier = Modifier.padding(vertical = 4.dp)
                     )
 
                     if (isEditing) {
@@ -2400,6 +2457,8 @@ fun GarmentDetailDialog(
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Slate600,
+                                maxLines = 1,
+                                softWrap = false,
                                 modifier = Modifier
                                     .clickable { handleCancelEditing() }
                                     .padding(vertical = 8.dp, horizontal = 4.dp)
@@ -2416,7 +2475,9 @@ fun GarmentDetailDialog(
                                     text = "Save Changes",
                                     fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
                         }
@@ -2431,7 +2492,9 @@ fun GarmentDetailDialog(
                                 text = "Close",
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = Color.White,
+                                maxLines = 1,
+                                softWrap = false
                             )
                         }
                     }

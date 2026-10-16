@@ -1,0 +1,1975 @@
+[
+  {
+    "fieldNameEn": "Hot at noon",
+    "fieldNameCn": "中午炎热度 / 散热透气",
+    "category": "clothes",
+    "descriptionEn": "Evaluates heat tolerance, breathability, and sun exposure during hot midday peak hours (>30°C).",
+    "descriptionCn": "评估中午高温烈日时（通常>30°C）该衣物的透气、散热及是否容易闷热捂汗。",
+    "typicalValues": [
+      {
+        "valueEn": "Not hot",
+        "valueCn": "不热 / 凉爽透气",
+        "meaningEn": "",
+        "meaningCn": "通风透气，中午在户内不容易闷热"
+      },
+      {
+        "valueEn": "Middle",
+        "valueCn": "中等温感 / 适中",
+        "meaningEn": "",
+        "meaningCn": "温度适中，中午中等闷热，少量流汗"
+      },
+      {
+        "valueEn": "Hot",
+        "valueCn": "闷热",
+        "meaningEn": "",
+        "meaningCn": "厚实或不透气面料，中午户内会出汗发闷，极不推荐高温穿着"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "diao dai",
+    "fieldNameCn": "吊带 / 细肩带款式与肩部承托",
+    "category": "clothes",
+    "descriptionEn": "Tracks strap width and shoulder trapezoid muscle strain (shoulder fatigue or digging into skin).",
+    "descriptionCn": "专指吊带/细肩带款式，重点考察肩带是否勒肩、压迫斜方肌或导致酸痛疲倦。",
+    "typicalValues": [
+      {
+        "valueEn": "diao dai",
+        "valueCn": "细吊带款式",
+        "meaningEn": "Thin shoulder straps, evaluates digging and pressure on shoulders",
+        "meaningCn": "细肩带，容易压迫斜方肌，需警惕勒肩酸痛"
+      },
+      {
+        "valueEn": "not diao dai",
+        "valueCn": "非吊带 / 有袖款",
+        "meaningEn": "Standard sleeves or sleeveless with broad shoulder coverage",
+        "meaningCn": "普通短袖或宽肩无袖，肩部受力分散，无勒感"
+      },
+      {
+        "valueEn": "wide diao dai",
+        "valueCn": "宽吊带款式",
+        "meaningEn": "",
+        "meaningCn": "较宽的肩带，受力较均匀，当时在肩膀固定衣服时不稳定，容易掉落，需要其他外衣固定，反而变成容易闷热"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "sit breast ok: With 聚拢bra",
+    "fieldNameCn": "正面坐姿胸型 (搭配聚拢bra)",
+    "category": "clothes",
+    "descriptionEn": "Front chest silhouette while seated when worn with a gathering / push-up bra (e.g. big bra, center gathering bra)",
+    "descriptionCn": "正面坐着观看胸型美不美，配合聚拢效果好的bra（如聚拢型、big bra、中心聚拢款等）。聚拢bra通常能支撑并修饰胸型。",
+    "typicalValues": [
+      {
+        "valueEn": "sit breast shape ok",
+        "valueCn": "坐姿胸型漂亮",
+        "meaningEn": "Bust contour and shape remain flattering while sitting",
+        "meaningCn": "坐姿胸型漂亮，配合聚拢bra胸型美观稳定"
+      },
+      {
+        "valueEn": "stand breast middle ugly, because alot 皱纹",
+        "valueCn": "站立/坐着褶皱多影响外观",
+        "meaningEn": "Wrinkles or creasing across cup or chest fabric affect aesthetic",
+        "meaningCn": "虽有聚拢但衣服褶皱多，坐姿胸型受褶皱影响"
+      },
+      {
+        "valueEn": "?",
+        "valueCn": "体感未明确 / 待体验",
+        "meaningEn": "Observation not yet finalized or requires testing",
+        "meaningCn": "尚未充分体验，需要下次搭配聚拢bra久坐时专门感受记录"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "sit breast ok: with side out bra",
+    "fieldNameCn": "正面坐姿胸型 (搭配侧开/非聚拢bra)",
+    "category": "clothes",
+    "descriptionEn": "Front chest silhouette while seated when worn with a side-open or non-gathering bra (e.g. side open bra, small bra)",
+    "descriptionCn": "正面坐着观看胸型美不美，配合侧开/副乳外扩/无中心聚拢效果的bra（如Hugo bra side open、small bra等）。若衣服本身无聚拢设计，搭配此类bra易出现扁塌外扩。",
+    "typicalValues": [
+      {
+        "valueEn": "ugly",
+        "valueCn": "胸型不美 / 扁塌外扩",
+        "meaningEn": "Unflattering silhouette, flat or collapsing without garment center gore support",
+        "meaningCn": "胸型扁塌不美，衣物缺乏聚拢，搭配侧开内衣暴露胸型缺陷"
+      },
+      {
+        "valueEn": "stand breast ugly, because loose tie not as white marry",
+        "valueCn": "松垮系带导致胸型不美",
+        "meaningEn": "Loose ties or lack of tension anchors cause chest fabric to sag",
+        "meaningCn": "系带松散缺乏支撑，搭配侧开内衣时胸型严重垮塌"
+      },
+      {
+        "valueEn": "sit breast shape ok",
+        "valueCn": "坐姿胸型依然漂亮",
+        "meaningEn": "Garment's own tailoring provides enough support even with side-open bra",
+        "meaningCn": "即使搭配侧开内衣，衣物自身剪裁的聚拢度也足够支撑胸型"
+      },
+      {
+        "valueEn": "?",
+        "valueCn": "体感未明确 / 待体验",
+        "meaningEn": "Observation not yet finalized or requires testing",
+        "meaningCn": "尚未充分体验，需要下次搭配侧开bra久坐时专门感受记录"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "sit breast ok",
+    "fieldNameCn": "久坐时胸部与底围舒适度",
+    "category": "clothes",
+    "descriptionEn": "Evaluates chest, underwire, or band comfort while sitting at a desk for extended hours (wrinkles, tightness, pressure).",
+    "descriptionCn": "考察在工位长时间坐姿办公时，胸口与底围钢圈是否有压迫感、胸型是否起皱或变丑。",
+    "typicalValues": [
+      {
+        "valueEn": "sit breast shape ok",
+        "valueCn": "坐姿胸型自然舒适",
+        "meaningEn": "Comfortable with natural support even when seated for hours",
+        "meaningCn": "久坐办公不勒胸，底围无压迫，胸型自然"
+      },
+      {
+        "valueEn": "stand breast ugly, because alot zhouwhen",
+        "valueCn": "站立/坐着褶皱多影响外观",
+        "meaningEn": "Creasing/wrinkles visible, loose or improper cups",
+        "meaningCn": "版型不服帖或褶皱过多，影响胸部形态美观"
+      },
+      {
+        "valueEn": "?",
+        "valueCn": "体感未明确 / 待体验",
+        "meaningEn": "Observation not yet finalized or requires testing",
+        "meaningCn": "尚未充分体验，需要下次久坐时专门感受记录"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "side breast ok: with 聚拢 bra",
+    "fieldNameCn": "侧边看胸型 (配合聚拢bra)",
+    "category": "clothes",
+    "descriptionEn": "Side breast silhouette and contour when worn with a gathering / push-up bra",
+    "descriptionCn": "从侧面观察胸部轮廓，配合聚拢效果好的bra。通常聚拢bra能提供侧向聚拢与立体承托，避免副乳外溢。",
+    "typicalValues": [
+      {
+        "valueEn": "side breast shape ok",
+        "valueCn": "侧边看胸型美",
+        "meaningEn": "Flattering, supportive side profile without bulging or sagging",
+        "meaningCn": "侧边看胸型优美挺拔，聚拢与包裹充分"
+      },
+      {
+        "valueEn": "side breast out",
+        "valueCn": "侧边仍有外溢或不美",
+        "meaningEn": "Side silhouette lacks adequate containment even with gathering bra",
+        "meaningCn": "侧边仍有轻微外扩或受衣服版型剪裁影响不够饱满"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "side breast ok: with side out bra",
+    "fieldNameCn": "侧边看胸型 (配合侧开/非聚拢bra)",
+    "category": "clothes",
+    "descriptionEn": "Side breast silhouette when worn with a side-open or non-gathering bra",
+    "descriptionCn": "从侧面观察胸部轮廓，配合侧开或无聚拢内衣。若衣服本身无聚拢设计，易暴露胸部扁塌或外扩。",
+    "typicalValues": [
+      {
+        "valueEn": "side breast out",
+        "valueCn": "侧边看胸型不美/外溢",
+        "meaningEn": "Side profile looks flat or uncontained with side-open bra",
+        "meaningCn": "侧边看胸型不美、缺乏中心聚拢易显扁平或副乳外扩"
+      },
+      {
+        "valueEn": "side breast shape ok",
+        "valueCn": "侧边看胸型依然美",
+        "meaningEn": "Garment itself provides enough structure even with side-open bra",
+        "meaningCn": "衣物剪裁自身自带侧边包裹，配合侧开bra依然轮廓良好"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when with aircond: hot feeling",
+    "fieldNameCn": "空调环境体表温感",
+    "category": "clothes",
+    "descriptionEn": "Thermal sensation and hot/cold feeling when in an air-conditioned room",
+    "descriptionCn": "在开空调环境下的体表感受（如 not so cold、comfortable、cold等）",
+    "typicalValues": [
+      {
+        "valueEn": "not so cold",
+        "valueCn": "不太冷/适温",
+        "meaningEn": "Comfortably insulated, not feeling chilly due to garment fabric thickness",
+        "meaningCn": "由于面料有一定厚度或中长款设计，在空调房里不会觉得冷"
+      },
+      {
+        "valueEn": "cold",
+        "valueCn": "偏冷",
+        "meaningEn": "Feels chilly in air-conditioned room, requires outer layer",
+        "meaningCn": "面料轻薄透风，在冷气房内感到寒凉，需添衣"
+      },
+      {
+        "valueEn": "comfortable",
+        "valueCn": "舒适恒温",
+        "meaningEn": "Perfect thermal balance in air-conditioned room",
+        "meaningCn": "空调环境下体感恰到好处"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when with aircond: leg feeling",
+    "fieldNameCn": "空调环境下身/腿部感受",
+    "category": "clothes",
+    "descriptionEn": "Leg and lower body thermal feeling in air-conditioned environment",
+    "descriptionCn": "在开空调环境下的双腿与下半身体感（如 not so cold、cold legs等）",
+    "typicalValues": [
+      {
+        "valueEn": "not so cold",
+        "valueCn": "腿部不冷/覆盖良好",
+        "meaningEn": "Legs remain warm enough under air conditioning",
+        "meaningCn": "裙长过膝或面料挡风，空调吹风下腿部不觉寒凉"
+      },
+      {
+        "valueEn": "cold leg",
+        "valueCn": "腿部偏冷/吹风受凉",
+        "meaningEn": "Lower legs feel cold due to draft or short inner lining",
+        "meaningCn": "内衬偏短或下摆透风导致小腿和关节发凉"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when without aircond: hot feeling",
+    "fieldNameCn": "无空调环境体表温感 (常温/中午)",
+    "category": "clothes",
+    "descriptionEn": "Thermal and sweat sensation in natural ambient temperatures without air conditioning",
+    "descriptionCn": "在无空调、常温或中午高温环境下的热感（如 hot、middle hot、not hot）",
+    "typicalValues": [
+      {
+        "valueEn": "hot",
+        "valueCn": "炎热/易出汗",
+        "meaningEn": "Feels hot and triggers sweat due to thick fabric or poor ventilation",
+        "meaningCn": "面料厚重或透气性弱，中午无空调环境下体感闷热多汗"
+      },
+      {
+        "valueEn": "middle hot",
+        "valueCn": "中等温热",
+        "meaningEn": "Slightly warm, tolerable perspiration",
+        "meaningCn": "轻微发热，有少量出汗但尚在可耐受区间"
+      },
+      {
+        "valueEn": "not hot",
+        "valueCn": "清凉不热",
+        "meaningEn": "Remains cool and breathable even without AC",
+        "meaningCn": "面料透气亲肤，无空调中午依然清爽"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when without aircond: leg feeling",
+    "fieldNameCn": "无空调环境下身/腿部感受",
+    "category": "clothes",
+    "descriptionEn": "Lower body and leg comfort in natural temperatures without air conditioning",
+    "descriptionCn": "无空调环境下双腿体感（如 middle hot、sweaty、breezy）",
+    "typicalValues": [
+      {
+        "valueEn": "middle hot",
+        "valueCn": "腿部中等热/微汗",
+        "meaningEn": "Legs feel moderately warm with some moisture accumulation",
+        "meaningCn": "因中长裙摆或多层厚布料，下身略显闷热微有汗意"
+      },
+      {
+        "valueEn": "hot and sweaty",
+        "valueCn": "下身闷热积汗",
+        "meaningEn": "Excessive heat and sweat buildup under skirt/pants",
+        "meaningCn": "下半身闷热积汗严重，面料贴腿不爽"
+      },
+      {
+        "valueEn": "comfortable breezy",
+        "valueCn": "透气清爽",
+        "meaningEn": "Breezy and comfortable leg feel",
+        "meaningCn": "裙摆透气飘逸，无闷热感"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when sleep under fan: hot feeling",
+    "fieldNameCn": "风扇睡眠体表温感",
+    "category": "clothes",
+    "descriptionEn": "Thermal sensation while sleeping under an electric fan",
+    "descriptionCn": "晚间或睡眠时在电风扇吹拂下的体感（如 not hot、cool、chilly）",
+    "typicalValues": [
+      {
+        "valueEn": "not hot",
+        "valueCn": "干爽不热",
+        "meaningEn": "Cool and comfortable sleep under fan without night sweats",
+        "meaningCn": "风扇风力与凉席辅助下有效带走热量，体表不热不出汗"
+      },
+      {
+        "valueEn": "cool",
+        "valueCn": "清凉舒适",
+        "meaningEn": "Pleasantly cool sleeping climate",
+        "meaningCn": "睡眠体感清爽安适"
+      },
+      {
+        "valueEn": "hot",
+        "valueCn": "闷热出汗",
+        "meaningEn": "Still sweaty under fan due to heavy fabric",
+        "meaningCn": "面料过厚，风扇吹风仍阻隔散热导致夜汗"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "when sleep under fan: leg feeling",
+    "fieldNameCn": "风扇睡眠下身/腿部感受",
+    "category": "clothes",
+    "descriptionEn": "Leg and foot thermal sensation while sleeping under fan",
+    "descriptionCn": "睡眠风扇环境下腿部与脚部体感（如 middle cold、cold foot、warm）",
+    "typicalValues": [
+      {
+        "valueEn": "middle cold",
+        "valueCn": "局部微凉/易翻卷受凉",
+        "meaningEn": "Legs feel moderately cold during sleep (e.g. thin inner lining or skirt riding up)",
+        "meaningCn": "夜间裙底易翻卷或内衬过短偏薄，导致小腿和脚部有凉意"
+      },
+      {
+        "valueEn": "cold foot",
+        "valueCn": "脚部受凉",
+        "meaningEn": "Feet become uncomfortably cold under continuous fan breeze",
+        "meaningCn": "风扇直吹下缺乏足够保暖遮蔽，脚部感到寒冷"
+      },
+      {
+        "valueEn": "just warm",
+        "valueCn": "温暖适度",
+        "meaningEn": "Comfortably insulated legs throughout the night",
+        "meaningCn": "裙长与厚度恰好保护腿部免受冷风直吹"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "side breast ok",
+    "fieldNameCn": "副乳包裹与侧收支撑",
+    "category": "clothes",
+    "descriptionEn": "Assesses side-bust containment and whether fabric cuts into underarm/side tissue.",
+    "descriptionCn": "评估侧边包裹性、是否有副乳溢出或侧边勒肉。",
+    "typicalValues": [
+      {
+        "valueEn": "side breast shape ok",
+        "valueCn": "副乳包裹良好舒适",
+        "meaningEn": "Smooth side profile, no spilling over the cup edges",
+        "meaningCn": "侧边平整收拢，不挤压副乳"
+      },
+      {
+        "valueEn": "side breast out",
+        "valueCn": "副乳外溢 / 包裹不足",
+        "meaningEn": "Tissue bulges at armpit area, cup coverage too narrow",
+        "meaningCn": "罩杯或侧翼过窄，副乳外溢明显"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "center chest",
+    "fieldNameCn": "胸口中心聚拢与压迫感",
+    "category": "clothes",
+    "descriptionEn": "Tracks center gore pressure and neckline gap/coverage.",
+    "descriptionCn": "考察前中鸡心部位是否有压迫感，领口是否过紧或镂空走光。",
+    "typicalValues": [
+      {
+        "valueEn": "no center chest",
+        "valueCn": "无中心压迫 / 平整",
+        "meaningEn": "Zero pressure on the sternum area",
+        "meaningCn": "鸡心平顺，完全不压迫胸骨"
+      },
+      {
+        "valueEn": "center chest",
+        "valueCn": "聚拢或中心有承托",
+        "meaningEn": "Central support present, check for sternum marks",
+        "meaningCn": "前中有聚拢结构或压迫感"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "thick clothes",
+    "fieldNameCn": "衣物厚度级别",
+    "category": "clothes",
+    "descriptionEn": "Fabric density and thermal weight category.",
+    "descriptionCn": "面料厚薄度与保暖透气等级。",
+    "typicalValues": [
+      {
+        "valueEn": "01 not thick clothes",
+        "valueCn": "超薄单衣",
+        "meaningEn": "Ultra-thin lightweight single layer (e.g. chiffon, light cotton)",
+        "meaningCn": "轻薄透气单层，适合夏日高温"
+      },
+      {
+        "valueEn": "02 middle thick clothes",
+        "valueCn": "适中厚度",
+        "meaningEn": "Medium thickness, suitable for temperate days",
+        "meaningCn": "春秋或室内空调厚度"
+      },
+      {
+        "valueEn": "03 thick clothes",
+        "valueCn": "偏厚实 / 较厚",
+        "meaningEn": "Thick, substantial fabric with thermal retention",
+        "meaningCn": "厚实面料，保暖防凉，高温天会闷"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "material",
+    "fieldNameCn": "面料材质",
+    "category": "clothes",
+    "descriptionEn": "Fabric composition affecting softness, skin breathability, and sweat absorption.",
+    "descriptionCn": "面料成分，直接影响亲肤软糯感、透气度与吸汗排湿性能（如棉、丝、雪纺、聚酯纤维等）。",
+    "typicalValues": [
+      {
+        "valueEn": "chiffon",
+        "valueCn": "雪纺面料",
+        "meaningEn": "Lightweight, airy, sheer, quick-drying, cool at noon",
+        "meaningCn": "轻盈飘逸、快干透气，中午不易积汗，但单层较薄"
+      },
+      {
+        "valueEn": "lace",
+        "valueCn": "蕾丝镂空面料",
+        "meaningEn": "Open weave, decorative, ventilated, can be slightly textured on skin",
+        "meaningCn": "镂空透气，但贴身穿着时需留意亲肤柔软度与扎感"
+      },
+      {
+        "valueEn": "cotton",
+        "valueCn": "纯棉面料",
+        "meaningEn": "Natural absorption, breathable, soft, absorbs moisture well",
+        "meaningCn": "吸汗亲肤，天然舒适，但出大汗后干燥较慢"
+      },
+      {
+        "valueEn": "modal",
+        "valueCn": "莫代尔面料",
+        "meaningEn": "Silky soft, high drape, skin-friendly, stretchy comfort",
+        "meaningCn": "柔软顺滑垂感好，高弹性，适合贴身内衣与睡裙"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "Total Washed Count",
+    "fieldNameCn": "累计洗涤总次数",
+    "category": "clothes",
+    "descriptionEn": "Total number of washes across all wear history. Used with price to compute true cost-per-wear ($/wear).",
+    "descriptionCn": "历史累计水洗总次数。结合买入价格可计算出每次穿着的真实使用成本（性价比）。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "shoulder feel",
+    "fieldNameCn": "肩膀感受 (穿着报告)",
+    "category": "wearingReport",
+    "descriptionEn": "Real-time fatigue or soreness reported on shoulders and neck after this wearing session.",
+    "descriptionCn": "本次穿着后肩膀、颈椎斜方肌的酸痛受压体感记录。",
+    "typicalValues": [
+      {
+        "valueEn": "comfortable",
+        "valueCn": "舒适无酸痛",
+        "meaningEn": "Zero fatigue or strap pressure felt on shoulders",
+        "meaningCn": "肩膀轻松，无勒痕无酸痛"
+      },
+      {
+        "valueEn": "tired",
+        "valueCn": "肩膀酸累",
+        "meaningEn": "Shoulder fatigue experienced after several hours",
+        "meaningCn": "肩部沉重，肩带拉扯感明显"
+      },
+      {
+        "valueEn": "painful",
+        "valueCn": "勒痛 / 压痕明显",
+        "meaningEn": "Straps cut into the skin or neck strain",
+        "meaningCn": "肩带有勒痛感，下班后有明显压痕"
+      },
+      {
+        "valueEn": "the not diao dai make the shoulder no so irrate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.",
+        "valueCn": "the not diao dai make the...",
+        "meaningEn": "Real historical journal observation: \"the not diao dai make the shoulder no so irrate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.\"",
+        "meaningCn": "真实穿搭历史记录值: \"the not diao dai make the shoulder no so irrate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.\""
+      },
+      {
+        "valueEn": "Not diao dai not irrate on shoulder",
+        "valueCn": "Not diao dai not irrate o...",
+        "meaningEn": "Real historical journal observation: \"Not diao dai not irrate on shoulder\"",
+        "meaningCn": "真实穿搭历史记录值: \"Not diao dai not irrate on shoulder\""
+      },
+      {
+        "valueEn": "the diao dai make the shoulder irrate and pain. But not hot at noon",
+        "valueCn": "the diao dai make the sho...",
+        "meaningEn": "Real historical journal observation: \"the diao dai make the shoulder irrate and pain. But not hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"the diao dai make the shoulder irrate and pain. But not hot at noon\""
+      },
+      {
+        "valueEn": "the not diao dai make the shoulder no so irrate and pain.",
+        "valueCn": "the not diao dai make the...",
+        "meaningEn": "Real historical journal observation: \"the not diao dai make the shoulder no so irrate and pain.\"",
+        "meaningCn": "真实穿搭历史记录值: \"the not diao dai make the shoulder no so irrate and pain.\""
+      },
+      {
+        "valueEn": "the wide diao dai make the shoulder drop ,  irrate and but no pain. But not hot at noon",
+        "valueCn": "the wide diao dai make th...",
+        "meaningEn": "Real historical journal observation: \"the wide diao dai make the shoulder drop ,  irrate and but no pain. But not hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"the wide diao dai make the shoulder drop ,  irrate and but no pain. But not hot at noon\""
+      },
+      {
+        "valueEn": "the not diao dai make the shoulder no so irrate and pain. But long shoulder size may hot at noon",
+        "valueCn": "the not diao dai make the...",
+        "meaningEn": "Real historical journal observation: \"the not diao dai make the shoulder no so irrate and pain. But long shoulder size may hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"the not diao dai make the shoulder no so irrate and pain. But long shoulder size may hot at noon\""
+      },
+      {
+        "valueEn": "the diao dai make the shoulder irrate and pain. But not so hot at noon",
+        "valueCn": "the diao dai make the sho...",
+        "meaningEn": "Real historical journal observation: \"the diao dai make the shoulder irrate and pain. But not so hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"the diao dai make the shoulder irrate and pain. But not so hot at noon\""
+      },
+      {
+        "valueEn": "the shoulder drop some time",
+        "valueCn": "the shoulder drop some ti...",
+        "meaningEn": "Real historical journal observation: \"the shoulder drop some time\"",
+        "meaningCn": "真实穿搭历史记录值: \"the shoulder drop some time\""
+      },
+      {
+        "valueEn": "the diao dai make the shoulder irrate and pain.",
+        "valueCn": "the diao dai make the sho...",
+        "meaningEn": "Real historical journal observation: \"the diao dai make the shoulder irrate and pain.\"",
+        "meaningCn": "真实穿搭历史记录值: \"the diao dai make the shoulder irrate and pain.\""
+      },
+      {
+        "valueEn": "the shoulder drop and need outer fit , so quite hot",
+        "valueCn": "the shoulder drop and nee...",
+        "meaningEn": "Real historical journal observation: \"the shoulder drop and need outer fit , so quite hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"the shoulder drop and need outer fit , so quite hot\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "sweat",
+    "fieldNameCn": "白天出汗情况",
+    "category": "wearingReport",
+    "descriptionEn": "Daytime perspiration intensity and fabric moisture retention.",
+    "descriptionCn": "白天正常活动或通勤时的出汗量及衣物吸汗排湿情况。",
+    "typicalValues": [
+      {
+        "valueEn": "no sweat",
+        "valueCn": "无汗 / 干爽",
+        "meaningEn": "Remained dry and fresh throughout the day",
+        "meaningCn": "整天干爽无异味"
+      },
+      {
+        "valueEn": "little sweat",
+        "valueCn": "轻微出汗",
+        "meaningEn": "Slight perspiration around underarms/back, dried quickly",
+        "meaningCn": "微汗，面料较快散发"
+      },
+      {
+        "valueEn": "alot sweat",
+        "valueCn": "大量出汗 / 湿透",
+        "meaningEn": "Heavy sweating, fabric got wet and sticky",
+        "meaningCn": "出汗多，衣物受潮，必须尽快换洗"
+      },
+      {
+        "valueEn": "thick clothes also more hot and swear",
+        "valueCn": "thick clothes also more h...",
+        "meaningEn": "Real historical journal observation: \"thick clothes also more hot and swear\"",
+        "meaningCn": "真实穿搭历史记录值: \"thick clothes also more hot and swear\""
+      },
+      {
+        "valueEn": "Not sweat",
+        "valueCn": "Not sweat",
+        "meaningEn": "Real historical journal observation: \"Not sweat\"",
+        "meaningCn": "真实穿搭历史记录值: \"Not sweat\""
+      },
+      {
+        "valueEn": "middle clothes, mid center stick to chest design also make more hot and swear, but skirt is thin and not so hot at noon",
+        "valueCn": "middle clothes, mid cente...",
+        "meaningEn": "Real historical journal observation: \"middle clothes, mid center stick to chest design also make more hot and swear, but skirt is thin and not so hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"middle clothes, mid center stick to chest design also make more hot and swear, but skirt is thin and not so hot at noon\""
+      },
+      {
+        "valueEn": "Middle thick clothes also more hot  and sweat at noon",
+        "valueCn": "Middle thick clothes also...",
+        "meaningEn": "Real historical journal observation: \"Middle thick clothes also more hot  and sweat at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"Middle thick clothes also more hot  and sweat at noon\""
+      },
+      {
+        "valueEn": "Thin clothes but fit design to chest make hotter at mid, other area like skirt will not hot",
+        "valueCn": "Thin clothes but fit desi...",
+        "meaningEn": "Real historical journal observation: \"Thin clothes but fit design to chest make hotter at mid, other area like skirt will not hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"Thin clothes but fit design to chest make hotter at mid, other area like skirt will not hot\""
+      },
+      {
+        "valueEn": "\"middle\" thick plain clothes also more hot and swear, and tight to chest",
+        "valueCn": "\"middle\" thick plain clot...",
+        "meaningEn": "Real historical journal observation: \"\"middle\" thick plain clothes also more hot and swear, and tight to chest\"",
+        "meaningCn": "真实穿搭历史记录值: \"\"middle\" thick plain clothes also more hot and swear, and tight to chest\""
+      },
+      {
+        "valueEn": "thick clothes also more hot  and sweat at noon",
+        "valueCn": "thick clothes also more h...",
+        "meaningEn": "Real historical journal observation: \"thick clothes also more hot  and sweat at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"thick clothes also more hot  and sweat at noon\""
+      },
+      {
+        "valueEn": "Thin clothes but tied to chest make hotter at mid, other area like skirt will not hot",
+        "valueCn": "Thin clothes but tied to ...",
+        "meaningEn": "Real historical journal observation: \"Thin clothes but tied to chest make hotter at mid, other area like skirt will not hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"Thin clothes but tied to chest make hotter at mid, other area like skirt will not hot\""
+      },
+      {
+        "valueEn": "thick clothes also more hot and swear, under fan sleep still ok hot",
+        "valueCn": "thick clothes also more h...",
+        "meaningEn": "Real historical journal observation: \"thick clothes also more hot and swear, under fan sleep still ok hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"thick clothes also more hot and swear, under fan sleep still ok hot\""
+      },
+      {
+        "valueEn": "\"middle\" thick lace clothes also more hot and swear",
+        "valueCn": "\"middle\" thick lace cloth...",
+        "meaningEn": "Real historical journal observation: \"\"middle\" thick lace clothes also more hot and swear\"",
+        "meaningCn": "真实穿搭历史记录值: \"\"middle\" thick lace clothes also more hot and swear\""
+      },
+      {
+        "valueEn": "\"middle\" thick lace clothes also more hot and swear, under fan sleep still ok hot",
+        "valueCn": "\"middle\" thick lace cloth...",
+        "meaningEn": "Real historical journal observation: \"\"middle\" thick lace clothes also more hot and swear, under fan sleep still ok hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"\"middle\" thick lace clothes also more hot and swear, under fan sleep still ok hot\""
+      },
+      {
+        "valueEn": "little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dresss",
+        "valueCn": "little swear(not sweat th...",
+        "meaningEn": "Real historical journal observation: \"little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dresss\"",
+        "meaningCn": "真实穿搭历史记录值: \"little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dresss\""
+      },
+      {
+        "valueEn": "little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dress",
+        "valueCn": "little swear(not sweat th...",
+        "meaningEn": "Real historical journal observation: \"little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dress\"",
+        "meaningCn": "真实穿搭历史记录值: \"little swear(not sweat the whole upper body like super hot weather in noon) due to diaodai and not center approach dress\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "night sweat",
+    "fieldNameCn": "夜间出汗情况",
+    "category": "wearingReport",
+    "descriptionEn": "Perspiration during evening relaxation or sleeping.",
+    "descriptionCn": "傍晚居家或夜间睡觉时的出汗发热情况。",
+    "typicalValues": [
+      {
+        "valueEn": "no sweat",
+        "valueCn": "干爽舒适",
+        "meaningEn": "Dry and fresh throughout the evening and sleep",
+        "meaningCn": "夜间干爽透气，睡眠无出汗"
+      },
+      {
+        "valueEn": "sweaty / warm",
+        "valueCn": "微热出汗",
+        "meaningEn": "Mild sweating or warmth during sleep",
+        "meaningCn": "被窝内轻微发热出汗"
+      },
+      {
+        "valueEn": "sticky / alot sweat",
+        "valueCn": "盗汗湿热 / 黏腻",
+        "meaningEn": "Heavy night perspiration requiring garment change",
+        "meaningCn": "出汗多贴肉黏身，醒来感觉潮热不适"
+      },
+      {
+        "valueEn": "Still ok under fans, not so sweat, no under fans, little sweat",
+        "valueCn": "Still ok under fans, not ...",
+        "meaningEn": "Real historical journal observation: \"Still ok under fans, not so sweat, no under fans, little sweat\"",
+        "meaningCn": "真实穿搭历史记录值: \"Still ok under fans, not so sweat, no under fans, little sweat\""
+      },
+      {
+        "valueEn": "Today weather hot, so little sweat at night.",
+        "valueCn": "Today weather hot, so lit...",
+        "meaningEn": "Real historical journal observation: \"Today weather hot, so little sweat at night.\"",
+        "meaningCn": "真实穿搭历史记录值: \"Today weather hot, so little sweat at night.\""
+      },
+      {
+        "valueEn": "still ok under fan not so sweat",
+        "valueCn": "still ok under fan not so...",
+        "meaningEn": "Real historical journal observation: \"still ok under fan not so sweat\"",
+        "meaningCn": "真实穿搭历史记录值: \"still ok under fan not so sweat\""
+      },
+      {
+        "valueEn": "Today weather hot, so little seeat",
+        "valueCn": "Today weather hot, so lit...",
+        "meaningEn": "Real historical journal observation: \"Today weather hot, so little seeat\"",
+        "meaningCn": "真实穿搭历史记录值: \"Today weather hot, so little seeat\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "mid breast",
+    "fieldNameCn": "白天胸口体感",
+    "category": "wearingReport",
+    "descriptionEn": "Bust support and gore pressure experienced throughout the active daytime.",
+    "descriptionCn": "白天活动期间胸口受力、承托感与透气度。",
+    "typicalValues": [
+      {
+        "valueEn": "comfortable & natural",
+        "valueCn": "舒适自然 / 承托适中",
+        "meaningEn": "Natural support with zero digging or breast pressure",
+        "meaningCn": "全天活动舒适，底围不勒肉，承托平整自如"
+      },
+      {
+        "valueEn": "oppressive / tight",
+        "valueCn": "压迫紧绷 / 勒胸",
+        "meaningEn": "Band cuts into skin or center gore digs into sternum",
+        "meaningCn": "底围过紧或钢圈压迫胸骨，久坐有窒息感"
+      },
+      {
+        "valueEn": "empty / loose",
+        "valueCn": "空杯 / 承托不足",
+        "meaningEn": "Cups gaping or fabric sagging without support",
+        "meaningCn": "罩杯不贴合容易空杯晃动"
+      },
+      {
+        "valueEn": "mid breast is ok sizd when pair with [[small bra]] when sit, sleep will side out and small little bit.",
+        "valueCn": "mid breast is ok sizd whe...",
+        "meaningEn": "Real historical journal observation: \"mid breast is ok sizd when pair with [[small bra]] when sit, sleep will side out and small little bit.\"",
+        "meaningCn": "真实穿搭历史记录值: \"mid breast is ok sizd when pair with [[small bra]] when sit, sleep will side out and small little bit.\""
+      },
+      {
+        "valueEn": "Wear hugo bra need ji xiong, size is ok and beautiful",
+        "valueCn": "Wear hugo bra need ji xio...",
+        "meaningEn": "Real historical journal observation: \"Wear hugo bra need ji xiong, size is ok and beautiful\"",
+        "meaningCn": "真实穿搭历史记录值: \"Wear hugo bra need ji xiong, size is ok and beautiful\""
+      },
+      {
+        "valueEn": "The small bra due to this tight mid design become smaller and stick to the chest, hot at noon",
+        "valueCn": "The small bra due to this...",
+        "meaningEn": "Real historical journal observation: \"The small bra due to this tight mid design become smaller and stick to the chest, hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"The small bra due to this tight mid design become smaller and stick to the chest, hot at noon\""
+      },
+      {
+        "valueEn": "The big bra is tight to chest , may hot in noon",
+        "valueCn": "The big bra is tight to c...",
+        "meaningEn": "Real historical journal observation: \"The big bra is tight to chest , may hot in noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"The big bra is tight to chest , may hot in noon\""
+      },
+      {
+        "valueEn": "full and beautiful, need big bra, small bra maybe need adjust upper and center by ji xiong",
+        "valueCn": "full and beautiful, need ...",
+        "meaningEn": "Real historical journal observation: \"full and beautiful, need big bra, small bra maybe need adjust upper and center by ji xiong\"",
+        "meaningCn": "真实穿搭历史记录值: \"full and beautiful, need big bra, small bra maybe need adjust upper and center by ji xiong\""
+      },
+      {
+        "valueEn": "The big purple bra due to this tight mid design become smaller and stick to the chest, alot zhouwhen",
+        "valueCn": "The big purple bra due to...",
+        "meaningEn": "Real historical journal observation: \"The big purple bra due to this tight mid design become smaller and stick to the chest, alot zhouwhen\"",
+        "meaningCn": "真实穿搭历史记录值: \"The big purple bra due to this tight mid design become smaller and stick to the chest, alot zhouwhen\""
+      },
+      {
+        "valueEn": "full and beautiful, need big bra, need waist belt, and hot and sweat at noon",
+        "valueCn": "full and beautiful, need ...",
+        "meaningEn": "Real historical journal observation: \"full and beautiful, need big bra, need waist belt, and hot and sweat at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"full and beautiful, need big bra, need waist belt, and hot and sweat at noon\""
+      },
+      {
+        "valueEn": "The big purple bra due to this tight mid design become smaller and stick to the chest.  Look small less beutiful. And very tight, will hot at noon",
+        "valueCn": "The big purple bra due to...",
+        "meaningEn": "Real historical journal observation: \"The big purple bra due to this tight mid design become smaller and stick to the chest.  Look small less beutiful. And very tight, will hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"The big purple bra due to this tight mid design become smaller and stick to the chest.  Look small less beutiful. And very tight, will hot at noon\""
+      },
+      {
+        "valueEn": "big bra better for this clothes, so hot at noon, and the waist desgin is ulgy, quite alot zhouwhen",
+        "valueCn": "big bra better for this c...",
+        "meaningEn": "Real historical journal observation: \"big bra better for this clothes, so hot at noon, and the waist desgin is ulgy, quite alot zhouwhen\"",
+        "meaningCn": "真实穿搭历史记录值: \"big bra better for this clothes, so hot at noon, and the waist desgin is ulgy, quite alot zhouwhen\""
+      },
+      {
+        "valueEn": "small bra better shape of breast, quite not beutiful (the dress mid design)",
+        "valueCn": "small bra better shape of...",
+        "meaningEn": "Real historical journal observation: \"small bra better shape of breast, quite not beutiful (the dress mid design)\"",
+        "meaningCn": "真实穿搭历史记录值: \"small bra better shape of breast, quite not beutiful (the dress mid design)\""
+      },
+      {
+        "valueEn": "Big bra quite not beutiful",
+        "valueCn": "Big bra quite not beutifu...",
+        "meaningEn": "Real historical journal observation: \"Big bra quite not beutiful\"",
+        "meaningCn": "真实穿搭历史记录值: \"Big bra quite not beutiful\""
+      },
+      {
+        "valueEn": "Ok side, but the dress cutting of mid is quite alot zhouwhen, not so beautiful",
+        "valueCn": "Ok side, but the dress cu...",
+        "meaningEn": "Real historical journal observation: \"Ok side, but the dress cutting of mid is quite alot zhouwhen, not so beautiful\"",
+        "meaningCn": "真实穿搭历史记录值: \"Ok side, but the dress cutting of mid is quite alot zhouwhen, not so beautiful\""
+      },
+      {
+        "valueEn": "The big blue bra due to this tight mid design become big and big and big and stick to the chest, like d , e cup",
+        "valueCn": "The big blue bra due to t...",
+        "meaningEn": "Real historical journal observation: \"The big blue bra due to this tight mid design become big and big and big and stick to the chest, like d , e cup\"",
+        "meaningCn": "真实穿搭历史记录值: \"The big blue bra due to this tight mid design become big and big and big and stick to the chest, like d , e cup\""
+      },
+      {
+        "valueEn": "The big blue bra due to this tight mid design become smaller and stick to the chest",
+        "valueCn": "The big blue bra due to t...",
+        "meaningEn": "Real historical journal observation: \"The big blue bra due to this tight mid design become smaller and stick to the chest\"",
+        "meaningCn": "真实穿搭历史记录值: \"The big blue bra due to this tight mid design become smaller and stick to the chest\""
+      },
+      {
+        "valueEn": "full and beautiful",
+        "valueCn": "full and beautiful",
+        "meaningEn": "Real historical journal observation: \"full and beautiful\"",
+        "meaningCn": "真实穿搭历史记录值: \"full and beautiful\""
+      },
+      {
+        "valueEn": "mid breast is little small when pair with [[small bra]] .side out, but still femiline , ok la.",
+        "valueCn": "mid breast is little smal...",
+        "meaningEn": "Real historical journal observation: \"mid breast is little small when pair with [[small bra]] .side out, but still femiline , ok la.\"",
+        "meaningCn": "真实穿搭历史记录值: \"mid breast is little small when pair with [[small bra]] .side out, but still femiline , ok la.\""
+      },
+      {
+        "valueEn": "full and beautiful, but the dress type make it drop little in middle look",
+        "valueCn": "full and beautiful, but t...",
+        "meaningEn": "Real historical journal observation: \"full and beautiful, but the dress type make it drop little in middle look\"",
+        "meaningCn": "真实穿搭历史记录值: \"full and beautiful, but the dress type make it drop little in middle look\""
+      },
+      {
+        "valueEn": "mid breast is little small when pair with [[hugo]] bra.side out, but still femiline , ok la.",
+        "valueCn": "mid breast is little smal...",
+        "meaningEn": "Real historical journal observation: \"mid breast is little small when pair with [[hugo]] bra.side out, but still femiline , ok la.\"",
+        "meaningCn": "真实穿搭历史记录值: \"mid breast is little small when pair with [[hugo]] bra.side out, but still femiline , ok la.\""
+      },
+      {
+        "valueEn": "mid breast is beautiful when see from top, and feel more heavy due to middle center breast of [[purple bra]]",
+        "valueCn": "mid breast is beautiful w...",
+        "meaningEn": "Real historical journal observation: \"mid breast is beautiful when see from top, and feel more heavy due to middle center breast of [[purple bra]]\"",
+        "meaningCn": "真实穿搭历史记录值: \"mid breast is beautiful when see from top, and feel more heavy due to middle center breast of [[purple bra]]\""
+      },
+      {
+        "valueEn": "mid breast is beautiful when see from top, (baring view also  same) and feel more heavy due to middle center breast of [[purple bra]]",
+        "valueCn": "mid breast is beautiful w...",
+        "meaningEn": "Real historical journal observation: \"mid breast is beautiful when see from top, (baring view also  same) and feel more heavy due to middle center breast of [[purple bra]]\"",
+        "meaningCn": "真实穿搭历史记录值: \"mid breast is beautiful when see from top, (baring view also  same) and feel more heavy due to middle center breast of [[purple bra]]\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "night mid breast",
+    "fieldNameCn": "夜间胸口体感",
+    "category": "wearingReport",
+    "descriptionEn": "Chest comfort when lounging or lying down in the evening.",
+    "descriptionCn": "晚上休息或躺下时胸口是否被束缚或无感舒适。",
+    "typicalValues": [
+      {
+        "valueEn": "zero pressure",
+        "valueCn": "完全无感 / 彻底放松",
+        "meaningEn": "Zero constraint on ribcage and chest while relaxing or sleeping",
+        "meaningCn": "胸廓毫无压迫，呼吸深长顺畅，宛如无穿"
+      },
+      {
+        "valueEn": "mildly tight",
+        "valueCn": "微有束缚",
+        "meaningEn": "Noticeable tightness around band or straps when lying down",
+        "meaningCn": "平躺时感觉胸部仍有束缚或边沿勒肉"
+      },
+      {
+        "valueEn": "With hugo bra , quite small breast. It is too side. Normally the white marry will center it. Because sleep style?",
+        "valueCn": "With hugo bra , quite sma...",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , quite small breast. It is too side. Normally the white marry will center it. Because sleep style?\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , quite small breast. It is too side. Normally the white marry will center it. Because sleep style?\""
+      },
+      {
+        "valueEn": "With big bra , more better mid breast shape , but due to the dress cutting of mid upper edge will drop little bit also, no so beautiful as other full and round model",
+        "valueCn": "With big bra , more bette...",
+        "meaningEn": "Real historical journal observation: \"With big bra , more better mid breast shape , but due to the dress cutting of mid upper edge will drop little bit also, no so beautiful as other full and round model\"",
+        "meaningCn": "真实穿搭历史记录值: \"With big bra , more better mid breast shape , but due to the dress cutting of mid upper edge will drop little bit also, no so beautiful as other full and round model\""
+      },
+      {
+        "valueEn": "With hugo bra , is ok size breast, can be bigger",
+        "valueCn": "With hugo bra , is ok siz...",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , is ok size breast, can be bigger\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , is ok size breast, can be bigger\""
+      },
+      {
+        "valueEn": "With big bra , quite full breast. Warm. Waist design still ok with big bra. Small bra?",
+        "valueCn": "With big bra , quite full...",
+        "meaningEn": "Real historical journal observation: \"With big bra , quite full breast. Warm. Waist design still ok with big bra. Small bra?\"",
+        "meaningCn": "真实穿搭历史记录值: \"With big bra , quite full breast. Warm. Waist design still ok with big bra. Small bra?\""
+      },
+      {
+        "valueEn": "With hugo bra , no so hot",
+        "valueCn": "With hugo bra , no so hot",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , no so hot\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , no so hot\""
+      },
+      {
+        "valueEn": "With hugo bra , quite full breast. Warm, no so so over center, nice",
+        "valueCn": "With hugo bra , quite ful...",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , quite full breast. Warm, no so so over center, nice\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , quite full breast. Warm, no so so over center, nice\""
+      },
+      {
+        "valueEn": "With hugo bra , quitr small breast.",
+        "valueCn": "With hugo bra , quitr sma...",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , quitr small breast.\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , quitr small breast.\""
+      },
+      {
+        "valueEn": "With big bra , quite full breast. Warm",
+        "valueCn": "With big bra , quite full...",
+        "meaningEn": "Real historical journal observation: \"With big bra , quite full breast. Warm\"",
+        "meaningCn": "真实穿搭历史记录值: \"With big bra , quite full breast. Warm\""
+      },
+      {
+        "valueEn": "With hugo bra , no so hot, need manual ji xiong",
+        "valueCn": "With hugo bra , no so hot...",
+        "meaningEn": "Real historical journal observation: \"With hugo bra , no so hot, need manual ji xiong\"",
+        "meaningCn": "真实穿搭历史记录值: \"With hugo bra , no so hot, need manual ji xiong\""
+      },
+      {
+        "valueEn": "With big bra , more better mid breast shape , but due to the dress cutting of mid is quite alot zhouwhen, no so beautiful as other full and round model",
+        "valueCn": "With big bra , more bette...",
+        "meaningEn": "Real historical journal observation: \"With big bra , more better mid breast shape , but due to the dress cutting of mid is quite alot zhouwhen, no so beautiful as other full and round model\"",
+        "meaningCn": "真实穿搭历史记录值: \"With big bra , more better mid breast shape , but due to the dress cutting of mid is quite alot zhouwhen, no so beautiful as other full and round model\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "leg feel",
+    "fieldNameCn": "白天腿部与下身舒适度",
+    "category": "wearingReport",
+    "descriptionEn": "Evaluates leg mobility, thigh friction, waistband ease, and airflow while walking or sitting during daytime.",
+    "descriptionCn": "白天行走或久坐时的腿部舒展度、大腿内侧摩擦、腰头勒腹感及下身透气性。",
+    "typicalValues": [
+      {
+        "valueEn": "comfortable / free",
+        "valueCn": "舒适自如 / 迈步轻松",
+        "meaningEn": "Legs move freely, no thigh friction or hemline pulling",
+        "meaningCn": "行走大步自如，大腿内侧不磨皮，坐下腰臀不勒"
+      },
+      {
+        "valueEn": "a bit tight",
+        "valueCn": "微紧 / 稍有摩擦",
+        "meaningEn": "Slight friction or waistband tightness during extended walking",
+        "meaningCn": "腰腹或大腿稍有紧绷，久坐有轻微勒痕"
+      },
+      {
+        "valueEn": "tight / restrictive",
+        "valueCn": "紧绷迈不开步 / 勒腹",
+        "meaningEn": "Tight fit restricting stride or cutting into waist/hips",
+        "meaningCn": "版型过紧或无弹力，迈不开腿，坐下压迫胃腹部"
+      },
+      {
+        "valueEn": "like dress not pant, skirt quite middle thick , no so cold leg",
+        "valueCn": "like dress not pant, skir...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, skirt quite middle thick , no so cold leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, skirt quite middle thick , no so cold leg\""
+      },
+      {
+        "valueEn": "Short dress",
+        "valueCn": "Short dress",
+        "meaningEn": "Real historical journal observation: \"Short dress\"",
+        "meaningCn": "真实穿搭历史记录值: \"Short dress\""
+      },
+      {
+        "valueEn": "like dress not pant, short dress, chiffon, thin, not hot at noon",
+        "valueCn": "like dress not pant, shor...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, short dress, chiffon, thin, not hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, short dress, chiffon, thin, not hot at noon\""
+      },
+      {
+        "valueEn": "Skirt quite long, thin, but the inner will stick to leg may swear?",
+        "valueCn": "Skirt quite long, thin, b...",
+        "meaningEn": "Real historical journal observation: \"Skirt quite long, thin, but the inner will stick to leg may swear?\"",
+        "meaningCn": "真实穿搭历史记录值: \"Skirt quite long, thin, but the inner will stick to leg may swear?\""
+      },
+      {
+        "valueEn": "like dress not pant, short dress, chiffon, not hot at noon, cold leg",
+        "valueCn": "like dress not pant, shor...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, short dress, chiffon, not hot at noon, cold leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, short dress, chiffon, not hot at noon, cold leg\""
+      },
+      {
+        "valueEn": "like dress not pant, skirt quite middle thick , but short, so middle cold leg",
+        "valueCn": "like dress not pant, skir...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, skirt quite middle thick , but short, so middle cold leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, skirt quite middle thick , but short, so middle cold leg\""
+      },
+      {
+        "valueEn": "Long dress  more hot and sweat at noon",
+        "valueCn": "Long dress  more hot and ...",
+        "meaningEn": "Real historical journal observation: \"Long dress  more hot and sweat at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress  more hot and sweat at noon\""
+      },
+      {
+        "valueEn": "like dress not pant, short dress, chiffon, not hot at noon",
+        "valueCn": "like dress not pant, shor...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, short dress, chiffon, not hot at noon\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, short dress, chiffon, not hot at noon\""
+      },
+      {
+        "valueEn": "Skirt quite long",
+        "valueCn": "Skirt quite long",
+        "meaningEn": "Real historical journal observation: \"Skirt quite long\"",
+        "meaningCn": "真实穿搭历史记录值: \"Skirt quite long\""
+      },
+      {
+        "valueEn": "like dress not pant, skirt middle long, skirt quite middle thick , no so cold leg",
+        "valueCn": "like dress not pant, skir...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, skirt middle long, skirt quite middle thick , no so cold leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, skirt middle long, skirt quite middle thick , no so cold leg\""
+      },
+      {
+        "valueEn": "like dress not pant, short dress cold little but middle thick material still ok",
+        "valueCn": "like dress not pant, shor...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, short dress cold little but middle thick material still ok\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, short dress cold little but middle thick material still ok\""
+      },
+      {
+        "valueEn": "like dress not pant, same like dress when sleep easy fold up and pee",
+        "valueCn": "like dress not pant, same...",
+        "meaningEn": "Real historical journal observation: \"like dress not pant, same like dress when sleep easy fold up and pee\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant, same like dress when sleep easy fold up and pee\""
+      },
+      {
+        "valueEn": "like dress not pant",
+        "valueCn": "like dress not pant",
+        "meaningEn": "Real historical journal observation: \"like dress not pant\"",
+        "meaningCn": "真实穿搭历史记录值: \"like dress not pant\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "night leg feel",
+    "fieldNameCn": "夜间腿部与下身放松度",
+    "category": "wearingReport",
+    "descriptionEn": "Assesses lower-body comfort, relaxation, and lack of constriction when lounging or resting at night.",
+    "descriptionCn": "傍晚居家休息、蜷腿或睡眠时下身腿部的柔软亲肤感与无拘束度。",
+    "typicalValues": [
+      {
+        "valueEn": "relaxed & soft",
+        "valueCn": "极度放松 / 柔软亲肤",
+        "meaningEn": "Zero constraint on lower body, soft breathable fabric for evening lounge",
+        "meaningCn": "下身毫无压力，面料细腻亲肤，极适合居家休息"
+      },
+      {
+        "valueEn": "warm & cozy",
+        "valueCn": "温暖舒适",
+        "meaningEn": "Pleasantly warm during evening chill without overheating",
+        "meaningCn": "夜间防凉保暖适中，不闷热"
+      },
+      {
+        "valueEn": "stuffy / sticky",
+        "valueCn": "闷热或粘身",
+        "meaningEn": "Fabric traps heat or clings uncomfortably to legs at night",
+        "meaningCn": "排湿透气差，裤腿黏腿或闷热烦躁"
+      },
+      {
+        "valueEn": "Long dress, cold  leg, dont know why the skirt feel thin now",
+        "valueCn": "Long dress, cold  leg, do...",
+        "meaningEn": "Real historical journal observation: \"Long dress, cold  leg, dont know why the skirt feel thin now\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress, cold  leg, dont know why the skirt feel thin now\""
+      },
+      {
+        "valueEn": "Middle dress,  sit is long but ,but sleep is short , quite cold for leg when sleep,",
+        "valueCn": "Middle dress,  sit is lon...",
+        "meaningEn": "Real historical journal observation: \"Middle dress,  sit is long but ,but sleep is short , quite cold for leg when sleep,\"",
+        "meaningCn": "真实穿搭历史记录值: \"Middle dress,  sit is long but ,but sleep is short , quite cold for leg when sleep,\""
+      },
+      {
+        "valueEn": "Middle Long dress, no so cold for leg, but at midnight 4am will cold",
+        "valueCn": "Middle Long dress, no so ...",
+        "meaningEn": "Real historical journal observation: \"Middle Long dress, no so cold for leg, but at midnight 4am will cold\"",
+        "meaningCn": "真实穿搭历史记录值: \"Middle Long dress, no so cold for leg, but at midnight 4am will cold\""
+      },
+      {
+        "valueEn": "Middle dress,  sit is long but ,quite cold for leg when sleep,",
+        "valueCn": "Middle dress,  sit is lon...",
+        "meaningEn": "Real historical journal observation: \"Middle dress,  sit is long but ,quite cold for leg when sleep,\"",
+        "meaningCn": "真实穿搭历史记录值: \"Middle dress,  sit is long but ,quite cold for leg when sleep,\""
+      },
+      {
+        "valueEn": "Long dress, no so cold for leg, but at midnight 4am will cold",
+        "valueCn": "Long dress, no so cold fo...",
+        "meaningEn": "Real historical journal observation: \"Long dress, no so cold for leg, but at midnight 4am will cold\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress, no so cold for leg, but at midnight 4am will cold\""
+      },
+      {
+        "valueEn": "Short dress, thin, cold for leg",
+        "valueCn": "Short dress, thin, cold f...",
+        "meaningEn": "Real historical journal observation: \"Short dress, thin, cold for leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"Short dress, thin, cold for leg\""
+      },
+      {
+        "valueEn": "Long dress, cold  leg, the inner is short and the outer is thin",
+        "valueCn": "Long dress, cold  leg, th...",
+        "meaningEn": "Real historical journal observation: \"Long dress, cold  leg, the inner is short and the outer is thin\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress, cold  leg, the inner is short and the outer is thin\""
+      },
+      {
+        "valueEn": "Long dress, no so cold for leg",
+        "valueCn": "Long dress, no so cold fo...",
+        "meaningEn": "Real historical journal observation: \"Long dress, no so cold for leg\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress, no so cold for leg\""
+      },
+      {
+        "valueEn": "Long dress, cold  leg, dont know why the skirt go out…..",
+        "valueCn": "Long dress, cold  leg, do...",
+        "meaningEn": "Real historical journal observation: \"Long dress, cold  leg, dont know why the skirt go out…..\"",
+        "meaningCn": "真实穿搭历史记录值: \"Long dress, cold  leg, dont know why the skirt go out…..\""
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "report detail",
+    "fieldNameCn": "穿着体验日志与随笔",
+    "category": "wearingReport",
+    "descriptionEn": "Personal styling reflections, compliments received, unexpected weather changes, and outfit diary notes.",
+    "descriptionCn": "本次整套搭配的综合上身体验随笔、外界评价反馈、温湿度应对反思以及搭配心得记录。",
+    "typicalValues": [
+      {
+        "valueEn": "From 9.30pm to 5am, 7.30hour",
+        "valueCn": "晚上9点半至早5点 (7.5小时睡眠)",
+        "meaningEn": "Overnight wear duration under fan/aircon sleep conditions",
+        "meaningCn": "夜间整夜穿着与睡眠温感，重点关注凌晨体温变化与风扇散热"
+      },
+      {
+        "valueEn": "12.20 - 6pm (daytime noon wear)",
+        "valueCn": "中午12:20至傍晚6点 (日间高温时段)",
+        "meaningEn": "Peak midday thermal exposure testing breathability and sweat",
+        "meaningCn": "中午到傍晚高温高峰时段，重点测试排汗与闷热度"
+      },
+      {
+        "valueEn": "1hour at noon, weather not bad, but got little swear too",
+        "valueCn": "中午穿1小时微热出汗",
+        "meaningEn": "Brief noon wear experiencing slight perspiration",
+        "meaningCn": "正午短时活动，轻微冒汗排湿测试"
+      },
+      {
+        "valueEn": "1 to 6 am (5 hours sleep)",
+        "valueCn": "凌晨1点至6点 (5小时夜间)",
+        "meaningEn": "Deep sleep hours observing leg and shoulder comfort",
+        "meaningCn": "后半夜深睡时段，关注腿部是否着凉及肩部承托"
+      },
+      {
+        "valueEn": "The skirt is short at sleep",
+        "valueCn": "睡眠时裙摆容易缩短受凉",
+        "meaningEn": "Dress hikes up during sleep leaving legs exposed to draft",
+        "meaningCn": "睡眠翻身时裙摆上缩，导致下身或腿部受风着凉"
+      },
+      {
+        "valueEn": "1 to 6 am",
+        "valueCn": "1 to 6 am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "2 to 10am",
+        "valueCn": "2 to 10am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "From 9.30pm to 5am , 7.30hour",
+        "valueCn": "From 9.30pm to 5am , 7.30hour",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "11.30 to 7",
+        "valueCn": "11.30 to 7",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "3-8.30am",
+        "valueCn": "3-8.30am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "start 4.30pm - 6.30pm",
+        "valueCn": "start 4.30pm - 6.30pm",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "3-9 am",
+        "valueCn": "3-9 am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "10.30 to 3 am - 4.30hour",
+        "valueCn": "10.30 to 3 am - 4.30hour",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "1 - 6",
+        "valueCn": "1 - 6",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "9-1am",
+        "valueCn": "9-1am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "1.30 -7.30am",
+        "valueCn": "1.30 -7.30am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "The skirt is short at sleep…",
+        "valueCn": "睡眠时裙摆容易缩短受凉",
+        "meaningEn": "Skirt rides up during sleep exposing legs to air",
+        "meaningCn": "睡眠翻身时裙摆上缩，导致下身或腿部受风着凉"
+      },
+      {
+        "valueEn": "6.30 - 9",
+        "valueCn": "6.30 - 9",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "4.30- 7.30am",
+        "valueCn": "4.30- 7.30am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "10.40 to 6am",
+        "valueCn": "10.40 to 6am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "9.30 - 3am",
+        "valueCn": "9.30 - 3am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "3-5pm",
+        "valueCn": "3-5pm",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "12-6am, first test , quite full , quit beautiful, can wash dry? Skirt will up ?",
+        "valueCn": "睡眠时裙摆容易缩短受凉",
+        "meaningEn": "Skirt rides up during sleep exposing legs to air",
+        "meaningCn": "睡眠翻身时裙摆上缩，导致下身或腿部受风着凉"
+      },
+      {
+        "valueEn": "9.30 - 12",
+        "valueCn": "9.30 - 12",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "10.30 to 6.30",
+        "valueCn": "10.30 to 6.30",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "12.20 - 6pm",
+        "valueCn": "12.20 - 6pm",
+        "meaningEn": "Midday thermal & sweat journal log",
+        "meaningCn": "日间/正午穿着时段与排汗随笔日志"
+      },
+      {
+        "valueEn": "8-9am",
+        "valueCn": "8-9am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "11.30pm - 6am",
+        "valueCn": "11.30pm - 6am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "10.20 - 1.20am",
+        "valueCn": "10.20 - 1.20am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "1.30 to 6",
+        "valueCn": "1.30 to 6",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "4-7",
+        "valueCn": "4-7",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "10.20pm - 7am - 8.40hour",
+        "valueCn": "10.20pm - 7am - 8.40hour",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "7-10am -3hour",
+        "valueCn": "7-10am -3hour",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "1.30 to 7",
+        "valueCn": "1.30 to 7",
+        "meaningEn": "Recorded in wear journal (1x)",
+        "meaningCn": "穿搭日记真实输入值 (历史记录 1 次)"
+      },
+      {
+        "valueEn": "Quite tight blue big bra with this white dress",
+        "valueCn": "Quite tight blue big bra with this white dress",
+        "meaningEn": "Bra matching ergonomics and tension feedback",
+        "meaningCn": "文胸搭配与底围胸口聚拢压迫感反馈"
+      },
+      {
+        "valueEn": "1hour at noon , weather not bad, but got little swear too",
+        "valueCn": "1hour at noon , weather not bad, but got little swear too",
+        "meaningEn": "Midday thermal & sweat journal log",
+        "meaningCn": "日间/正午穿着时段与排汗随笔日志"
+      },
+      {
+        "valueEn": "1 hour little swear and little hot",
+        "valueCn": "1 hour little swear and little hot",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "4-9am",
+        "valueCn": "4-9am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "9-4am",
+        "valueCn": "9-4am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "3am-9am",
+        "valueCn": "3am-9am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "12-9am , when wearing middle little small , material feel lace middle thick , may quite hot at noon",
+        "valueCn": "12-9am , when wearing middle little small , material feel lace middle thick , may quite hot at noon",
+        "meaningEn": "Midday thermal & sweat journal log",
+        "meaningCn": "日间/正午穿着时段与排汗随笔日志"
+      },
+      {
+        "valueEn": "Quick big center breast. Warm if noon is hot",
+        "valueCn": "Quick big center breast. Warm if noon is hot",
+        "meaningEn": "Midday thermal & sweat journal log",
+        "meaningCn": "日间/正午穿着时段与排汗随笔日志"
+      },
+      {
+        "valueEn": "11pm to 3am",
+        "valueCn": "11pm to 3am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "Start 5am - 7am",
+        "valueCn": "Start 5am - 7am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      },
+      {
+        "valueEn": "10.40pm to 5am",
+        "valueCn": "10.40pm to 5am",
+        "meaningEn": "Wear session time window and sleep duration",
+        "meaningCn": "穿着具体时间段与睡眠时长随笔记录"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "categories",
+    "fieldNameCn": "穿搭场合与场景分类",
+    "category": "wearingReport",
+    "descriptionEn": "Context or dress code of the day (e.g. Office/Work, Casual, Dining/Date, Workout, Travel).",
+    "descriptionCn": "本次穿着适用的具体生活与社交场景（如：职场通勤、休闲逛街、约会聚餐、差旅出行、居家等）。",
+    "typicalValues": [
+      {
+        "valueEn": "Office / Work",
+        "valueCn": "职场通勤",
+        "meaningEn": "Professional workplace dress code",
+        "meaningCn": "严肃或半正式办公、重要商务或客户会议场景"
+      },
+      {
+        "valueEn": "Casual / Daily",
+        "valueCn": "日常休闲",
+        "meaningEn": "Relaxed weekend or neighborhood activities",
+        "meaningCn": "周末逛街、居家闲适或户外漫步"
+      },
+      {
+        "valueEn": "Date / Dining",
+        "valueCn": "约会聚餐",
+        "meaningEn": "Social gatherings, romantic dinner or brunch",
+        "meaningCn": "聚会拍照、餐饮约会，兼顾美感与自如"
+      },
+      {
+        "valueEn": "Travel / Commute",
+        "valueCn": "差旅出行",
+        "meaningEn": "Long sitting or walking during transit",
+        "meaningCn": "高铁飞机长途跋涉，注重抗皱与耐脏"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "tags",
+    "fieldNameCn": "风格与美学体感标签",
+    "category": "wearingReport",
+    "descriptionEn": "Multi-select aesthetic and sensory tags capturing outfit style, silhouette, and emotional impression.",
+    "descriptionCn": "本次搭配的风格美学与情绪体感标签（如：显瘦、极简、复古、高级感、松弛感等）。",
+    "typicalValues": [
+      {
+        "valueEn": "Slimming",
+        "valueCn": "显瘦高挑",
+        "meaningEn": "Elongating visual silhouette with clean lines",
+        "meaningCn": "视觉拉长身形，遮肉显精神"
+      },
+      {
+        "valueEn": "Minimalist",
+        "valueCn": "极简高级",
+        "meaningEn": "Clean cuts and restrained neutral tones",
+        "meaningCn": "素雅克制，低调质感"
+      },
+      {
+        "valueEn": "Comfort First",
+        "valueCn": "舒适优先",
+        "meaningEn": "Zero pressure sensory comfort all day long",
+        "meaningCn": "身体第一，全天无感自由"
+      },
+      {
+        "valueEn": "Chic & Layered",
+        "valueCn": "时髦层次",
+        "meaningEn": "Sophisticated textural or color layering",
+        "meaningCn": "层次丰富，富有造型感"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "wear date",
+    "fieldNameCn": "穿着日期",
+    "category": "wearingReport",
+    "descriptionEn": "The calendar date when this outfit was worn, linking to seasonal weather and wear history.",
+    "descriptionCn": "本次整套衣服上身穿着的具体公历日期，关联气温季节与历史穿着周期。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "Name",
+    "fieldNameCn": "报告名称 / 穿搭主题",
+    "category": "wearingReport",
+    "descriptionEn": "Descriptive title or theme for this outfit session (e.g. 2026-09-10 Work Outfit, Autumn Coffee Walk).",
+    "descriptionCn": "本次穿搭报告的自定义主题标题（例如：周一重要提案装、秋日午后咖啡漫步）。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "AI Wearing Analysis",
+    "fieldNameCn": "AI 穿着多维度诊断分析",
+    "category": "wearingReport",
+    "descriptionEn": "Multi-dimensional grounded AI evaluation of styling coherence, color harmony, thermal fit, and laundry recommendations.",
+    "descriptionCn": "由 AI 生成的多维度整套穿搭评测，涵盖配色协调度、温湿度体感适配与洗护优化建议。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "Pictures",
+    "fieldNameCn": "穿搭上身照片与视觉记录",
+    "category": "wearingReport",
+    "descriptionEn": "Full-body outfit photos or detail shots documenting the visual silhouette, draping, and real-life look.",
+    "descriptionCn": "本次穿着的全身穿搭照、局部特写或镜面自拍，记录真实垂坠感与搭配效果。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "weather",
+    "fieldNameCn": "天气与气候环境",
+    "category": "wearingReport",
+    "descriptionEn": "Ambient outdoor weather during the wear session (e.g. Sunny, Rain, Cloudy, Overcast, Breeze).",
+    "descriptionCn": "穿搭当天的室外天气环境（如：晴天艳阳、小雨、多云阴天、阵风等），影响面料抗湿与防风表现。",
+    "typicalValues": [
+      {
+        "valueEn": "Sunny / Clear",
+        "valueCn": "晴朗明媚",
+        "meaningEn": "Bright sunlight, UV protection required",
+        "meaningCn": "晴天少云，需要透气或防晒"
+      },
+      {
+        "valueEn": "Cloudy / Overcast",
+        "valueCn": "多云阴天",
+        "meaningEn": "Mild indirect sunlight with moderate humidity",
+        "meaningCn": "光线柔和，气温平稳"
+      },
+      {
+        "valueEn": "Rainy / Humid",
+        "valueCn": "小雨潮湿",
+        "meaningEn": "Wet conditions requiring water-resistant or quick-dry garments",
+        "meaningCn": "下雨湿冷，需注意防溅水与速干"
+      },
+      {
+        "valueEn": "Breezy / Windy",
+        "valueCn": "大风降温",
+        "meaningEn": "Strong air movement necessitating outer windbreaker",
+        "meaningCn": "风大，需要防风外套或适当添衣"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "temperature",
+    "fieldNameCn": "气温与体感温标",
+    "category": "wearingReport",
+    "descriptionEn": "Recorded temperature range or perceived thermal comfort (e.g. 24°C pleasant, 15°C chilly, 32°C hot).",
+    "descriptionCn": "当天环境温度或冷热体感指标（如：舒适凉爽 22°C、初秋微凉 16°C、炎炎夏日 33°C 等）。",
+    "typicalValues": [
+      {
+        "valueEn": "Cool / Chilly (<18°C)",
+        "valueCn": "凉爽微寒 (18°C以下)",
+        "meaningEn": "Requires knitwear or jacket layers",
+        "meaningCn": "需添毛衣或夹克外套"
+      },
+      {
+        "valueEn": "Pleasant & Mild (18-25°C)",
+        "valueCn": "舒适宜人 (18-25°C)",
+        "meaningEn": "Goldilocks thermal zone, single layer or light shirt",
+        "meaningCn": "最舒适温度，衬衫或单衣即可"
+      },
+      {
+        "valueEn": "Warm to Hot (>26°C)",
+        "valueCn": "温热闷热 (26°C以上)",
+        "meaningEn": "Lightweight linen or cotton, maximum breathability",
+        "meaningCn": "需穿透气纯棉或亚麻，散热排汗"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "overall satisfaction",
+    "fieldNameCn": "综合穿搭满意度",
+    "category": "wearingReport",
+    "descriptionEn": "Holistic self-rating of the outfit taking into account aesthetics, confidence, and physical comfort.",
+    "descriptionCn": "对整套穿搭在上身颜值、自信气场与生理舒适度维度的综合满意度评星。",
+    "typicalValues": [
+      {
+        "valueEn": "5-Star Loved",
+        "valueCn": "极其满意 (满分爱穿)",
+        "meaningEn": "Perfect synergy of comfort and style, will definitely re-wear",
+        "meaningCn": "极度惊艳且整天毫无束缚，列入高频循环清单"
+      },
+      {
+        "valueEn": "4-Star Good",
+        "valueCn": "良好推荐 (舒适协调)",
+        "meaningEn": "Very satisfactory outfit with minor room for accessories",
+        "meaningCn": "整体大方得体，体验很好"
+      },
+      {
+        "valueEn": "3-Star Average",
+        "valueCn": "普通中规中矩",
+        "meaningEn": "Acceptable but feels ordinary or slightly uncomfortable",
+        "meaningCn": "中规中矩，无功无过"
+      },
+      {
+        "valueEn": "Needs Adjustment",
+        "valueCn": "有待改进 (踩雷或不合身)",
+        "meaningEn": "Uncomfortable or mismatched silhouette, should rethink styling",
+        "meaningCn": "单品间有冲突或某件勒痛磨皮，下次需调整单品搭配"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "activities",
+    "fieldNameCn": "主要活动与行动轨迹",
+    "category": "wearingReport",
+    "descriptionEn": "Primary physical activities performed during this session (e.g. Desk office work, Walking/Transit, Dining, Workout).",
+    "descriptionCn": "本次穿着期间的主要身体活动形式（如：久坐办公、长途步行通勤、聚餐约会、健身运动等）。",
+    "typicalValues": [
+      {
+        "valueEn": "Office / Desk Work",
+        "valueCn": "久坐办公",
+        "meaningEn": "Extended sitting, checks waistband and back comfort",
+        "meaningCn": "长时间伏案坐着，检验腰腹舒适度"
+      },
+      {
+        "valueEn": "Walking / Commute",
+        "valueCn": "步行通勤",
+        "meaningEn": "Active walking testing shoes, stride, and thigh rub",
+        "meaningCn": "大步快走，检验迈步自由度与裤腿摩擦"
+      },
+      {
+        "valueEn": "Dining / Social",
+        "valueCn": "聚会餐饮",
+        "meaningEn": "Relaxed dining, social photos, and stomach expansion",
+        "meaningCn": "饱餐进食，考验腰头延展度与拍照上镜度"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "aiReports",
+    "fieldNameCn": "历史 AI 诊断版本集",
+    "category": "wearingReport",
+    "descriptionEn": "Multi-version history of grounded AI advisor evaluations and styling diagnostics saved across iterations.",
+    "descriptionCn": "本次报告历次由 AI 生成的造型诊断、改款建议与色彩分析的历史版本集合。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "created",
+    "fieldNameCn": "记录创建时间",
+    "category": "wearingReport",
+    "descriptionEn": "Exact timestamp when this wearing log was created in the wardrobe database.",
+    "descriptionCn": "本条穿着报告在系统数据库中生成的创建时间戳。",
+    "typicalValues": []
+  },
+  {
+    "fieldNameEn": "wash stated",
+    "fieldNameCn": "洗护标记状态",
+    "category": "junction",
+    "descriptionEn": "Indicates whether the specific garment worn in this session was washed or still unwashed.",
+    "descriptionCn": "标记本次穿着后该件单品是已洗净还是待洗（需洗涤）。",
+    "typicalValues": [
+      {
+        "valueEn": "wash",
+        "valueCn": "已清洗 (Clean)",
+        "meaningEn": "Item was laundered after this wearing session",
+        "meaningCn": "本场次穿着后已放入洗衣并完成清洗"
+      },
+      {
+        "valueEn": "need wash",
+        "valueCn": "待洗 (Dirty/Unwashed)",
+        "meaningEn": "Item is dirty or accumulated wear time and must be washed",
+        "meaningCn": "未清洗，已累积穿着时长或沾汗，进入待洗清单"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "duration",
+    "fieldNameCn": "穿着时长 (秒数)",
+    "category": "junction",
+    "descriptionEn": "Duration in seconds this garment was worn in this session (e.g. 14400s = 4h).",
+    "descriptionCn": "本次 session 该单品的实际穿着时间（秒数换算，例如 14400 秒 = 4 小时）。",
+    "typicalValues": [
+      {
+        "valueEn": "27000 (7.5 hours)",
+        "valueCn": "7.5 小时 (全夜长时穿着)",
+        "meaningEn": "Standard overnight sleeping session duration",
+        "meaningCn": "完整的夜间睡眠穿搭时段 (如 9:30pm - 5:00am)"
+      },
+      {
+        "valueEn": "19800 (5.5 hours)",
+        "valueCn": "5.5 小时 (半夜或清晨睡眠)",
+        "meaningEn": "Medium sleeping session or late sleep period",
+        "meaningCn": "较短睡眠时段 (如 3:00am - 8:30am)"
+      },
+      {
+        "valueEn": "3600 (1.0 hour)",
+        "valueCn": "1.0 小时 (日间短时试穿测试)",
+        "meaningEn": "Brief daytime trial for heat and noon fit check",
+        "meaningCn": "正午或下午短时穿搭，重点测验散热透气"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "wet",
+    "fieldNameCn": "衣物潮湿发黏度 / 排湿速干状态",
+    "category": "clothes",
+    "descriptionEn": "Tracks moisture retention, sweat clinginess, and how wet or dry the garment stays or dries during wear.",
+    "descriptionCn": "评估该衣物在穿着过程中的吸汗潮湿程度、是否容易被汗水浸湿黏身，以及面料的速干排湿表现。",
+    "typicalValues": [
+      {
+        "valueEn": "dry",
+        "valueCn": "干爽 / 不易受潮浸湿",
+        "meaningEn": "Fabric remains dry, quick-drying or repels moisture well without clinging",
+        "meaningCn": "不易吸湿发黏或透气快干，穿着全程保持干爽舒适"
+      },
+      {
+        "valueEn": "middle",
+        "valueCn": "适中 / 半干半湿",
+        "meaningEn": "Moderate moisture, neither bone dry nor completely soaked",
+        "meaningCn": "排湿透气适中，微有体感但未明显积汗黏腻"
+      },
+      {
+        "valueEn": "little wet",
+        "valueCn": "微湿 / 局部微潮",
+        "meaningEn": "Slight dampness around sweat zones or high humidity, but acceptable",
+        "meaningCn": "局部有轻微潮气或微汗微湿，但尚不至于大面积贴身黏腻"
+      },
+      {
+        "valueEn": "wet",
+        "valueCn": "潮湿 / 易浸湿黏身",
+        "meaningEn": "Traps sweat or moisture, heavy fabric or poor evaporation causing dampness",
+        "meaningCn": "容易受汗浸湿、排湿不良或面料厚重受潮，穿着后有湿热黏身感"
+      },
+      {
+        "valueEn": "need dry",
+        "valueCn": "需晾干 / 需风干",
+        "meaningEn": "Garment is damp or sweaty and requires drying/airing before next wear",
+        "meaningCn": "穿着后局部受潮或微湿，需要悬挂晾干通风"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "wet reason",
+    "fieldNameCn": "潮湿/干爽原因与面料结构",
+    "category": "clothes",
+    "descriptionEn": "Specific fabric, structural, or layered reason why the garment tends to remain dry or become wet (e.g. chiffon, lace, thick middle, plain thick).",
+    "descriptionCn": "导致该衣物保持干爽或容易潮湿的面料与版型结构原因（如：雪纺轻盈速干、蕾丝通透、夹层偏厚易捂汗等）。",
+    "typicalValues": [
+      {
+        "valueEn": "dry due to chiffon",
+        "valueCn": "因雪纺轻盈快干",
+        "meaningEn": "Chiffon fabric allows rapid moisture evaporation and stays dry",
+        "meaningCn": "雪纺材质透气飘逸，汗液迅速散发，保持干爽"
+      },
+      {
+        "valueEn": "dry due to lace",
+        "valueCn": "因蕾丝镂空透气干爽",
+        "meaningEn": "Open lace weave promotes airflow and prevents moisture buildup",
+        "meaningCn": "蕾丝网孔通风透气，不易聚汗"
+      },
+      {
+        "valueEn": "wet due to thick middle",
+        "valueCn": "因中间夹层厚实易闷湿",
+        "meaningEn": "Thick middle lining or dense core traps perspiration",
+        "meaningCn": "中间夹层或里料较厚，透气受阻容易积汗变湿"
+      },
+      {
+        "valueEn": "maybe dry due to plain thick",
+        "valueCn": "因平纹厚度适度吸湿防透",
+        "meaningEn": "Plain weave fabric maintains moderate absorption without feeling soaked",
+        "meaningCn": "平纹密织面料具有一定厚度吸汗，不易外透"
+      },
+      {
+        "valueEn": "maybe not wet",
+        "valueCn": "体感不易潮湿",
+        "meaningEn": "Perceived to remain dry under typical daily wear",
+        "meaningCn": "日常穿着体感良好，不易返潮湿热"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "Clothes Type",
+    "fieldNameCn": "款式品类与单品分类",
+    "category": "clothes",
+    "descriptionEn": "Core garment category classifying outer layer, underlayer, or accessories (e.g. Dress, bra, Tshirt, Pant, skirt, sweater, jacket).",
+    "descriptionCn": "单品核心品类，区分外穿大衣、裙装、内衣或裤装，用于指导搭配与温度层叠评估。",
+    "typicalValues": [
+      {
+        "valueEn": "Dress",
+        "valueCn": "连衣裙 / 连身裙",
+        "meaningEn": "One-piece dress, evaluates leg airflow, draft at sleep, and ease of bathroom visits",
+        "meaningCn": "连身裙装，通风度好但睡眠时需考察裙摆翻折与腿部受凉"
+      },
+      {
+        "valueEn": "bra",
+        "valueCn": "内衣 / 文胸",
+        "meaningEn": "Underwear bra, evaluates breast support, cup volume, strap pressure, and center gore comfort",
+        "meaningCn": "贴身文胸，重点考察承托力、杯型聚拢、肩带勒痕与心位压迫"
+      },
+      {
+        "valueEn": "Pant",
+        "valueCn": "长裤 / 短裤",
+        "meaningEn": "Pants, provides full leg wind protection but may feel constricting compared to dresses",
+        "meaningCn": "裤装，防风保暖性好，但透气性相比裙装略受限"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "long dress",
+    "fieldNameCn": "裙长版型与覆盖度",
+    "category": "clothes",
+    "descriptionEn": "Hemline length and leg coverage tier (short dress, middle dress, long dress) determining leg thermal protection and ease of walking.",
+    "descriptionCn": "裙长款式级别（短裙 short dress、中长裙 middle dress、长裙 long dress），直接影响坐姿腿部覆盖与夜间保暖。",
+    "typicalValues": [
+      {
+        "valueEn": "short dress",
+        "valueCn": "短裙 / 膝盖以上",
+        "meaningEn": "Hem above the knee, airy in daytime heat but offers little wind/chill protection at night",
+        "meaningCn": "膝上短裙，中午清爽透气，但夜间或凌晨4点容易腿凉"
+      },
+      {
+        "valueEn": "middle dress",
+        "valueCn": "中长裙 / 膝盖附近",
+        "meaningEn": "Hem around knee-length, sits long when seated but may hike up during sleeping",
+        "meaningCn": "中长款，坐姿时覆盖膝盖，但躺下睡眠时容易缩上去"
+      },
+      {
+        "valueEn": "long dress",
+        "valueCn": "长裙 / 覆盖小腿与脚踝",
+        "meaningEn": "Full length coverage, protects legs from drafts but fabric weight affects walking ease",
+        "meaningCn": "长裙摆，全腿防风防空调凉气，但需关注面料垂坠厚重感"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "beautiful",
+    "fieldNameCn": "外观美感与上身视觉评分",
+    "category": "clothes",
+    "descriptionEn": "Aesthetic evaluation of outfit silhouette, cut flatteringness, and visual styling appeal.",
+    "descriptionCn": "外观美观度综合评价，评估版型剪裁是否显瘦、线条是否优美饱满。",
+    "typicalValues": [
+      {
+        "valueEn": "Beautiful",
+        "valueCn": "优美 / 版型好看",
+        "meaningEn": "Flattering cut, elegant line, enhances natural silhouette",
+        "meaningCn": "版型优美，衬托身形线条，视觉效果极佳"
+      },
+      {
+        "valueEn": "Middle beautiful",
+        "valueCn": "中等美观 / 尚可接受",
+        "meaningEn": "Acceptable styling but may have minor flaws like awkward waist or drop in cup shape",
+        "meaningCn": "外观尚可，但可能存在腰身剪裁不够收紧或胸型偏低等瑕疵"
+      },
+      {
+        "valueEn": "not so beautiful",
+        "valueCn": "不够美观 / 版型不佳",
+        "meaningEn": "Unflattering, wrinkly, poor proportions, or incompatible bra pairing",
+        "meaningCn": "剪裁显臃肿、心位外露或易出褶皱，视觉效果不理想"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "beatiful reason",
+    "fieldNameCn": "美观原因与剪裁点评",
+    "category": "clothes",
+    "descriptionEn": "Specific design, color, or structural explanation why the garment looks beautiful or unflattering (e.g. waist cutting, zhouwen wrinkles, pink color, needs big bra).",
+    "descriptionCn": "导致该单品好看或不好看的具体版型原因（如：腰部剪裁收拢、褶皱 zhouwen、颜色提气色、搭配大内衣提升胸型等）。",
+    "typicalValues": [
+      {
+        "valueEn": "because green and chiffon",
+        "valueCn": "因绿色与雪纺飘逸优美",
+        "meaningEn": "Fresh color and flowy chiffon material create graceful aesthetic",
+        "meaningCn": "颜色清新雪纺飘逸，视觉效果柔和仙美"
+      },
+      {
+        "valueEn": "sit breast still ok, but waist cutting has zhouwen",
+        "valueCn": "坐姿承托尚可，但腰腹有褶皱影响美观",
+        "meaningEn": "Supportive at chest, but fabric wrinkles around waist and thin straps detract from appearance",
+        "meaningCn": "胸部尚可，但细肩带处有压迫且腰腹起皱(zhouwen)减损美观"
+      },
+      {
+        "valueEn": "need big bra to fill mid design",
+        "valueCn": "需搭配大号文胸撑起领口弧度",
+        "meaningEn": "Dress neckline requires fuller bra cup for optimal cleavage line and support",
+        "meaningCn": "领口剪裁开阔，需搭配饱满大罩杯才能撑起优美胸线"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "Descriptions",
+    "fieldNameCn": "单品详细描述 1 (背景与搭配注意)",
+    "category": "clothes",
+    "descriptionEn": "First primary background description of garment history, initial purchase intent, fabric tactile feel, or critical wearing quirks.",
+    "descriptionCn": "单品初次穿戴体验、购买初衷、贴肤触感及关键搭配禁忌（如是否扎肉、容易滑肩等）。",
+    "typicalValues": [
+      {
+        "valueEn": "a easy fall diao dai, thick clothes",
+        "valueCn": "细肩带易滑落，衣物偏厚",
+        "meaningEn": "Straps slip off shoulders easily and fabric is relatively thick",
+        "meaningCn": "肩带容易脱落，面料偏厚需留意中午捂热"
+      },
+      {
+        "valueEn": "soft feel, cutting design, breast loose but feminine",
+        "valueCn": "触感柔软，剪裁宽松优雅很有女人味",
+        "meaningEn": "Comfortable soft hand feel with feminine drape",
+        "meaningCn": "面料亲肤柔软，虽然胸围略松但整体垂感优雅"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "Descriptions 2",
+    "fieldNameCn": "单品详细描述 2 (裙摆遮蔽与保暖补充)",
+    "category": "clothes",
+    "descriptionEn": "Secondary observation covering hemline drape relative to knees, transparency shadow concerns, or extra warmth notes.",
+    "descriptionCn": "单品第二段补充描述，重点记录坐姿下摆过膝程度、透光投影及小腿御寒表现。",
+    "typicalValues": [
+      {
+        "valueEn": "sit is over knee long, protect cold",
+        "valueCn": "坐姿裙摆过膝，能够防寒",
+        "meaningEn": "Fabric covers knees when sitting to block cold drafts",
+        "meaningCn": "久坐时裙长超过膝盖，具有一定的挡风御寒作用"
+      },
+      {
+        "valueEn": "breast ok, skirt side too shadow",
+        "valueCn": "胸围合适，但裙侧透光有阴影",
+        "meaningEn": "Upper fit is good, but skirt fabric is sheer under bright lighting",
+        "meaningCn": "上半身尺寸贴合，但裙摆在光照下略显透光"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "last comment or action",
+    "fieldNameCn": "最新评语与处置建议",
+    "category": "clothes",
+    "descriptionEn": "Follow-up verdict and pragmatic actions for this garment (e.g. only wear on cool days, pair with specific bra, alteration needed, or difficult to dry).",
+    "descriptionCn": "最新一次穿着后的总结评语及后续穿搭对策（如：仅在天凉穿、固定搭配某款文胸、需局部缝合改造等）。",
+    "typicalValues": [
+      {
+        "valueEn": "hot at noon due to thick, night depend weather",
+        "valueCn": "中午因面料厚实闷热，夜间视天气而定",
+        "meaningEn": "Avoid peak daytime heat; night wear depends on ambient temperature",
+        "meaningCn": "中午不宜穿，夜间若天气凉爽或开风扇尚可"
+      },
+      {
+        "valueEn": "expensive and wear less frequency, but not easy dry",
+        "valueCn": "价格高穿得少，洗后较难晾干",
+        "meaningEn": "High value low rotation garment requiring careful drying",
+        "meaningCn": "昂贵单品，洗护需轻柔且面料厚重不易干透"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "may throw",
+    "fieldNameCn": "闲置与淘汰处置状态",
+    "category": "clothes",
+    "descriptionEn": "Lifecycle and decluttering status evaluating whether to keep, donate, repurpose, or discard.",
+    "descriptionCn": "衣物生命周期状态，记录是否考虑断舍离、淘汰弃置、闲置保留或留作特殊纪念款。",
+    "typicalValues": [
+      {
+        "valueEn": "may throw",
+        "valueCn": "考虑淘汰 / 拟弃置",
+        "meaningEn": "Garment causes irritation, poor fit, or persistent discomfort",
+        "meaningCn": "体感不适或版型不合身，拟淘汰断舍离"
+      },
+      {
+        "valueEn": "may no throw due to unique",
+        "valueCn": "因款式独特暂时保留",
+        "meaningEn": "Has comfort flaws but retained for unique styling or rare occasions",
+        "meaningCn": "虽有小瑕疵，但因剪裁或花色独一无二而继续保留"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "wash date",
+    "fieldNameCn": "单品清洗记录日期",
+    "category": "junction",
+    "descriptionEn": "Specific calendar date when the garment was washed following this wear session.",
+    "descriptionCn": "该单品在本次穿戴后实际浸水清洗的日期记录，用于计算洗涤间隔与衣物损耗。",
+    "typicalValues": [
+      {
+        "valueEn": "2026-07-23",
+        "valueCn": "2026年7月23日已洗涤",
+        "meaningEn": "Recorded wash date on calendar",
+        "meaningCn": "日历记录的真实清洗入水日期"
+      }
+    ]
+  },
+  {
+    "fieldNameEn": "customFields",
+    "fieldNameCn": "自定义扩展会话字段 (天气/室温/心率等)",
+    "category": "wearingReport",
+    "descriptionEn": "Dynamic key-value session attributes including weather conditions, indoor temperature, fan usage, or custom notes.",
+    "descriptionCn": "动态扩展的穿搭环境与会话数据，包括天气、室内温度、风扇档位或个性化备注指标。",
+    "typicalValues": [
+      {
+        "valueEn": "cutting: A-line, lining: double-layer",
+        "valueCn": "版型: A字版型，内衬: 双层",
+        "meaningEn": "Custom design specifications and attributes recorded by the user",
+        "meaningCn": "用户记录的个性化剪裁与版型特征"
+      },
+      {
+        "valueEn": "weather: sunny, temp: 31C",
+        "valueCn": "晴天，室温 31°C",
+        "meaningEn": "Recorded ambient conditions during wear",
+        "meaningCn": "穿着期间记录的环境温度与气候"
+      }
+    ]
+  }
+]

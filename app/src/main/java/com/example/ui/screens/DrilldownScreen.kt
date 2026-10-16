@@ -85,6 +85,7 @@ import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.drilldown.GroupSummary
 import com.example.ui.drilldown.PresetEditorModal
 import com.example.ui.drilldown.ReportPresetService
+import com.example.ui.drilldown.ReportFieldDef
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.ChevronRight
@@ -161,6 +162,11 @@ fun DrilldownScreen(
     var activePresetId by remember { mutableStateOf(presetService.getActivePresetId()) }
     val currentPreset = remember(presets, activePresetId) {
         presets.find { it.id == activePresetId } ?: presets.firstOrNull() ?: DEFAULT_DRILL_PRESETS.first()
+    }
+
+    androidx.compose.runtime.LaunchedEffect(clothes.size, reports.size) {
+        presets = presetService.getPresets()
+        activePresetId = presetService.getActivePresetId()
     }
     var showPresetEditor by remember { mutableStateOf(false) }
     var drillPath by remember(currentPreset.id) { mutableStateOf<List<DrilldownBreadcrumb>>(emptyList()) }
@@ -330,15 +336,27 @@ fun DrilldownScreen(
         val isLaptop = screenWidth >= 960.dp
         val isWide = isTablet || isLaptop
 
+        val subgroupColumns = when {
+            screenWidth >= 1000.dp -> 3
+            screenWidth >= 550.dp -> 2
+            else -> 1
+        }
+        val recordColumns = when {
+            screenWidth >= 1100.dp -> 4
+            screenWidth >= 800.dp -> 3
+            screenWidth >= 550.dp -> 2
+            else -> 1
+        }
+
         LazyColumn(
             modifier = Modifier
                 .widthIn(max = 1440.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = if (isWide) 20.dp else 10.dp,
-                vertical = 8.dp
+                horizontal = if (isWide) 8.dp else 6.dp,
+                vertical = 6.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // 1. COMPACT HEADER & CONTROLS CARD
             item {
@@ -752,81 +770,36 @@ fun DrilldownScreen(
                     }
                 }
 
-                items(subgroups, key = { "subgroup_${it.field}_${it.value}" }) { sg ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
+                if (subgroupColumns == 1) {
+                    items(subgroups, key = { "subgroup_${it.field}_${it.value}" }) { sg ->
+                        SubgroupCard(
+                            sg = sg,
+                            fieldDef = fieldMap[sg.field],
+                            onClick = {
                                 drillPath = drillPath + DrilldownBreadcrumb(drillPath.size, sg.field, sg.value)
-                            },
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        shape = RoundedCornerShape(12.dp),
-                        border = BorderStroke(1.dp, Slate200),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(28.dp)
-                                        .clip(RoundedCornerShape(7.dp))
-                                        .background(Color(0xFFECFDF5)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(Icons.Default.Folder, contentDescription = null, tint = BrandEmerald, modifier = Modifier.size(16.dp))
-                                }
-                                Text(
-                                    text = sg.value,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate900,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFFECFDF5)
-                                ) {
-                                    Text(
-                                        text = "${sg.count} garments",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFF065F46),
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    )
-                                }
-                                if (sg.needWashCount > 0) {
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFFFEF3C7)
-                                    ) {
-                                        Text(
-                                            text = "${sg.needWashCount} need wash",
-                                            fontSize = 10.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF92400E),
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
-                                    }
-                                }
                             }
-
-                            Icon(
-                                imageVector = Icons.Default.ChevronRight,
-                                contentDescription = null,
-                                tint = Slate400,
-                                modifier = Modifier.size(18.dp)
-                            )
+                        )
+                    }
+                } else {
+                    items(subgroups.chunked(subgroupColumns), key = { row -> "sg_row_${row.first().field}_${row.first().value}" }) { rowItems ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            rowItems.forEach { sg ->
+                                SubgroupCard(
+                                    sg = sg,
+                                    fieldDef = fieldMap[sg.field],
+                                    onClick = {
+                                        drillPath = drillPath + DrilldownBreadcrumb(drillPath.size, sg.field, sg.value)
+                                    },
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                            repeat(subgroupColumns - rowItems.size) {
+                                Spacer(modifier = Modifier.weight(1f))
+                            }
                         }
                     }
                 }
@@ -858,13 +831,36 @@ fun DrilldownScreen(
 
             when (viewMode) {
                 "cards" -> {
-                    items(sortedBranchGarments, key = { "branch_card_${it.id}" }) { g ->
-                        DrillRecordCard(
-                            garment = g,
-                            preset = currentPreset,
-                            junctions = junctions,
-                            onSelect = { onSelectGarment?.invoke(it) ?: run { selectedGarmentForDetail = it } }
-                        )
+                    if (recordColumns == 1) {
+                        items(sortedBranchGarments, key = { "branch_card_${it.id}" }) { g ->
+                            DrillRecordCard(
+                                garment = g,
+                                preset = currentPreset,
+                                junctions = junctions,
+                                onSelect = { onSelectGarment?.invoke(it) ?: run { selectedGarmentForDetail = it } }
+                            )
+                        }
+                    } else {
+                        items(sortedBranchGarments.chunked(recordColumns), key = { row -> "rec_row_${row.first().id}" }) { rowItems ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                rowItems.forEach { g ->
+                                    DrillRecordCard(
+                                        garment = g,
+                                        preset = currentPreset,
+                                        junctions = junctions,
+                                        onSelect = { onSelectGarment?.invoke(it) ?: run { selectedGarmentForDetail = it } },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                repeat(recordColumns - rowItems.size) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
+                        }
                     }
                 }
                 "table" -> {
@@ -2377,6 +2373,152 @@ private fun DrilldownFlatTableView(
                 }
                 HorizontalDivider(color = Slate100)
             }
+        }
+    }
+}
+
+@Composable
+private fun SubgroupCard(
+    sg: GroupSummary,
+    fieldDef: ReportFieldDef?,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val fieldLabel = fieldDef?.label ?: sg.field
+    val isUndefined = sg.value.equals("undefined", ignoreCase = true) || sg.value.isBlank()
+
+    Card(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable { onClick() },
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, if (isUndefined) Color(0xFFE2E8F0) else Slate200),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (isUndefined) Color(0xFFF1F5F9) else Color(0xFFECFDF5)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Folder,
+                        contentDescription = null,
+                        tint = if (isUndefined) Slate400 else BrandEmerald,
+                        modifier = Modifier.size(17.dp)
+                    )
+                }
+
+                Column(modifier = Modifier.weight(1f)) {
+                    // Field description label
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFFF1F5F9)
+                        ) {
+                            Text(
+                                text = "Field: $fieldLabel",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Slate600,
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                        if (isUndefined) {
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFFFEF2F2)
+                            ) {
+                                Text(
+                                    text = "undefined (no value)",
+                                    fontSize = 10.sp,
+                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFFDC2626),
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                )
+                            }
+                        }
+                    }
+                    val desc = fieldDef?.description.orEmpty()
+                    if (desc.isNotBlank()) {
+                        Text(
+                            text = desc,
+                            fontSize = 10.sp,
+                            color = Slate500,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(3.dp))
+
+                    // Subgroup Value & Count Badges
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = if (isUndefined) "undefined" else sg.value,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isUndefined) Slate500 else Slate900,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFECFDF5)
+                        ) {
+                            Text(
+                                text = "${sg.count} garments",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF065F46),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                        if (sg.needWashCount > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFFEF3C7)
+                            ) {
+                                Text(
+                                    text = "${sg.needWashCount} need wash",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFF92400E),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Slate400,
+                modifier = Modifier.size(18.dp)
+            )
         }
     }
 }

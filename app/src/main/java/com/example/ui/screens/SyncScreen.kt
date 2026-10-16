@@ -227,7 +227,7 @@ fun SyncScreen(
     junctions: List<JunctionEntity>,
     isRestoring: Boolean,
     restoreStatus: String?,
-    onRestoreFromZip: (Uri) -> Unit,
+    onRestoreFromZip: (Uri, Boolean) -> Unit,
     isExporting: Boolean = false,
     exportStatus: String? = null,
     onExportFullBackup: ((Uri) -> Unit)? = null,
@@ -280,11 +280,13 @@ fun SyncScreen(
         junctions.count { it.washDate.isNotBlank() || it.washedDate.isNotBlank() }
     }
 
+    var pendingRestoreZipUri by remember { mutableStateOf<Uri?>(null) }
+
     val zipPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
-            onRestoreFromZip(uri)
+            pendingRestoreZipUri = uri
         }
     }
 
@@ -544,9 +546,9 @@ fun SyncScreen(
                                         }
                                     }
 
-                                    Row(
+                                    FlowRow(
                                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                        verticalAlignment = Alignment.CenterVertically
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
                                         Button(
                                             onClick = {
@@ -564,7 +566,9 @@ fun SyncScreen(
                                             Text(
                                                 text = "Download 3-Tab Spreadsheet (.xlsx)",
                                                 fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                softWrap = false
                                             )
                                         }
 
@@ -582,7 +586,13 @@ fun SyncScreen(
                                         ) {
                                             Icon(Icons.Default.Upload, contentDescription = null, modifier = Modifier.size(15.dp))
                                             Spacer(modifier = Modifier.width(4.dp))
-                                            Text("Import (.xlsx)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            Text(
+                                                text = "Import (.xlsx)",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
                                         }
                                     }
 
@@ -721,7 +731,13 @@ fun SyncScreen(
                                         ) {
                                             Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(14.dp))
                                             Spacer(modifier = Modifier.width(5.dp))
-                                            Text("Push Now (Update 3 Tabs)", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            Text(
+                                                text = "Push Now (Update 3 Tabs)",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
                                         }
 
                                         OutlinedButton(
@@ -742,7 +758,13 @@ fun SyncScreen(
                                         ) {
                                             Icon(Icons.Default.Sync, contentDescription = null, modifier = Modifier.size(14.dp))
                                             Spacer(modifier = Modifier.width(5.dp))
-                                            Text("Pull from Sheet", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                            Text(
+                                                text = "Pull from Sheet",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
                                         }
 
                                         Row(
@@ -1741,6 +1763,149 @@ fun SyncScreen(
             }
         )
     }
+
+    // Modal dialog prompting user with Smart Merge vs Full Overwrite options
+    if (pendingRestoreZipUri != null) {
+        val targetUri = pendingRestoreZipUri!!
+        AlertDialog(
+            onDismissRequest = { pendingRestoreZipUri = null },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.FolderZip,
+                    contentDescription = null,
+                    tint = BrandPurple,
+                    modifier = Modifier.size(32.dp)
+                )
+            },
+            title = {
+                Text(
+                    text = "Restore Wardrobe Archive",
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 18.sp,
+                    color = Slate900
+                )
+            },
+            text = {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "You selected a backup archive from the web app. How would you like to restore this data?",
+                        fontSize = 13.sp,
+                        color = Slate700,
+                        lineHeight = 18.sp
+                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = Color(0xFFF8FAFC),
+                        border = BorderStroke(1.dp, Slate200),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text("✨", fontSize = 14.sp)
+                                Column {
+                                    Text(
+                                        text = "Smart Merge (Recommended)",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
+                                    Text(
+                                        text = "Updates existing matching items and adds new records. Any locally created items not in the archive are preserved.",
+                                        fontSize = 11.sp,
+                                        color = Slate600,
+                                        lineHeight = 15.sp
+                                    )
+                                }
+                            }
+
+                            HorizontalDivider(color = Slate200)
+
+                            Row(
+                                verticalAlignment = Alignment.Top,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text("⚠️", fontSize = 14.sp)
+                                Column {
+                                    Text(
+                                        text = "Full Overwrite",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFDC2626)
+                                    )
+                                    Text(
+                                        text = "Clears current database completely and replaces everything with data from this archive.",
+                                        fontSize = 11.sp,
+                                        color = Slate600,
+                                        lineHeight = 15.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Text(
+                        text = "📸 High-resolution photos are extracted and saved directly into internal app storage.",
+                        fontSize = 11.sp,
+                        color = BrandPurple,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val uri = targetUri
+                        pendingRestoreZipUri = null
+                        onRestoreFromZip(uri, true) // Full Overwrite (clearExisting = true)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = BrandEmerald,
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Full Overwrite (Recommended)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                }
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                            val uri = targetUri
+                            pendingRestoreZipUri = null
+                            onRestoreFromZip(uri, false) // Smart Merge (clearExisting = false)
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = Slate700
+                        ),
+                        border = BorderStroke(1.dp, Slate200),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Smart Merge", fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
+                    }
+
+                    TextButton(
+                        onClick = { pendingRestoreZipUri = null },
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Text("Cancel", color = Slate600, fontSize = 12.sp)
+                    }
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp)
+        )
+    }
 }
 
 @Composable
@@ -1786,7 +1951,13 @@ private fun DriveZipActionSubCard(
                 ) {
                     Icon(Icons.Default.CloudUpload, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(buttonLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = buttonLabel,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
             } else {
                 OutlinedButton(
@@ -1798,7 +1969,13 @@ private fun DriveZipActionSubCard(
                 ) {
                     Icon(Icons.Default.CloudDownload, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(buttonLabel, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = buttonLabel,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1,
+                        softWrap = false
+                    )
                 }
             }
         }

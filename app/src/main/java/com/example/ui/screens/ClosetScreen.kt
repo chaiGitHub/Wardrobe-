@@ -197,10 +197,13 @@ fun ClosetScreen(
     val presets = remember {
         listOf(
             PresetOption("all", "All Items"),
-            PresetOption("dirty", "Dirty / Need Wash"),
-            PresetOption("protection_4", "High Protection >=4"),
-            PresetOption("breathability_4", "High Breathability >=4"),
-            PresetOption("best_value", "Best Value <=\$10/w")
+            PresetOption("noon_not_hot", "☀️ Hot at noon: Not hot"),
+            PresetOption("beautiful", "🌟 beautiful: Beautiful"),
+            PresetOption("dirty", "🧺 wash stated: need wash"),
+            PresetOption("chiffon", "🪶 material: chiffon"),
+            PresetOption("sit_breast_ok", "💺 sit breast ok"),
+            PresetOption("diao_dai", "👗 diao dai"),
+            PresetOption("best_value", "💰 Best Value (CPW <= $5)")
         )
     }
 
@@ -219,10 +222,19 @@ fun ClosetScreen(
                 val cpw = if (g.price > 0 && totalWashes > 0) g.price / totalWashes else Double.MAX_VALUE
 
                 val presetMatch = when (selectedPreset) {
-                    "dirty" -> gStats?.needWash == true
-                    "protection_4" -> deriveProtectionRating(g) >= 4
-                    "breathability_4" -> deriveBreathabilityRating(g) >= 4
-                    "best_value" -> cpw <= 10.0
+                    "noon_not_hot" -> {
+                        val heat = (g.noAircondHotFeeling.ifBlank { g.hotAtNoon }).lowercase(Locale.US)
+                        heat.contains("not hot") || heat.contains("not so cold") || heat.contains("cool")
+                    }
+                    "beautiful" -> g.beautiful.lowercase(Locale.US).contains("beautiful")
+                    "dirty" -> gStats?.needWash == true || junctions.any { j -> j.clothesId == g.id && j.washStated.equals("need wash", true) }
+                    "chiffon" -> g.material.lowercase(Locale.US).contains("chiffon")
+                    "sit_breast_ok" -> (g.sitBreast.ifBlank { g.sitBreastGatherBra }).lowercase(Locale.US).contains("ok")
+                    "diao_dai" -> {
+                        val dd = g.diaoDai.lowercase(Locale.US)
+                        dd.contains("diao dai") && !dd.contains("not")
+                    }
+                    "best_value" -> cpw <= 5.0
                     else -> true
                 }
 
@@ -234,7 +246,7 @@ fun ClosetScreen(
                         g.material.lowercase(Locale.US).contains(q) ||
                         g.thickClothes.lowercase(Locale.US).contains(q) ||
                         g.clothesType.lowercase(Locale.US).contains(q) ||
-                        g.impression.lowercase(Locale.US).contains(q)
+                        g.lastComment.lowercase(Locale.US).contains(q)
                 }
 
                 catMatch && presetMatch && searchMatch
@@ -273,16 +285,17 @@ fun ClosetScreen(
         val isLaptop = screenWidth >= 960.dp
         val isWide = isTablet || isLaptop
 
-        // Calculate responsive column counts for Cards and Grid modes
+        // Calculate responsive column counts for Cards and Grid modes matching webapp WardrobeStudio grid
         val cardsColumns = when {
-            screenWidth >= 1100.dp -> 3
-            screenWidth >= 680.dp -> 2
+            screenWidth >= 1100.dp -> 4
+            screenWidth >= 800.dp -> 3
+            screenWidth >= 550.dp -> 2
             else -> 1
         }
         val gridColumns = when {
-            screenWidth >= 1200.dp -> 5
-            screenWidth >= 960.dp -> 4
-            screenWidth >= 600.dp -> 3
+            screenWidth >= 1100.dp -> 5
+            screenWidth >= 800.dp -> 4
+            screenWidth >= 550.dp -> 3
             else -> 2
         }
 
@@ -291,10 +304,10 @@ fun ClosetScreen(
                 .widthIn(max = 1440.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = if (isWide) 24.dp else 14.dp,
-                vertical = 16.dp
+                horizontal = if (isWide) 8.dp else 6.dp,
+                vertical = 6.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // 1. HEADER ROW: Title + Stats on Left, [Cards | Grid | Table] Switcher on Right (Screenshot 222706)
             item {
@@ -430,8 +443,8 @@ fun ClosetScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(14.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        modifier = Modifier.padding(10.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         // Category Pills + [Select Mode] + [Add Clothes] Buttons (Responsive for Compact/Wide)
                         if (isWide) {
@@ -1071,6 +1084,7 @@ private fun ClosetSearchField(
  *   - 2x2 Attribute Grid (COMFORT, BREATHABILITY, PROTECTION, DURABILITY)
  *   - Footer: Last washed date + App logged wears (hours)
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GarmentStudioCard(
     garment: GarmentEntity,
@@ -1128,7 +1142,7 @@ fun GarmentStudioCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
+                    .height(165.dp)
                     .background(Color(0xFFF1F5F9))
             ) {
                 // Selection Checkbox in Select Mode
@@ -1241,197 +1255,236 @@ fun GarmentStudioCard(
                     }
                 }
 
-                // Top-Right: Clean / Dirty (8.0h) Badge
+                // Top-Left: Wash Status Pill (need wash (X.Xh) / wash)
                 Surface(
                     shape = RoundedCornerShape(999.dp),
-                    color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF10B981),
+                    color = if (isNeedWash) Color(0xFFFEF3C7).copy(alpha = 0.95f) else Color(0xFFECFDF5).copy(alpha = 0.95f),
+                    border = BorderStroke(1.dp, if (isNeedWash) Color(0xFFFDE68A) else Color(0xFFA7F3D0)),
                     modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(10.dp)
+                        .align(Alignment.TopStart)
+                        .padding(8.dp)
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
-                        Icon(
-                            imageVector = if (isNeedWash) Icons.Default.Warning else Icons.Default.CheckCircle,
-                            contentDescription = null,
-                            tint = Color.White,
-                            modifier = Modifier.size(11.dp)
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .clip(CircleShape)
+                                .background(if (isNeedWash) Color(0xFFD97706) else Color(0xFF059669))
                         )
                         Text(
-                            text = if (isNeedWash) "Dirty (${unwashedHours}h)" else "Clean",
+                            text = if (isNeedWash) "need wash (${unwashedHours}h)" else "wash",
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = if (isNeedWash) Color(0xFFB45309) else Color(0xFF047857)
                         )
                     }
                 }
 
-                // Bottom-Left: Price + CPW Pills
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(10.dp),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (garment.price > 0) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Slate900.copy(alpha = 0.85f)
-                        ) {
-                            Text(
-                                text = "$${garment.price.toInt()}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
-                    if (cpw != null) {
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = Color.White.copy(alpha = 0.92f)
-                        ) {
-                            Text(
-                                text = "CPW: $$cpw/wash",
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate800,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                            )
-                        }
-                    }
+                // Top-Right: Category Pill with Webapp Color Coding
+                val catType = garment.clothesType.lowercase(Locale.US)
+                val (catBg, catText, catBorder) = when {
+                    catType.contains("dress") -> Triple(Color(0xFFFFF1F2), Color(0xFFBE123C), Color(0xFFFECDD3))
+                    catType.contains("bra") -> Triple(Color(0xFFF5F3FF), Color(0xFF6D28D9), Color(0xFFDDD6FE))
+                    catType.contains("tshirt") || catType.contains("t-shirt") -> Triple(Color(0xFFF0F9FF), Color(0xFF0369A1), Color(0xFFBAE6FD))
+                    catType.contains("pant") -> Triple(Color(0xFFFFFBEB), Color(0xFFB45309), Color(0xFFFDE68A))
+                    else -> Triple(Color(0xFFF8FAFC), Color(0xFF334155), Color(0xFFE2E8F0))
                 }
-
-                // Bottom-Right: Category Pill
                 Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = Color.White.copy(alpha = 0.92f),
+                    shape = RoundedCornerShape(999.dp),
+                    color = catBg.copy(alpha = 0.95f),
+                    border = BorderStroke(1.dp, catBorder),
                     modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(10.dp)
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = garment.clothesType.ifBlank { "Garment" },
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Slate700,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        color = catText,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
+                }
+
+                // Bottom-Left: "Beautiful" gold star badge if applicable
+                val isBeautiful = garment.beautiful.contains("beautiful", ignoreCase = true)
+                if (isBeautiful) {
+                    Surface(
+                        shape = RoundedCornerShape(999.dp),
+                        color = Color(0xFFD97706).copy(alpha = 0.9f),
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(3.dp),
+                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                        ) {
+                            Text(
+                                text = "★",
+                                fontSize = 10.sp,
+                                color = Color.White
+                            )
+                            Text(
+                                text = "Beautiful",
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
             }
 
-            // Lower Card Body (Screenshot 222706)
+            // Lower Card Body
             Column(
-                modifier = Modifier.padding(14.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
+                modifier = Modifier.padding(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                // Title + Total Washed Count on Right
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
+                // Title
+                Text(
+                    text = garment.name,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Slate900,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // Material & thickness line
+                val mat = garment.material.ifBlank { "Fabric" }
+                val thick = garment.thickClothes.ifBlank { "" }
+                Text(
+                    text = if (thick.isNotBlank()) "$mat · $thick" else mat,
+                    fontSize = 11.sp,
+                    color = Slate500,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                // Sensory Tag Chips Row (FlowRow)
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = garment.name,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = Slate900,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                        val mat = garment.material.ifBlank { "100% Cotton" }
-                        val thick = garment.thickClothes.ifBlank { "Year-round" }
-                        val extra = listOfNotNull(
-                            (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).takeIf { it.isNotBlank() },
-                            garment.sitBreast.takeIf { it.isNotBlank() }
-                        ).joinToString(", ")
-                        Text(
-                            text = if (extra.isNotBlank()) "$mat · $thick · $extra" else "$mat · $thick",
-                            fontSize = 11.sp,
-                            color = Slate500,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                    val hot = (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).lowercase(Locale.US)
+                    if (hot.isNotBlank()) {
+                        val isNotHot = hot.contains("not hot") || hot.contains("cool")
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = if (isNotHot) Color(0xFFECFDF5) else Color(0xFFFFFBEB),
+                            border = BorderStroke(1.dp, if (isNotHot) Color(0xFFA7F3D0) else Color(0xFFFDE68A))
+                        ) {
+                            Text(
+                                text = if (isNotHot) "☀️ Not hot" else "☀️ Hot",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = if (isNotHot) Color(0xFF047857) else Color(0xFFB45309),
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
                     }
 
-                    Column(horizontalAlignment = Alignment.End) {
-                        Text(
-                            text = "${totalWashedCount}x",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color(0xFF059669)
-                        )
-                        Text(
-                            text = "Total Washed",
-                            fontSize = 9.sp,
-                            color = Slate400
-                        )
+                    val sitBreast = (garment.sitBreast.ifBlank { garment.sitBreastGatherBra }).lowercase(Locale.US)
+                    if (sitBreast.contains("ok")) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFF5F3FF),
+                            border = BorderStroke(1.dp, Color(0xFFDDD6FE))
+                        ) {
+                            Text(
+                                text = "💺 Sit Ok",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF6D28D9),
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
                     }
-                }
 
-                // 2x2 Attribute Grid: COMFORT | BREATHABILITY / PROTECTION | DURABILITY
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AttributeMetricBox(
-                            label = "COMFORT",
-                            value = "$comfort/5",
-                            modifier = Modifier.weight(1f)
-                        )
-                        AttributeMetricBox(
-                            label = "BREATHABILITY",
-                            value = "$breathability/5",
-                            modifier = Modifier.weight(1f)
-                        )
+                    val diaoDai = garment.diaoDai.lowercase(Locale.US)
+                    if (diaoDai.contains("diao dai") && !diaoDai.contains("not")) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Slate100,
+                            border = BorderStroke(1.dp, Slate200)
+                        ) {
+                            Text(
+                                text = "👗 Sling",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Slate700,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        AttributeMetricBox(
-                            label = "PROTECTION",
-                            value = "$protection/5",
-                            modifier = Modifier.weight(1f)
-                        )
-                        AttributeMetricBox(
-                            label = "DURABILITY",
-                            value = "$durability/5",
-                            modifier = Modifier.weight(1f)
-                        )
+
+                    if (garment.wet.contains("dry", ignoreCase = true) || garment.wet.contains("ok", ignoreCase = true)) {
+                        Surface(
+                            shape = RoundedCornerShape(6.dp),
+                            color = Color(0xFFF0F9FF),
+                            border = BorderStroke(1.dp, Color(0xFFBAE6FD))
+                        ) {
+                            Text(
+                                text = "💧 Quick Dry",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF0369A1),
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
                     }
                 }
 
                 HorizontalDivider(color = Slate100)
 
-                // Footer: Last washed & App logged wears
+                // Card Footer: Left washes count, Right price and CPW
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val lastWashedDisplay = stats?.latestWashDate
-                        ?: garment.lastWashed.ifBlank { "—" }
-                    Text(
-                        text = "Last washed: $lastWashedDisplay",
-                        fontSize = 11.sp,
-                        color = Slate500
-                    )
-                    val appWears = stats?.totalWears ?: 0
-                    val appHours = stats?.totalHours ?: "0.0"
-                    Text(
-                        text = "App logged: $appWears wears (${appHours}h)",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Slate600
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            text = "🕒",
+                            fontSize = 10.sp
+                        )
+                        Text(
+                            text = "${totalWashedCount} washes",
+                            fontSize = 11.sp,
+                            color = Slate500
+                        )
+                    }
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        if (garment.price > 0) {
+                            Text(
+                                text = "$${garment.price.toInt()}",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate900
+                            )
+                        }
+                        if (cpw != null) {
+                            Text(
+                                text = "($$cpw/w)",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = Color(0xFF059669)
+                            )
+                        }
+                    }
                 }
             }
         }

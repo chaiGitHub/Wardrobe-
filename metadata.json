@@ -1,6 +1,8 @@
 {
-  "name": "Wardrobe & Wear Journal",
+  "name": "Wardrobe",
   "description": "Personalized wardrobe tracker, comfort and sensory wear journaling, laundry care cycles, and AI styling insights.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

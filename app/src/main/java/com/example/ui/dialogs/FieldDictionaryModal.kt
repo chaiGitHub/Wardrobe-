@@ -230,7 +230,8 @@ class FieldDictionaryService(context: Context) {
                 "diao dai" -> g.diaoDai
                 "side breast ok" -> g.sideBreastOk
                 "stand breast" -> g.standBreast
-                "sit breast ok", "sit breast" -> g.sitBreast
+                "sit breast ok: with 聚拢 bra", "sit breast ok: with 聚拢bra:", "sit breast ok", "sit breast" -> g.sitBreastGatherBra.ifBlank { g.sitBreast }
+                "sit breast ok: with side out bra" -> g.sitBreastSideOutBra
                 "material" -> g.material
                 "thick clothes" -> g.thickClothes
                 "wet" -> g.wet

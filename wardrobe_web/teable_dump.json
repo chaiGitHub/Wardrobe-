@@ -1,0 +1,3918 @@
+{
+  "Clothes (new design)": {
+    "id": "tblrHfBAYrA6gRCYbPN",
+    "queries": [
+      {
+        "dehydratedAt": 1789048018263,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048018056,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048018263,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048018069,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048018263,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048018185,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048018263,
+        "state": {
+          "data": [
+            {
+              "id": "viwSFeSe9s3j6tCCAaw",
+              "name": "group by clothes type dry, beautiful, sort by hot at noon",
+              "type": "grid",
+              "order": 0,
+              "options": {
+                "rowHeight": "tall",
+                "fieldNameDisplayLines": 3
+              },
+              "sort": {
+                "sortObjs": [
+                  {
+                    "fieldId": "fldge98QPqKgQDPsQCY",
+                    "order": "asc"
+                  }
+                ],
+                "manualSort": false
+              },
+              "group": [
+                {
+                  "fieldId": "fldleRV0c1MI4AJw9cL",
+                  "order": "asc"
+                },
+                {
+                  "fieldId": "fld06atm7hiNUZbtNSC",
+                  "order": "asc"
+                },
+                {
+                  "fieldId": "fldXyAQ6fFhyjAsda13",
+                  "order": "asc"
+                }
+              ],
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-09T00:46:31.584Z",
+              "lastModifiedTime": "2026-09-10T08:27:41.009Z",
+              "columnMeta": {
+                "fldmaW3ZEf0sePJqLXO": {
+                  "order": 0
+                },
+                "fldleRV0c1MI4AJw9cL": {
+                  "order": 1
+                },
+                "fldhurW1bhCxAtDkwOI": {
+                  "order": 2
+                },
+                "fldIVoBXlmjqkzAQVgL": {
+                  "order": 3
+                },
+                "fldx1A1XMqIE1ssYiWK": {
+                  "order": 4
+                },
+                "fldbW4OxoAH1w92FDWf": {
+                  "order": 5
+                },
+                "fldnduLsWyujW9FrqVj": {
+                  "order": 6
+                },
+                "fldIA1v388613CdQIn1": {
+                  "order": 7
+                },
+                "fldnFaNl2D2qd0t3UDU": {
+                  "order": 8
+                },
+                "fldge98QPqKgQDPsQCY": {
+                  "order": 9
+                },
+                "fldqIJi3wZHR1sVg4kM": {
+                  "order": 10
+                },
+                "fldHnoX5NGtWJTdi4WT": {
+                  "order": 11
+                },
+                "fldnSGRBfCUvEE53Yfl": {
+                  "order": 12
+                },
+                "fldhDBcANWC941iQjcL": {
+                  "order": 13
+                },
+                "fldRSxa93WkQnqBQmUy": {
+                  "order": 14
+                },
+                "fldIG4mUJp6udZ9be82": {
+                  "order": 15
+                },
+                "fldXyAQ6fFhyjAsda13": {
+                  "order": 16
+                },
+                "fldaZn1Z1cPdIp6fAt2": {
+                  "order": 17,
+                  "width": 255
+                },
+                "fldx2Gh5oo5ABEJGvnE": {
+                  "order": 18
+                },
+                "fld15lRyqCFDfzh58RU": {
+                  "order": 19
+                },
+                "fldvvK6PBIMrjiPMptB": {
+                  "order": 20
+                },
+                "fldeYLxYc8u8A4ysZKE": {
+                  "order": 21
+                },
+                "fldoamM3X0AMbDltAGc": {
+                  "order": 22
+                },
+                "fldnphHhGqiQXp6WkJZ": {
+                  "order": 23
+                },
+                "fld06atm7hiNUZbtNSC": {
+                  "order": 24
+                },
+                "fld63H6vtUEj6XE3U1w": {
+                  "order": 25
+                },
+                "fldFAiE2ATEteQo6ZaU": {
+                  "order": 26
+                },
+                "fldjXmOsERJgqmizFqA": {
+                  "order": 27
+                },
+                "fldR6hANGlJQYkxlEBG": {
+                  "order": 28
+                },
+                "flddXGlcEiglVuaqq6H": {
+                  "order": 27,
+                  "width": 189
+                },
+                "fld9BYCguxis0c8nIUC": {
+                  "order": 29
+                },
+                "fldY0qTsOPivHsnBIZF": {
+                  "order": 30
+                },
+                "fldnXsUeuwGXBsQwmEm": {
+                  "order": 31
+                }
+              }
+            },
+            {
+              "id": "viwm1jjNlR3LfNE3b20",
+              "name": "group by thick,hot, sort by beautiful",
+              "type": "grid",
+              "order": 1,
+              "group": [
+                {
+                  "fieldId": "fldnduLsWyujW9FrqVj",
+                  "order": "asc"
+                },
+                {
+                  "fieldId": "fldge98QPqKgQDPsQCY",
+                  "order": "asc"
+                },
+                {
+                  "fieldId": "fldXyAQ6fFhyjAsda13",
+                  "order": "asc"
+                }
+              ],
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-09T00:46:31.584Z",
+              "lastModifiedTime": "2026-09-10T08:27:41.009Z",
+              "columnMeta": {
+                "fldmaW3ZEf0sePJqLXO": {
+                  "order": 0
+                },
+                "fldleRV0c1MI4AJw9cL": {
+                  "order": 1
+                },
+                "fldhurW1bhCxAtDkwOI": {
+                  "order": 2
+                },
+                "fldIVoBXlmjqkzAQVgL": {
+                  "order": 3
+                },
+                "fldx1A1XMqIE1ssYiWK": {
+                  "order": 4
+                },
+                "fldbW4OxoAH1w92FDWf": {
+                  "order": 5
+                },
+                "fldnduLsWyujW9FrqVj": {
+                  "order": 6
+                },
+                "fldIA1v388613CdQIn1": {
+                  "order": 7
+                },
+                "fldnFaNl2D2qd0t3UDU": {
+                  "order": 8
+                },
+                "fldge98QPqKgQDPsQCY": {
+                  "order": 9
+                },
+                "fldqIJi3wZHR1sVg4kM": {
+                  "order": 10
+                },
+                "fldHnoX5NGtWJTdi4WT": {
+                  "order": 11
+                },
+                "fldnSGRBfCUvEE53Yfl": {
+                  "order": 12
+                },
+                "fldhDBcANWC941iQjcL": {
+                  "order": 13
+                },
+                "fldRSxa93WkQnqBQmUy": {
+                  "order": 14
+                },
+                "fldIG4mUJp6udZ9be82": {
+                  "order": 15
+                },
+                "fldXyAQ6fFhyjAsda13": {
+                  "order": 16
+                },
+                "fldaZn1Z1cPdIp6fAt2": {
+                  "order": 17
+                },
+                "fldx2Gh5oo5ABEJGvnE": {
+                  "order": 18
+                },
+                "fld15lRyqCFDfzh58RU": {
+                  "order": 19
+                },
+                "fldvvK6PBIMrjiPMptB": {
+                  "order": 20
+                },
+                "fldeYLxYc8u8A4ysZKE": {
+                  "order": 21
+                },
+                "fldoamM3X0AMbDltAGc": {
+                  "order": 22
+                },
+                "fldnphHhGqiQXp6WkJZ": {
+                  "order": 23
+                },
+                "fld06atm7hiNUZbtNSC": {
+                  "order": 24
+                },
+                "fld63H6vtUEj6XE3U1w": {
+                  "order": 25
+                },
+                "fldFAiE2ATEteQo6ZaU": {
+                  "order": 26
+                },
+                "fldjXmOsERJgqmizFqA": {
+                  "order": 27
+                },
+                "fldR6hANGlJQYkxlEBG": {
+                  "order": 28
+                },
+                "flddXGlcEiglVuaqq6H": {
+                  "order": 29
+                },
+                "fld9BYCguxis0c8nIUC": {
+                  "order": 30
+                },
+                "fldY0qTsOPivHsnBIZF": {
+                  "order": 31
+                },
+                "fldnXsUeuwGXBsQwmEm": {
+                  "order": 32
+                }
+              }
+            },
+            {
+              "id": "viwIucjQsBzZTr2sQtO",
+              "name": "Gallery",
+              "type": "gallery",
+              "order": 2,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-09T00:46:31.584Z",
+              "lastModifiedTime": "2026-09-10T08:27:41.009Z",
+              "columnMeta": {
+                "fldmaW3ZEf0sePJqLXO": {
+                  "order": 0,
+                  "visible": true
+                },
+                "fldleRV0c1MI4AJw9cL": {
+                  "order": 1
+                },
+                "fldhurW1bhCxAtDkwOI": {
+                  "order": 2
+                },
+                "fldIVoBXlmjqkzAQVgL": {
+                  "order": 3
+                },
+                "fldx1A1XMqIE1ssYiWK": {
+                  "order": 4
+                },
+                "fldbW4OxoAH1w92FDWf": {
+                  "order": 5
+                },
+                "fldnduLsWyujW9FrqVj": {
+                  "order": 6
+                },
+                "fldIA1v388613CdQIn1": {
+                  "order": 7
+                },
+                "fldnFaNl2D2qd0t3UDU": {
+                  "order": 8
+                },
+                "fldge98QPqKgQDPsQCY": {
+                  "order": 9
+                },
+                "fldqIJi3wZHR1sVg4kM": {
+                  "order": 10
+                },
+                "fldHnoX5NGtWJTdi4WT": {
+                  "order": 11
+                },
+                "fldnSGRBfCUvEE53Yfl": {
+                  "order": 12
+                },
+                "fldhDBcANWC941iQjcL": {
+                  "order": 13
+                },
+                "fldRSxa93WkQnqBQmUy": {
+                  "order": 14
+                },
+                "fldIG4mUJp6udZ9be82": {
+                  "order": 15
+                },
+                "fldXyAQ6fFhyjAsda13": {
+                  "order": 16
+                },
+                "fldaZn1Z1cPdIp6fAt2": {
+                  "order": 17
+                },
+                "fldx2Gh5oo5ABEJGvnE": {
+                  "order": 18
+                },
+                "fld15lRyqCFDfzh58RU": {
+                  "order": 19
+                },
+                "fldvvK6PBIMrjiPMptB": {
+                  "order": 20
+                },
+                "fldeYLxYc8u8A4ysZKE": {
+                  "order": 21
+                },
+                "fldoamM3X0AMbDltAGc": {
+                  "order": 22
+                },
+                "fldnphHhGqiQXp6WkJZ": {
+                  "order": 23
+                },
+                "fld06atm7hiNUZbtNSC": {
+                  "order": 24
+                },
+                "fld63H6vtUEj6XE3U1w": {
+                  "order": 25
+                },
+                "fldFAiE2ATEteQo6ZaU": {
+                  "order": 26
+                },
+                "fldjXmOsERJgqmizFqA": {
+                  "order": 27
+                },
+                "fldR6hANGlJQYkxlEBG": {
+                  "order": 28
+                },
+                "flddXGlcEiglVuaqq6H": {
+                  "order": 29
+                },
+                "fld9BYCguxis0c8nIUC": {
+                  "order": 30
+                },
+                "fldY0qTsOPivHsnBIZF": {
+                  "order": 31
+                },
+                "fldnXsUeuwGXBsQwmEm": {
+                  "order": 32
+                }
+              }
+            },
+            {
+              "id": "viwY4mYM8yxLFtRyN8i",
+              "name": "full clothes",
+              "type": "grid",
+              "order": 3,
+              "options": {
+                "fieldNameDisplayLines": 3
+              },
+              "sort": {
+                "sortObjs": [
+                  {
+                    "fieldId": "fldmaW3ZEf0sePJqLXO",
+                    "order": "asc"
+                  }
+                ],
+                "manualSort": false
+              },
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-09T00:46:31.584Z",
+              "lastModifiedTime": "2026-09-10T08:40:08.420Z",
+              "columnMeta": {
+                "fldmaW3ZEf0sePJqLXO": {
+                  "order": 0
+                },
+                "fldleRV0c1MI4AJw9cL": {
+                  "order": 1
+                },
+                "fldhurW1bhCxAtDkwOI": {
+                  "order": 2
+                },
+                "fldIVoBXlmjqkzAQVgL": {
+                  "order": 3
+                },
+                "fldx1A1XMqIE1ssYiWK": {
+                  "order": 4
+                },
+                "fldbW4OxoAH1w92FDWf": {
+                  "order": 5
+                },
+                "fldnduLsWyujW9FrqVj": {
+                  "order": 6
+                },
+                "fldIA1v388613CdQIn1": {
+                  "order": 7
+                },
+                "fldnFaNl2D2qd0t3UDU": {
+                  "order": 8
+                },
+                "fldge98QPqKgQDPsQCY": {
+                  "order": 9
+                },
+                "fldqIJi3wZHR1sVg4kM": {
+                  "order": 10
+                },
+                "fldHnoX5NGtWJTdi4WT": {
+                  "order": 11
+                },
+                "fldnSGRBfCUvEE53Yfl": {
+                  "order": 12
+                },
+                "fldhDBcANWC941iQjcL": {
+                  "order": 13
+                },
+                "fldRSxa93WkQnqBQmUy": {
+                  "order": 14
+                },
+                "fldIG4mUJp6udZ9be82": {
+                  "order": 15
+                },
+                "fldXyAQ6fFhyjAsda13": {
+                  "order": 16
+                },
+                "fldaZn1Z1cPdIp6fAt2": {
+                  "order": 17
+                },
+                "fldx2Gh5oo5ABEJGvnE": {
+                  "order": 18
+                },
+                "fld15lRyqCFDfzh58RU": {
+                  "order": 19
+                },
+                "fldvvK6PBIMrjiPMptB": {
+                  "order": 20
+                },
+                "fldeYLxYc8u8A4ysZKE": {
+                  "order": 21
+                },
+                "fldoamM3X0AMbDltAGc": {
+                  "order": 22
+                },
+                "fldnphHhGqiQXp6WkJZ": {
+                  "order": 23
+                },
+                "fld06atm7hiNUZbtNSC": {
+                  "order": 24
+                },
+                "fld63H6vtUEj6XE3U1w": {
+                  "order": 25
+                },
+                "fldFAiE2ATEteQo6ZaU": {
+                  "order": 26
+                },
+                "fldjXmOsERJgqmizFqA": {
+                  "order": 27,
+                  "width": 345
+                },
+                "fldR6hANGlJQYkxlEBG": {
+                  "order": 28
+                },
+                "flddXGlcEiglVuaqq6H": {
+                  "order": 29,
+                  "width": 116
+                },
+                "fld9BYCguxis0c8nIUC": {
+                  "order": 30,
+                  "width": 114
+                },
+                "fldY0qTsOPivHsnBIZF": {
+                  "order": 31,
+                  "width": 289
+                },
+                "fldnXsUeuwGXBsQwmEm": {
+                  "order": 32
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048018140,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblrHfBAYrA6gRCYbPN"
+        ],
+        "queryHash": "[\"view-list\",\"tblrHfBAYrA6gRCYbPN\"]"
+      },
+      {
+        "dehydratedAt": 1789048018263,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048018213,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblrHfBAYrA6gRCYbPN"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblrHfBAYrA6gRCYbPN\"]"
+      }
+    ]
+  },
+  "Full Wearing Report (new design)": {
+    "id": "tblRBWTgaP6dH4SU1RQ",
+    "queries": [
+      {
+        "dehydratedAt": 1789048025207,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048020956,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048025207,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048021195,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048025207,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048023410,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048025207,
+        "state": {
+          "data": [
+            {
+              "id": "viwm0CxF1VPXS9tkB43",
+              "name": "clothes not yet wash, group by clothes",
+              "type": "grid",
+              "order": 0,
+              "sort": {
+                "sortObjs": [
+                  {
+                    "fieldId": "fldNhtbIbjTbnkuo1gS",
+                    "order": "asc"
+                  }
+                ],
+                "manualSort": false
+              },
+              "group": [
+                {
+                  "fieldId": "fldjn1zUIHc246fhHPv",
+                  "order": "asc"
+                }
+              ],
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-08T23:54:44.331Z",
+              "lastModifiedTime": "2026-09-10T08:14:26.049Z",
+              "columnMeta": {
+                "fldNhtbIbjTbnkuo1gS": {
+                  "order": -1,
+                  "width": 262
+                },
+                "fldjn1zUIHc246fhHPv": {
+                  "order": -1
+                },
+                "fldxVL8ZkD50YkgXW46": {
+                  "order": 0
+                },
+                "fld1KrpqyRdoVKKFdIu": {
+                  "order": 1
+                },
+                "fldj6uoTQ1O3VNzJICI": {
+                  "order": 3
+                },
+                "fldtZOVMoSx4RLzAIW8": {
+                  "order": 4
+                },
+                "fldZn1esSHsYRSu0A9X": {
+                  "order": 5
+                },
+                "fldDvCoBEwrrTPWwLml": {
+                  "order": 6
+                },
+                "fldZ2wIV7BBDdwTHcik": {
+                  "order": 7
+                },
+                "fldLC0IyuB14HUx8Okz": {
+                  "order": 8
+                },
+                "fldhj9y1POtxyi6aHVt": {
+                  "order": 10,
+                  "width": 295
+                },
+                "fldMYtS8eGk2FGVCfH9": {
+                  "order": 11
+                },
+                "fld4BKceQL7Rplovisp": {
+                  "order": 12
+                },
+                "fldAna4m9MT67qiFnjX": {
+                  "order": 13
+                },
+                "fld8kYh4si44Lmqg8Li": {
+                  "order": 14
+                },
+                "fldjhRz5R4XCryCytPn": {
+                  "order": 15,
+                  "width": 268
+                }
+              }
+            },
+            {
+              "id": "viwG6b3UvOEt4UYZowS",
+              "name": "bra not yet wash, group by bra copy",
+              "type": "grid",
+              "order": 1,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-08T23:54:44.331Z",
+              "lastModifiedTime": "2026-09-10T07:56:03.791Z",
+              "columnMeta": {
+                "fldNhtbIbjTbnkuo1gS": {
+                  "order": 0
+                },
+                "fldjn1zUIHc246fhHPv": {
+                  "order": 1
+                },
+                "fldxVL8ZkD50YkgXW46": {
+                  "order": 2
+                },
+                "fld1KrpqyRdoVKKFdIu": {
+                  "order": 3
+                },
+                "fldj6uoTQ1O3VNzJICI": {
+                  "order": 4
+                },
+                "fldtZOVMoSx4RLzAIW8": {
+                  "order": 5
+                },
+                "fldZn1esSHsYRSu0A9X": {
+                  "order": 6
+                },
+                "fldDvCoBEwrrTPWwLml": {
+                  "order": 7
+                },
+                "fldZ2wIV7BBDdwTHcik": {
+                  "order": 8
+                },
+                "fldLC0IyuB14HUx8Okz": {
+                  "order": 9
+                },
+                "fldhj9y1POtxyi6aHVt": {
+                  "order": 10
+                },
+                "fldMYtS8eGk2FGVCfH9": {
+                  "order": 11
+                },
+                "fld4BKceQL7Rplovisp": {
+                  "order": 12
+                },
+                "fldAna4m9MT67qiFnjX": {
+                  "order": 13
+                },
+                "fld8kYh4si44Lmqg8Li": {
+                  "order": 14
+                },
+                "fldjhRz5R4XCryCytPn": {
+                  "order": 15
+                }
+              }
+            },
+            {
+              "id": "viwojaJHqfM55hkvEc8",
+              "name": "full wearing report",
+              "type": "grid",
+              "order": 2,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-08T23:54:44.331Z",
+              "lastModifiedTime": "2026-09-10T07:56:03.791Z",
+              "columnMeta": {
+                "fldNhtbIbjTbnkuo1gS": {
+                  "order": -1,
+                  "width": 274
+                },
+                "fldjn1zUIHc246fhHPv": {
+                  "order": -1
+                },
+                "fldxVL8ZkD50YkgXW46": {
+                  "order": 0
+                },
+                "fld1KrpqyRdoVKKFdIu": {
+                  "order": 1
+                },
+                "fldj6uoTQ1O3VNzJICI": {
+                  "order": 3
+                },
+                "fldtZOVMoSx4RLzAIW8": {
+                  "order": 4,
+                  "width": 158
+                },
+                "fldZn1esSHsYRSu0A9X": {
+                  "order": 5
+                },
+                "fldDvCoBEwrrTPWwLml": {
+                  "order": 6
+                },
+                "fldZ2wIV7BBDdwTHcik": {
+                  "order": 7
+                },
+                "fldLC0IyuB14HUx8Okz": {
+                  "order": 8
+                },
+                "fldhj9y1POtxyi6aHVt": {
+                  "order": 10
+                },
+                "fldMYtS8eGk2FGVCfH9": {
+                  "order": 11
+                },
+                "fld4BKceQL7Rplovisp": {
+                  "order": 12
+                },
+                "fldAna4m9MT67qiFnjX": {
+                  "order": 13
+                },
+                "fld8kYh4si44Lmqg8Li": {
+                  "order": 14
+                },
+                "fldjhRz5R4XCryCytPn": {
+                  "order": 15,
+                  "width": 262
+                }
+              }
+            },
+            {
+              "id": "viwMB2diHxSZxBFizJ5",
+              "name": "Form",
+              "type": "form",
+              "order": 3,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-08T23:54:44.331Z",
+              "lastModifiedTime": "2026-09-10T07:56:03.791Z",
+              "columnMeta": {
+                "fldNhtbIbjTbnkuo1gS": {
+                  "order": 0,
+                  "visible": true
+                },
+                "fldjn1zUIHc246fhHPv": {
+                  "order": 1,
+                  "visible": true
+                },
+                "fldxVL8ZkD50YkgXW46": {
+                  "order": 2,
+                  "visible": true
+                },
+                "fld1KrpqyRdoVKKFdIu": {
+                  "order": 3,
+                  "visible": true
+                },
+                "fldj6uoTQ1O3VNzJICI": {
+                  "order": 4,
+                  "visible": true
+                },
+                "fldtZOVMoSx4RLzAIW8": {
+                  "order": 5,
+                  "visible": true
+                },
+                "fldZn1esSHsYRSu0A9X": {
+                  "order": 6,
+                  "visible": true
+                },
+                "fldDvCoBEwrrTPWwLml": {
+                  "order": 7,
+                  "visible": true
+                },
+                "fldZ2wIV7BBDdwTHcik": {
+                  "order": 8,
+                  "visible": true
+                },
+                "fldLC0IyuB14HUx8Okz": {
+                  "order": 9,
+                  "visible": true
+                },
+                "fldhj9y1POtxyi6aHVt": {
+                  "order": 10,
+                  "visible": true
+                },
+                "fldMYtS8eGk2FGVCfH9": {
+                  "order": 11,
+                  "visible": true
+                },
+                "fld4BKceQL7Rplovisp": {
+                  "order": 12,
+                  "visible": true
+                },
+                "fldAna4m9MT67qiFnjX": {
+                  "order": 13,
+                  "visible": true
+                },
+                "fld8kYh4si44Lmqg8Li": {
+                  "order": 14,
+                  "visible": true
+                },
+                "fldjhRz5R4XCryCytPn": {
+                  "order": 15,
+                  "visible": true
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048021840,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblRBWTgaP6dH4SU1RQ"
+        ],
+        "queryHash": "[\"view-list\",\"tblRBWTgaP6dH4SU1RQ\"]"
+      },
+      {
+        "dehydratedAt": 1789048025207,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048023756,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblRBWTgaP6dH4SU1RQ"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblRBWTgaP6dH4SU1RQ\"]"
+      }
+    ]
+  },
+  "Full Wearing Report (new design) clothes list": {
+    "id": "tbl0BBxOfZbH6SKR9gd",
+    "queries": [
+      {
+        "dehydratedAt": 1789048026070,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048025894,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048026070,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048025910,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048026070,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048026013,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048026070,
+        "state": {
+          "data": [
+            {
+              "id": "viwOdLVVU8ZllBhVvXD",
+              "name": "look up clothes type and group",
+              "type": "grid",
+              "order": -1,
+              "filter": {
+                "conjunction": "and",
+                "filterSet": [
+                  {
+                    "fieldId": "fldSjVPGZ5lQJizsKf6",
+                    "value": "need wash",
+                    "operator": "is"
+                  }
+                ]
+              },
+              "group": [
+                {
+                  "fieldId": "fldye1t5qODNCOxFaEM",
+                  "order": "asc"
+                },
+                {
+                  "fieldId": "fldRejGrK27lNUlQuID",
+                  "order": "asc"
+                }
+              ],
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-10T07:44:01.248Z",
+              "lastModifiedTime": "2026-09-10T07:46:27.981Z",
+              "columnMeta": {
+                "fldUEz6W4GGiArTRSpW": {
+                  "order": 0
+                },
+                "fldqJXG4UBo6nOFuIHG": {
+                  "order": 1
+                },
+                "fldRejGrK27lNUlQuID": {
+                  "order": 2
+                },
+                "flddudt6SRCza1BQuPc": {
+                  "order": 3,
+                  "statisticFunc": "sum"
+                },
+                "fldSjVPGZ5lQJizsKf6": {
+                  "order": 4
+                },
+                "fldye1t5qODNCOxFaEM": {
+                  "order": 5,
+                  "width": 205
+                }
+              }
+            },
+            {
+              "id": "viwdYjKJFLBSRkMQXHq",
+              "name": "group by clothes, need wash",
+              "type": "grid",
+              "order": 1,
+              "filter": {
+                "conjunction": "and",
+                "filterSet": [
+                  {
+                    "fieldId": "fldSjVPGZ5lQJizsKf6",
+                    "value": "need wash",
+                    "operator": "is"
+                  }
+                ]
+              },
+              "group": [
+                {
+                  "fieldId": "fldRejGrK27lNUlQuID",
+                  "order": "asc"
+                }
+              ],
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-10T07:41:07.656Z",
+              "lastModifiedTime": "2026-09-10T07:44:46.266Z",
+              "columnMeta": {
+                "fldUEz6W4GGiArTRSpW": {
+                  "order": 0
+                },
+                "fldqJXG4UBo6nOFuIHG": {
+                  "order": 1
+                },
+                "fldRejGrK27lNUlQuID": {
+                  "order": 2
+                },
+                "flddudt6SRCza1BQuPc": {
+                  "order": 3,
+                  "statisticFunc": "sum"
+                },
+                "fldSjVPGZ5lQJizsKf6": {
+                  "order": 4
+                },
+                "fldye1t5qODNCOxFaEM": {
+                  "order": 5
+                }
+              }
+            },
+            {
+              "id": "viwIQT3dwc1OfU8rNqp",
+              "name": "full clothes detail",
+              "type": "grid",
+              "order": 2,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-08T23:59:33.012Z",
+              "lastModifiedTime": "2026-09-10T07:46:32.458Z",
+              "columnMeta": {
+                "fldUEz6W4GGiArTRSpW": {
+                  "order": 0,
+                  "width": 100
+                },
+                "fldqJXG4UBo6nOFuIHG": {
+                  "order": 1,
+                  "width": 278
+                },
+                "fldRejGrK27lNUlQuID": {
+                  "order": 2
+                },
+                "flddudt6SRCza1BQuPc": {
+                  "order": 3,
+                  "statisticFunc": "sum"
+                },
+                "fldSjVPGZ5lQJizsKf6": {
+                  "order": 4
+                },
+                "fldye1t5qODNCOxFaEM": {
+                  "order": 5
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048025982,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tbl0BBxOfZbH6SKR9gd"
+        ],
+        "queryHash": "[\"view-list\",\"tbl0BBxOfZbH6SKR9gd\"]"
+      },
+      {
+        "dehydratedAt": 1789048026070,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048026041,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tbl0BBxOfZbH6SKR9gd"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tbl0BBxOfZbH6SKR9gd\"]"
+      }
+    ]
+  },
+  "Clothes": {
+    "id": "tbll5LBGSzsCRz06LT2",
+    "queries": [
+      {
+        "dehydratedAt": 1789048030794,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048027386,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048030794,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048027520,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048030794,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048030319,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048030794,
+        "state": {
+          "data": [
+            {
+              "id": "viwMAN9MTQ0VSTHyfH6",
+              "name": "group by clothes type dry, beautiful, sort by hot at noon",
+              "type": "grid",
+              "order": 0,
+              "options": {
+                "rowHeight": "tall",
+                "fieldNameDisplayLines": 3
+              },
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-10T07:34:51.489Z",
+              "columnMeta": {
+                "fldV63aXdlxx94lE2AZ": {
+                  "order": 0
+                },
+                "fldVKZgeRHPTyuEVQXB": {
+                  "order": 1,
+                  "width": 140
+                },
+                "fldOdPF8rwOPNQPo0CG": {
+                  "order": 2
+                },
+                "fld2qcdRjN6WsS3Oz1J": {
+                  "order": 3
+                },
+                "fldEKlTjPu6a0CYAQ7k": {
+                  "order": 4
+                },
+                "flddc2vVsZX2cZSADOp": {
+                  "order": 5
+                },
+                "fldP4Lcq1CzDINHWyNo": {
+                  "order": 6
+                },
+                "fldzqmRC6QnE8RSffC0": {
+                  "order": 7
+                },
+                "fldnmtsH1XAnW5McHIX": {
+                  "order": 8
+                },
+                "fldNVLbmVoet1FyRCZO": {
+                  "order": 9
+                },
+                "fldbOeDKR61MqnqITMS": {
+                  "order": 10
+                },
+                "fldEWiHEoY6xsUKQQoY": {
+                  "order": 11
+                },
+                "fldgHXzs35Bt3yqLEXo": {
+                  "order": 12
+                },
+                "fldWQOJ4WRQboqnpZny": {
+                  "order": 13
+                },
+                "fldUOEa2V0zedgLQaZt": {
+                  "order": 14
+                },
+                "fldQiP6AXq7gBzszSas": {
+                  "order": 15
+                },
+                "fld0NvVp2YQG4Otla85": {
+                  "order": 16
+                },
+                "fld8H3vImQWoMR2LbWU": {
+                  "order": 17
+                },
+                "fld8dtmesAewCixkVBj": {
+                  "order": 18
+                },
+                "fldIkxUQFidOIvxGIXI": {
+                  "order": 19
+                },
+                "fldFAWHK70btlBFkqbE": {
+                  "order": 20,
+                  "width": 273
+                },
+                "fldZf1z942oI8NdKOCa": {
+                  "order": 21
+                },
+                "flds8i9Tg3Px92wRpqm": {
+                  "order": 22
+                },
+                "fldimlzxlOwQtxcMNDZ": {
+                  "order": 23
+                },
+                "fldz9ckzcmLHmlEXP8R": {
+                  "order": 24
+                },
+                "fldgrsiIkCIQG9h7O83": {
+                  "order": 25
+                },
+                "fldnOp7WXFmn5rJoDgU": {
+                  "order": 26
+                },
+                "fldSXGO6HRC1Jqe9KtO": {
+                  "order": 27
+                },
+                "fld05IxVuARCmlY1vbm": {
+                  "order": 28
+                },
+                "fldLsRuFb20RYb3CA8s": {
+                  "order": 29
+                },
+                "fldGHbgELJjIo1fq5JU": {
+                  "order": 30
+                },
+                "fldaWfeBWnA7PMP7caq": {
+                  "order": 31
+                },
+                "fldAiAhDQYjxqt4Z7oO": {
+                  "order": 32
+                },
+                "fldRAXr82876TBKOrgC": {
+                  "order": 33
+                },
+                "fldbESZGLlJoSLj39bo": {
+                  "order": 34
+                }
+              }
+            },
+            {
+              "id": "viwLsdwaFjvHUe9zBX4",
+              "name": "group by thick,hot, sort by beautiful",
+              "type": "grid",
+              "order": 1,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-10T07:34:51.489Z",
+              "columnMeta": {
+                "fldV63aXdlxx94lE2AZ": {
+                  "order": 0
+                },
+                "fldVKZgeRHPTyuEVQXB": {
+                  "order": 1
+                },
+                "fldOdPF8rwOPNQPo0CG": {
+                  "order": 2
+                },
+                "fld2qcdRjN6WsS3Oz1J": {
+                  "order": 3
+                },
+                "fldEKlTjPu6a0CYAQ7k": {
+                  "order": 4
+                },
+                "flddc2vVsZX2cZSADOp": {
+                  "order": 5
+                },
+                "fldP4Lcq1CzDINHWyNo": {
+                  "order": 6
+                },
+                "fldzqmRC6QnE8RSffC0": {
+                  "order": 7
+                },
+                "fldnmtsH1XAnW5McHIX": {
+                  "order": 8
+                },
+                "fldNVLbmVoet1FyRCZO": {
+                  "order": 9
+                },
+                "fldbOeDKR61MqnqITMS": {
+                  "order": 10
+                },
+                "fldEWiHEoY6xsUKQQoY": {
+                  "order": 11
+                },
+                "fldgHXzs35Bt3yqLEXo": {
+                  "order": 12
+                },
+                "fldWQOJ4WRQboqnpZny": {
+                  "order": 13
+                },
+                "fldUOEa2V0zedgLQaZt": {
+                  "order": 14
+                },
+                "fldQiP6AXq7gBzszSas": {
+                  "order": 15
+                },
+                "fld0NvVp2YQG4Otla85": {
+                  "order": 16
+                },
+                "fld8H3vImQWoMR2LbWU": {
+                  "order": 17
+                },
+                "fld8dtmesAewCixkVBj": {
+                  "order": 18
+                },
+                "fldIkxUQFidOIvxGIXI": {
+                  "order": 19
+                },
+                "fldFAWHK70btlBFkqbE": {
+                  "order": 20
+                },
+                "fldZf1z942oI8NdKOCa": {
+                  "order": 21
+                },
+                "flds8i9Tg3Px92wRpqm": {
+                  "order": 22
+                },
+                "fldimlzxlOwQtxcMNDZ": {
+                  "order": 23
+                },
+                "fldz9ckzcmLHmlEXP8R": {
+                  "order": 24
+                },
+                "fldgrsiIkCIQG9h7O83": {
+                  "order": 25
+                },
+                "fldnOp7WXFmn5rJoDgU": {
+                  "order": 26
+                },
+                "fldSXGO6HRC1Jqe9KtO": {
+                  "order": 27
+                },
+                "fld05IxVuARCmlY1vbm": {
+                  "order": 28
+                },
+                "fldLsRuFb20RYb3CA8s": {
+                  "order": 29
+                },
+                "fldGHbgELJjIo1fq5JU": {
+                  "order": 30
+                },
+                "fldaWfeBWnA7PMP7caq": {
+                  "order": 31
+                },
+                "fldAiAhDQYjxqt4Z7oO": {
+                  "order": 32
+                },
+                "fldRAXr82876TBKOrgC": {
+                  "order": 33
+                },
+                "fldbESZGLlJoSLj39bo": {
+                  "order": 34
+                }
+              }
+            },
+            {
+              "id": "viwgLdxbAHyvZhlrOCu",
+              "name": "Gallery",
+              "type": "gallery",
+              "order": 2,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-10T07:34:51.489Z",
+              "columnMeta": {
+                "fldV63aXdlxx94lE2AZ": {
+                  "order": 0,
+                  "visible": true
+                },
+                "fldVKZgeRHPTyuEVQXB": {
+                  "order": 1
+                },
+                "fldOdPF8rwOPNQPo0CG": {
+                  "order": 2
+                },
+                "fld2qcdRjN6WsS3Oz1J": {
+                  "order": 3
+                },
+                "fldEKlTjPu6a0CYAQ7k": {
+                  "order": 4
+                },
+                "flddc2vVsZX2cZSADOp": {
+                  "order": 5
+                },
+                "fldP4Lcq1CzDINHWyNo": {
+                  "order": 6
+                },
+                "fldzqmRC6QnE8RSffC0": {
+                  "order": 7
+                },
+                "fldnmtsH1XAnW5McHIX": {
+                  "order": 8
+                },
+                "fldNVLbmVoet1FyRCZO": {
+                  "order": 9
+                },
+                "fldbOeDKR61MqnqITMS": {
+                  "order": 10
+                },
+                "fldEWiHEoY6xsUKQQoY": {
+                  "order": 11
+                },
+                "fldgHXzs35Bt3yqLEXo": {
+                  "order": 12
+                },
+                "fldWQOJ4WRQboqnpZny": {
+                  "order": 13
+                },
+                "fldUOEa2V0zedgLQaZt": {
+                  "order": 14
+                },
+                "fldQiP6AXq7gBzszSas": {
+                  "order": 15
+                },
+                "fld0NvVp2YQG4Otla85": {
+                  "order": 16
+                },
+                "fld8H3vImQWoMR2LbWU": {
+                  "order": 17
+                },
+                "fld8dtmesAewCixkVBj": {
+                  "order": 18
+                },
+                "fldIkxUQFidOIvxGIXI": {
+                  "order": 19
+                },
+                "fldFAWHK70btlBFkqbE": {
+                  "order": 20
+                },
+                "fldZf1z942oI8NdKOCa": {
+                  "order": 21
+                },
+                "flds8i9Tg3Px92wRpqm": {
+                  "order": 22
+                },
+                "fldimlzxlOwQtxcMNDZ": {
+                  "order": 23
+                },
+                "fldz9ckzcmLHmlEXP8R": {
+                  "order": 24
+                },
+                "fldgrsiIkCIQG9h7O83": {
+                  "order": 25
+                },
+                "fldnOp7WXFmn5rJoDgU": {
+                  "order": 26
+                },
+                "fldSXGO6HRC1Jqe9KtO": {
+                  "order": 27
+                },
+                "fld05IxVuARCmlY1vbm": {
+                  "order": 28
+                },
+                "fldLsRuFb20RYb3CA8s": {
+                  "order": 29
+                },
+                "fldGHbgELJjIo1fq5JU": {
+                  "order": 30
+                },
+                "fldaWfeBWnA7PMP7caq": {
+                  "order": 31
+                },
+                "fldAiAhDQYjxqt4Z7oO": {
+                  "order": 32
+                },
+                "fldRAXr82876TBKOrgC": {
+                  "order": 33
+                },
+                "fldbESZGLlJoSLj39bo": {
+                  "order": 34
+                }
+              }
+            },
+            {
+              "id": "viwoCGkrcv1R1TlAgcx",
+              "name": "full clothes",
+              "type": "grid",
+              "order": 3,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-10T07:34:51.489Z",
+              "columnMeta": {
+                "fldV63aXdlxx94lE2AZ": {
+                  "order": 0
+                },
+                "fldVKZgeRHPTyuEVQXB": {
+                  "order": 1,
+                  "width": 237
+                },
+                "fldOdPF8rwOPNQPo0CG": {
+                  "order": 2
+                },
+                "fld2qcdRjN6WsS3Oz1J": {
+                  "order": 3
+                },
+                "fldEKlTjPu6a0CYAQ7k": {
+                  "order": 4
+                },
+                "flddc2vVsZX2cZSADOp": {
+                  "order": 5
+                },
+                "fldP4Lcq1CzDINHWyNo": {
+                  "order": 6
+                },
+                "fldzqmRC6QnE8RSffC0": {
+                  "order": 7
+                },
+                "fldnmtsH1XAnW5McHIX": {
+                  "order": 8
+                },
+                "fldNVLbmVoet1FyRCZO": {
+                  "order": 9
+                },
+                "fldbOeDKR61MqnqITMS": {
+                  "order": 10
+                },
+                "fldEWiHEoY6xsUKQQoY": {
+                  "order": 11
+                },
+                "fldgHXzs35Bt3yqLEXo": {
+                  "order": 12
+                },
+                "fldWQOJ4WRQboqnpZny": {
+                  "order": 13
+                },
+                "fldUOEa2V0zedgLQaZt": {
+                  "order": 14
+                },
+                "fldQiP6AXq7gBzszSas": {
+                  "order": 15
+                },
+                "fld0NvVp2YQG4Otla85": {
+                  "order": 16
+                },
+                "fld8H3vImQWoMR2LbWU": {
+                  "order": 17
+                },
+                "fld8dtmesAewCixkVBj": {
+                  "order": 18
+                },
+                "fldIkxUQFidOIvxGIXI": {
+                  "order": 19
+                },
+                "fldFAWHK70btlBFkqbE": {
+                  "order": 20
+                },
+                "fldZf1z942oI8NdKOCa": {
+                  "order": 21
+                },
+                "flds8i9Tg3Px92wRpqm": {
+                  "order": 22
+                },
+                "fldimlzxlOwQtxcMNDZ": {
+                  "order": 23
+                },
+                "fldz9ckzcmLHmlEXP8R": {
+                  "order": 24
+                },
+                "fldgrsiIkCIQG9h7O83": {
+                  "order": 25
+                },
+                "fldnOp7WXFmn5rJoDgU": {
+                  "order": 26
+                },
+                "fldSXGO6HRC1Jqe9KtO": {
+                  "order": 27
+                },
+                "fld05IxVuARCmlY1vbm": {
+                  "order": 28
+                },
+                "fldLsRuFb20RYb3CA8s": {
+                  "order": 29
+                },
+                "fldGHbgELJjIo1fq5JU": {
+                  "order": 30
+                },
+                "fldaWfeBWnA7PMP7caq": {
+                  "order": 31
+                },
+                "fldAiAhDQYjxqt4Z7oO": {
+                  "order": 32,
+                  "width": 220
+                },
+                "fldRAXr82876TBKOrgC": {
+                  "order": 33
+                },
+                "fldbESZGLlJoSLj39bo": {
+                  "order": 34
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048027857,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tbll5LBGSzsCRz06LT2"
+        ],
+        "queryHash": "[\"view-list\",\"tbll5LBGSzsCRz06LT2\"]"
+      },
+      {
+        "dehydratedAt": 1789048030794,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048030470,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tbll5LBGSzsCRz06LT2"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tbll5LBGSzsCRz06LT2\"]"
+      }
+    ]
+  },
+  "Full Wearing Report": {
+    "id": "tblmbW3D6WWSgRWKhbV",
+    "queries": [
+      {
+        "dehydratedAt": 1789048031438,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048031317,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048031438,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048031323,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048031438,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048031368,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048031438,
+        "state": {
+          "data": [
+            {
+              "id": "viwR3rsFghXoUmZVOGR",
+              "name": "clothes not yet wash, group by clothes",
+              "type": "grid",
+              "order": 0,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-05T23:14:22.016Z",
+              "columnMeta": {
+                "fld0097vIeZYSf2QAKR": {
+                  "order": 0
+                },
+                "fldPfLCcuR0pLVXVt7k": {
+                  "order": 1
+                },
+                "fldQi2R02zyl1f2Jadm": {
+                  "order": 2
+                },
+                "fldBVMU1qd59SrEjL7u": {
+                  "order": 3
+                },
+                "fldaVnTofR3AyLL0OVR": {
+                  "order": 4
+                },
+                "fld9kQtqD897sm9uNPs": {
+                  "order": 5
+                },
+                "fldpMlryQtmboxRXYkb": {
+                  "order": 6
+                },
+                "fldOgW7i4h2hDc07wGv": {
+                  "order": 7
+                },
+                "fldLKr3yK2SKjuwMm6Z": {
+                  "order": 8
+                },
+                "fldr4ABIY7yp7xPiJ8e": {
+                  "order": 9
+                },
+                "fldeJkBIlJSEAkY4ODj": {
+                  "order": 10
+                },
+                "fldebm1lGRVfLaDIy2P": {
+                  "order": 11
+                },
+                "fldJ48CMXjZ7THt1dD5": {
+                  "order": 12
+                },
+                "fldei6hvXYS1IjL8yDW": {
+                  "order": 13
+                },
+                "fldpeGhJwAoqRDsBPpu": {
+                  "order": 14
+                },
+                "fld49VoaLVm5x3N9K0f": {
+                  "order": 15
+                },
+                "fldqGCXnERTuajAtphk": {
+                  "order": 16,
+                  "width": 295
+                },
+                "fldxb0tMKUugFdg7w0X": {
+                  "order": 17
+                },
+                "fldk5LBY8vwR8GDFTaW": {
+                  "order": 18
+                },
+                "fld4jucwRhlcj2zlPa6": {
+                  "order": 19
+                },
+                "fldxh6KUNsXjKV4aeHX": {
+                  "order": 20
+                }
+              }
+            },
+            {
+              "id": "viwbjKx0ZjFv8mnDQWC",
+              "name": "bra not yet wash, group by bra copy",
+              "type": "grid",
+              "order": 1,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z",
+              "columnMeta": {
+                "fld0097vIeZYSf2QAKR": {
+                  "order": 0
+                },
+                "fldPfLCcuR0pLVXVt7k": {
+                  "order": 1
+                },
+                "fldQi2R02zyl1f2Jadm": {
+                  "order": 2
+                },
+                "fldBVMU1qd59SrEjL7u": {
+                  "order": 3
+                },
+                "fldaVnTofR3AyLL0OVR": {
+                  "order": 4
+                },
+                "fld9kQtqD897sm9uNPs": {
+                  "order": 5
+                },
+                "fldpMlryQtmboxRXYkb": {
+                  "order": 6
+                },
+                "fldOgW7i4h2hDc07wGv": {
+                  "order": 7
+                },
+                "fldLKr3yK2SKjuwMm6Z": {
+                  "order": 8
+                },
+                "fldr4ABIY7yp7xPiJ8e": {
+                  "order": 9
+                },
+                "fldeJkBIlJSEAkY4ODj": {
+                  "order": 10
+                },
+                "fldebm1lGRVfLaDIy2P": {
+                  "order": 11
+                },
+                "fldJ48CMXjZ7THt1dD5": {
+                  "order": 12
+                },
+                "fldei6hvXYS1IjL8yDW": {
+                  "order": 13
+                },
+                "fldpeGhJwAoqRDsBPpu": {
+                  "order": 14
+                },
+                "fld49VoaLVm5x3N9K0f": {
+                  "order": 15
+                },
+                "fldqGCXnERTuajAtphk": {
+                  "order": 16
+                },
+                "fldxb0tMKUugFdg7w0X": {
+                  "order": 17
+                },
+                "fldk5LBY8vwR8GDFTaW": {
+                  "order": 18
+                },
+                "fld4jucwRhlcj2zlPa6": {
+                  "order": 19
+                },
+                "fldxh6KUNsXjKV4aeHX": {
+                  "order": 20
+                }
+              }
+            },
+            {
+              "id": "viwDwZedY0vrcxQfu7U",
+              "name": "full wearing report",
+              "type": "grid",
+              "order": 2,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-08T23:53:39.420Z",
+              "columnMeta": {
+                "fld0097vIeZYSf2QAKR": {
+                  "order": 0,
+                  "width": 274
+                },
+                "fldPfLCcuR0pLVXVt7k": {
+                  "order": 1
+                },
+                "fldQi2R02zyl1f2Jadm": {
+                  "order": 2
+                },
+                "fldBVMU1qd59SrEjL7u": {
+                  "order": 3
+                },
+                "fldaVnTofR3AyLL0OVR": {
+                  "order": 4
+                },
+                "fld9kQtqD897sm9uNPs": {
+                  "order": 5
+                },
+                "fldpMlryQtmboxRXYkb": {
+                  "order": 6
+                },
+                "fldOgW7i4h2hDc07wGv": {
+                  "order": 2.5
+                },
+                "fldLKr3yK2SKjuwMm6Z": {
+                  "order": 8
+                },
+                "fldr4ABIY7yp7xPiJ8e": {
+                  "order": 9
+                },
+                "fldeJkBIlJSEAkY4ODj": {
+                  "order": 10
+                },
+                "fldebm1lGRVfLaDIy2P": {
+                  "order": 11
+                },
+                "fldJ48CMXjZ7THt1dD5": {
+                  "order": 12
+                },
+                "fldei6hvXYS1IjL8yDW": {
+                  "order": 13
+                },
+                "fldpeGhJwAoqRDsBPpu": {
+                  "order": 14
+                },
+                "fld49VoaLVm5x3N9K0f": {
+                  "order": 1.5
+                },
+                "fldqGCXnERTuajAtphk": {
+                  "order": 16
+                },
+                "fldxb0tMKUugFdg7w0X": {
+                  "order": 17
+                },
+                "fldk5LBY8vwR8GDFTaW": {
+                  "order": 18
+                },
+                "fld4jucwRhlcj2zlPa6": {
+                  "order": 19
+                },
+                "fldxh6KUNsXjKV4aeHX": {
+                  "order": 20
+                }
+              }
+            },
+            {
+              "id": "viwrQAx7F9wu6h5Tm24",
+              "name": "Form",
+              "type": "form",
+              "order": 3,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z",
+              "columnMeta": {
+                "fld0097vIeZYSf2QAKR": {
+                  "order": 0,
+                  "visible": true
+                },
+                "fldPfLCcuR0pLVXVt7k": {
+                  "order": 1,
+                  "visible": true
+                },
+                "fldQi2R02zyl1f2Jadm": {
+                  "order": 2,
+                  "visible": true
+                },
+                "fldBVMU1qd59SrEjL7u": {
+                  "order": 3,
+                  "visible": true
+                },
+                "fldaVnTofR3AyLL0OVR": {
+                  "order": 4,
+                  "visible": true
+                },
+                "fld9kQtqD897sm9uNPs": {
+                  "order": 5,
+                  "visible": true
+                },
+                "fldpMlryQtmboxRXYkb": {
+                  "order": 6,
+                  "visible": true
+                },
+                "fldOgW7i4h2hDc07wGv": {
+                  "order": 7,
+                  "visible": true
+                },
+                "fldLKr3yK2SKjuwMm6Z": {
+                  "order": 8
+                },
+                "fldr4ABIY7yp7xPiJ8e": {
+                  "order": 9,
+                  "visible": true
+                },
+                "fldeJkBIlJSEAkY4ODj": {
+                  "order": 10,
+                  "visible": true
+                },
+                "fldebm1lGRVfLaDIy2P": {
+                  "order": 11,
+                  "visible": true
+                },
+                "fldJ48CMXjZ7THt1dD5": {
+                  "order": 12,
+                  "visible": true
+                },
+                "fldei6hvXYS1IjL8yDW": {
+                  "order": 13,
+                  "visible": true
+                },
+                "fldpeGhJwAoqRDsBPpu": {
+                  "order": 14,
+                  "visible": true
+                },
+                "fld49VoaLVm5x3N9K0f": {
+                  "order": 15,
+                  "visible": true
+                },
+                "fldqGCXnERTuajAtphk": {
+                  "order": 16,
+                  "visible": true
+                },
+                "fldxb0tMKUugFdg7w0X": {
+                  "order": 17,
+                  "visible": true
+                },
+                "fldk5LBY8vwR8GDFTaW": {
+                  "order": 18,
+                  "visible": true
+                },
+                "fld4jucwRhlcj2zlPa6": {
+                  "order": 19,
+                  "visible": true
+                },
+                "fldxh6KUNsXjKV4aeHX": {
+                  "order": 20,
+                  "visible": true
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048031348,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblmbW3D6WWSgRWKhbV"
+        ],
+        "queryHash": "[\"view-list\",\"tblmbW3D6WWSgRWKhbV\"]"
+      },
+      {
+        "dehydratedAt": 1789048031438,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048031393,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblmbW3D6WWSgRWKhbV"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblmbW3D6WWSgRWKhbV\"]"
+      }
+    ]
+  },
+  "AI Analysis Reports": {
+    "id": "tblj2QlZQfjxyHnvpkD",
+    "queries": [
+      {
+        "dehydratedAt": 1789048034974,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048032511,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048034974,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048033010,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048034974,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048033807,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048034974,
+        "state": {
+          "data": [
+            {
+              "id": "viwJ1rebJx8bXhpvtY5",
+              "name": "Grid view",
+              "type": "grid",
+              "order": 0,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-05T23:16:15.014Z",
+              "columnMeta": {
+                "fldaw3adXze5rfYNjCr": {
+                  "order": 0
+                },
+                "fldpg3VHpZxMeNITuA4": {
+                  "order": 1
+                },
+                "fld3a2UlMy6Qe14HXQw": {
+                  "order": 2
+                },
+                "fldKmpwaEYppBOvOs9X": {
+                  "order": 3,
+                  "width": 254
+                },
+                "fldkMIOID9VoyljwUxx": {
+                  "order": 4
+                },
+                "fldlH7xhU3JrpFlIWrr": {
+                  "order": 5
+                },
+                "fldddAyOLpZxCAG5kRh": {
+                  "order": 6
+                },
+                "fldmyMDB4yHCn39SC7e": {
+                  "order": 7
+                },
+                "fldMIZIb2oeKwcMH6Uf": {
+                  "order": 8
+                },
+                "fldC537TlE0hiZIVyJK": {
+                  "order": 9
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048033394,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblj2QlZQfjxyHnvpkD"
+        ],
+        "queryHash": "[\"view-list\",\"tblj2QlZQfjxyHnvpkD\"]"
+      },
+      {
+        "dehydratedAt": 1789048034974,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048034778,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblj2QlZQfjxyHnvpkD"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblj2QlZQfjxyHnvpkD\"]"
+      }
+    ]
+  },
+  "Wearing App Users": {
+    "id": "tblYNGw22tLx2yBcUAc",
+    "queries": [
+      {
+        "dehydratedAt": 1789048035769,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048035472,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048035769,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048035480,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048035769,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048035707,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048035769,
+        "state": {
+          "data": [
+            {
+              "id": "viwHddMjxVX02TMpK3n",
+              "name": "Authorized Users",
+              "type": "grid",
+              "order": 0,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z",
+              "columnMeta": {
+                "fld21Wg8twgTDdBAZ66": {
+                  "order": 0
+                },
+                "fld8gQ7BLQcRwQ5RGsC": {
+                  "order": 1
+                },
+                "fldolFhYiOY84Dxrr0y": {
+                  "order": 2
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048035658,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblYNGw22tLx2yBcUAc"
+        ],
+        "queryHash": "[\"view-list\",\"tblYNGw22tLx2yBcUAc\"]"
+      },
+      {
+        "dehydratedAt": 1789048035769,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048035743,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblYNGw22tLx2yBcUAc"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblYNGw22tLx2yBcUAc\"]"
+      }
+    ]
+  },
+  "Wardrobe App Presets": {
+    "id": "tblZfZ130UwonyLaizY",
+    "queries": [
+      {
+        "dehydratedAt": 1789048036162,
+        "state": {
+          "data": {
+            "id": "bseMzVW4ZJlrI5QzaQW",
+            "name": "WardrobeRecord (Copy) (Copy)",
+            "icon": null,
+            "spaceId": "spcJxzf2vzuWtVEYpQk",
+            "createdBy": "usrnRAoSbECMfjTvtyc",
+            "role": "viewer",
+            "collaboratorType": "base",
+            "v2Status": {
+              "useV2": true,
+              "reason": "env_force_v2_all"
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048036074,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048036162,
+        "state": {
+          "data": {
+            "table|create": false,
+            "table|delete": false,
+            "table|read": true,
+            "table|update": false,
+            "table|import": false,
+            "table|export": false,
+            "table|trash_read": false,
+            "table|trash_update": false,
+            "table|trash_reset": false,
+            "table|archive_read": false,
+            "table|archive_manage": false,
+            "base|create": false,
+            "base|delete": false,
+            "base|read": true,
+            "base|read_all": false,
+            "base|update": false,
+            "base|invite_email": false,
+            "base|invite_link": false,
+            "base|table_import": false,
+            "base|table_export": false,
+            "base|authority_matrix_config": false,
+            "base|db_connection": false,
+            "base|query_data": true,
+            "automation|create": false,
+            "automation|delete": false,
+            "automation|read": true,
+            "automation|update": false,
+            "app|create": false,
+            "app|delete": false,
+            "app|read": true,
+            "app|update": false,
+            "table_record_history|read": false
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048036080,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "base-permission",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"base-permission\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048036162,
+        "state": {
+          "data": [
+            {
+              "id": "tbll5LBGSzsCRz06LT2",
+              "name": "Clothes",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbll5LBGSzsCRz06LT2",
+              "defaultViewId": "viwMAN9MTQ0VSTHyfH6",
+              "order": 1,
+              "lastModifiedTime": "2026-09-10T07:34:51.552Z"
+            },
+            {
+              "id": "tblmbW3D6WWSgRWKhbV",
+              "name": "Full Wearing Report",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblmbW3D6WWSgRWKhbV",
+              "defaultViewId": "viwR3rsFghXoUmZVOGR",
+              "order": 2,
+              "lastModifiedTime": "2026-09-08T23:53:39.427Z"
+            },
+            {
+              "id": "tblj2QlZQfjxyHnvpkD",
+              "name": "AI Analysis Reports",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblj2QlZQfjxyHnvpkD",
+              "defaultViewId": "viwJ1rebJx8bXhpvtY5",
+              "order": 3,
+              "lastModifiedTime": "2026-09-05T23:16:15.023Z"
+            },
+            {
+              "id": "tblYNGw22tLx2yBcUAc",
+              "name": "Wearing App Users",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblYNGw22tLx2yBcUAc",
+              "defaultViewId": "viwHddMjxVX02TMpK3n",
+              "order": 4,
+              "lastModifiedTime": "2026-09-03T17:07:33.780Z"
+            },
+            {
+              "id": "tblZfZ130UwonyLaizY",
+              "name": "Wardrobe App Presets",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblZfZ130UwonyLaizY",
+              "defaultViewId": "viwtXrrXFLjvp1cnMrl",
+              "order": 5,
+              "lastModifiedTime": "2026-09-08T23:51:44.360Z"
+            },
+            {
+              "id": "tblRBWTgaP6dH4SU1RQ",
+              "name": "Full Wearing Report (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblRBWTgaP6dH4SU1RQ",
+              "defaultViewId": "viwm0CxF1VPXS9tkB43",
+              "order": 6,
+              "lastModifiedTime": "2026-09-10T08:14:26.068Z"
+            },
+            {
+              "id": "tbl0BBxOfZbH6SKR9gd",
+              "name": "Full Wearing Report (new design) clothes list",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tbl0BBxOfZbH6SKR9gd",
+              "defaultViewId": "viwOdLVVU8ZllBhVvXD",
+              "order": 7,
+              "lastModifiedTime": "2026-09-10T07:46:32.469Z"
+            },
+            {
+              "id": "tblrHfBAYrA6gRCYbPN",
+              "name": "Clothes (new design)",
+              "dbTableName": "bseMzVW4ZJlrI5QzaQW.tblrHfBAYrA6gRCYbPN",
+              "defaultViewId": "viwSFeSe9s3j6tCCAaw",
+              "order": 8,
+              "lastModifiedTime": "2026-09-10T08:45:41.391Z"
+            }
+          ],
+          "dataUpdateCount": 2,
+          "dataUpdatedAt": 1789048036125,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-list",
+          "bseMzVW4ZJlrI5QzaQW"
+        ],
+        "queryHash": "[\"table-list\",\"bseMzVW4ZJlrI5QzaQW\"]"
+      },
+      {
+        "dehydratedAt": 1789048036162,
+        "state": {
+          "data": [
+            {
+              "id": "viwtXrrXFLjvp1cnMrl",
+              "name": "Grid view",
+              "type": "grid",
+              "order": 0,
+              "createdBy": "usrnRAoSbECMfjTvtyc",
+              "lastModifiedBy": "usrnRAoSbECMfjTvtyc",
+              "createdTime": "2026-09-03T17:07:33.780Z",
+              "lastModifiedTime": "2026-09-08T23:51:44.353Z",
+              "columnMeta": {
+                "fldLDwE24Jz5vQHZFE8": {
+                  "order": 0,
+                  "width": 434
+                },
+                "fldMLYSI2Cb3Y4AUtCb": {
+                  "order": 1,
+                  "width": 196
+                },
+                "fldqusW5jW3KvpFxCyv": {
+                  "order": 2
+                },
+                "fld3mIDhuZ1pWCLKAsO": {
+                  "order": 3
+                },
+                "fldNguWXwO807zyIbTR": {
+                  "order": 4,
+                  "width": 705
+                },
+                "fld2fbbaziFugT8wvsc": {
+                  "order": 5
+                },
+                "fldMo9muoueDCfhxToG": {
+                  "order": 6
+                }
+              }
+            }
+          ],
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048036105,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "view-list",
+          "tblZfZ130UwonyLaizY"
+        ],
+        "queryHash": "[\"view-list\",\"tblZfZ130UwonyLaizY\"]"
+      },
+      {
+        "dehydratedAt": 1789048036162,
+        "state": {
+          "data": {
+            "table": {
+              "table|create": false,
+              "table|delete": false,
+              "table|read": true,
+              "table|update": false,
+              "table|import": false,
+              "table|export": false,
+              "table|trash_read": false,
+              "table|trash_update": false,
+              "table|trash_reset": false,
+              "table|archive_read": false,
+              "table|archive_manage": false
+            },
+            "field": {
+              "field|create": false,
+              "field|delete": false,
+              "field|read": true,
+              "field|update": false
+            },
+            "record": {
+              "record|create": false,
+              "record|delete": false,
+              "record|read": true,
+              "record|update": false,
+              "record|comment": false,
+              "record|copy": true,
+              "record|archive": false
+            },
+            "view": {
+              "view|create": false,
+              "view|delete": false,
+              "view|read": true,
+              "view|update": false,
+              "view|share": false
+            }
+          },
+          "dataUpdateCount": 1,
+          "dataUpdatedAt": 1789048036143,
+          "error": null,
+          "errorUpdateCount": 0,
+          "errorUpdatedAt": 0,
+          "fetchFailureCount": 0,
+          "fetchFailureReason": null,
+          "fetchMeta": null,
+          "isInvalidated": false,
+          "status": "success",
+          "fetchStatus": "idle"
+        },
+        "queryKey": [
+          "table-permission",
+          "bseMzVW4ZJlrI5QzaQW",
+          "tblZfZ130UwonyLaizY"
+        ],
+        "queryHash": "[\"table-permission\",\"bseMzVW4ZJlrI5QzaQW\",\"tblZfZ130UwonyLaizY\"]"
+      }
+    ]
+  }
+}

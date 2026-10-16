@@ -264,13 +264,13 @@ fun AdvisorScreen(
                     }
                     Column {
                         Text(
-                            text = "AI 智能穿搭与单品顾问",
+                            text = "Sensory Styling & Climate Consultant",
                             fontSize = 15.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = Slate900
                         )
                         Text(
-                            text = "融合字段中英字典、衣物属性、穿搭报告与清洗记录的精准诊断",
+                            text = "Climate scenario, sensory comfort priority & wardrobe synthesis",
                             fontSize = 11.sp,
                             color = Slate500,
                             lineHeight = 15.sp

@@ -1,0 +1,84 @@
+{
+  "entities": {
+    "Clothes": {
+      "title": "Clothes",
+      "description": "Wardrobe garment item with complete database field names and specifications",
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string", "maxLength": 300, "description": "Garment display name" },
+        "Clothes Type": { "type": "string", "maxLength": 100, "description": "Garment classification (Dress, bra, Tshirt, Pant, etc.)" },
+        "material": { "type": "string", "maxLength": 150, "description": "Fabric material" },
+        "thick clothes": { "type": "string", "maxLength": 100, "description": "Fabric thickness" },
+        "Hot at noon": { "type": "string", "maxLength": 100, "description": "Midday heat experience" },
+        "diao dai": { "type": "string", "maxLength": 100, "description": "Strap specification" },
+        "side breast ok": { "type": "string", "maxLength": 100, "description": "Side breast coverage and comfort" },
+        "sit breast ok": { "type": "string", "maxLength": 150, "description": "Sitting breast silhouette and shape" },
+        "center chest": { "type": "string", "maxLength": 100, "description": "Center chest cut and fit" },
+        "beautiful": { "type": "string", "maxLength": 100, "description": "Aesthetic rating" },
+        "beatiful reason": { "type": "string", "maxLength": 1000, "description": "Reason for aesthetic rating" },
+        "wet": { "type": "string", "maxLength": 50, "description": "Moisture and dryness state" },
+        "wet reason": { "type": "string", "maxLength": 500, "description": "Reason for wetness or drying behavior" },
+        "Descriptions": { "type": "string", "maxLength": 2000, "description": "Detailed primary description" },
+        "Descriptions 2": { "type": "string", "maxLength": 2000, "description": "Secondary fit description" },
+        "price": { "type": "number", "description": "Garment acquisition price" },
+        "wearing frequency(how many times legacy washed)": { "type": "number", "description": "Legacy washing frequency count" },
+        "Tracked App Washes": { "type": "number", "description": "App tracked laundry washes" },
+        "Total Washed Count": { "type": "number", "description": "Lifetime total washes" },
+        "Last Washed": { "type": "string", "maxLength": 100, "description": "ISO timestamp of last wash" },
+        "AI Clothes Analysis": { "type": "string", "maxLength": 5000, "description": "AI sensory and ergonomic analysis" },
+        "may throw": { "type": "string", "maxLength": 200, "description": "Declutter or discard consideration" },
+        "last comment or action": { "type": "string", "maxLength": 500, "description": "Last recorded comment or action" },
+        "long dress": { "type": "string", "maxLength": 100, "description": "Length classification (short dress, middle dress, long dress)" },
+        "unwash time rollup": { "type": "number", "description": "Cumulative unwashed wear duration in seconds" },
+        "created": { "type": "string", "maxLength": 100, "description": "Creation timestamp" }
+      },
+      "required": ["Name", "Clothes Type", "material"]
+    },
+    "WearingReport": {
+      "title": "WearingReport",
+      "description": "Daily outfit wearing log and sensory bodily reflection session",
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string", "maxLength": 300, "description": "Report title / session ID" },
+        "wear date": { "type": "string", "maxLength": 100, "description": "Date worn" },
+        "created": { "type": "string", "maxLength": 100, "description": "Creation timestamp" },
+        "shoulder feel": { "type": "string", "maxLength": 500, "description": "Shoulder strap sensory comfort" },
+        "mid breast": { "type": "string", "maxLength": 500, "description": "Daytime breast comfort and silhouette" },
+        "night mid breast": { "type": "string", "maxLength": 500, "description": "Evening/nighttime breast comfort" },
+        "sweat": { "type": "string", "maxLength": 500, "description": "Daytime heat and sweat rating" },
+        "night sweat": { "type": "string", "maxLength": 500, "description": "Evening/night heat and sweat rating" },
+        "leg feel": { "type": "string", "maxLength": 500, "description": "Leg sensation and skirt coverage" },
+        "night leg feel": { "type": "string", "maxLength": 500, "description": "Evening/night leg warmth and sensation" },
+        "report detail": { "type": "string", "maxLength": 2000, "description": "Hours worn and day reflections" },
+        "AI Wearing Analysis": { "type": "string", "maxLength": 5000, "description": "AI analysis of comfort, fit, and care" }
+      },
+      "required": ["Name", "wear date"]
+    },
+    "ReportClothes": {
+      "title": "ReportClothes",
+      "description": "Session junction linking wearing report and garment item",
+      "type": "object",
+      "properties": {
+        "name": { "type": "number", "description": "Incremental session junction ID" },
+        "duration": { "type": "number", "description": "Wear duration in seconds" },
+        "wash stated": { "type": "string", "maxLength": 50, "description": "Laundry wash status (wash / need wash)" },
+        "Clothes Type (from clothes(new))": { "type": "string", "maxLength": 100, "description": "Garment type" }
+      },
+      "required": ["name", "duration", "wash stated"]
+    }
+  },
+  "firestore": {
+    "/clothes/{clothesId}": {
+      "schema": "Clothes",
+      "description": "Collection of wardrobe garment specifications and records"
+    },
+    "/wearing_reports/{reportId}": {
+      "schema": "WearingReport",
+      "description": "Collection of daily wear reports and sensory reflections"
+    },
+    "/report_clothes_junctions/{junctionId}": {
+      "schema": "ReportClothes",
+      "description": "Collection of outfit session wear connections"
+    }
+  }
+}

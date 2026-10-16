@@ -177,6 +177,9 @@ fun JournalScreen(
         }
     }
 
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val isWide = configuration.screenWidthDp >= 768
+
     Box(modifier = modifier.fillMaxSize().background(Color(0xFFF8FAFC))) {
         if (viewMode == "calendar") {
             Column(modifier = Modifier.fillMaxSize()) {
@@ -206,8 +209,8 @@ fun JournalScreen(
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                contentPadding = PaddingValues(horizontal = if (isWide) 8.dp else 6.dp, vertical = 6.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // 1. Top Header Card (IMG_9718)
                 item {
@@ -284,17 +287,43 @@ fun JournalScreen(
                         }
                     }
                 } else if (groupMode == "None") {
-                    items(filteredReports, key = { it.id }) { report ->
-                        val reportJunctions = junctions.filter { it.wearingReportId == report.id }
-                        Box(modifier = Modifier.padding(horizontal = 16.dp)) {
-                            ReportCard(
-                                report = report,
-                                junctions = reportJunctions,
-                                clothes = clothes,
-                                onClick = { selectedReportForModal = report },
-                                onSelectGarment = { g -> onSelectGarment?.invoke(g) },
-                                onWashBadgeClick = { j, gName -> pendingWashTarget = j to gName }
-                            )
+                    if (!isWide) {
+                        items(filteredReports, key = { it.id }) { report ->
+                            val reportJunctions = junctions.filter { it.wearingReportId == report.id }
+                            Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                                ReportCard(
+                                    report = report,
+                                    junctions = reportJunctions,
+                                    clothes = clothes,
+                                    onClick = { selectedReportForModal = report },
+                                    onSelectGarment = { g -> onSelectGarment?.invoke(g) },
+                                    onWashBadgeClick = { j, gName -> pendingWashTarget = j to gName }
+                                )
+                            }
+                        }
+                    } else {
+                        items(filteredReports.chunked(2), key = { row -> "journal_row_${row.first().id}" }) { rowReports ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                rowReports.forEach { report ->
+                                    val reportJunctions = junctions.filter { it.wearingReportId == report.id }
+                                    ReportCard(
+                                        report = report,
+                                        junctions = reportJunctions,
+                                        clothes = clothes,
+                                        onClick = { selectedReportForModal = report },
+                                        onSelectGarment = { g -> onSelectGarment?.invoke(g) },
+                                        onWashBadgeClick = { j, gName -> pendingWashTarget = j to gName },
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                                if (rowReports.size == 1) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                }
+                            }
                         }
                     }
                 } else {
@@ -475,15 +504,15 @@ private fun JournalHeaderCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(20.dp),
+            .padding(vertical = 4.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFF3B82F6).copy(alpha = 0.35f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Row 1: Header Icon + Title (Full width so "Wearing Report Journal" is never truncated)
             Row(
@@ -750,7 +779,8 @@ private fun ReportCard(
     clothes: List<GarmentEntity>,
     onClick: () -> Unit,
     onSelectGarment: (GarmentEntity) -> Unit,
-    onWashBadgeClick: ((JunctionEntity, String) -> Unit)? = null
+    onWashBadgeClick: ((JunctionEntity, String) -> Unit)? = null,
+    modifier: Modifier = Modifier
 ) {
     val formattedDate = remember(report.wearDate) {
         formatReportDate(report.wearDate, "EEE, MMM d, yyyy")
@@ -763,7 +793,7 @@ private fun ReportCard(
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .testTag("report_card_${report.id}")
             .clickable { onClick() },
@@ -773,8 +803,8 @@ private fun ReportCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
-            modifier = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // 1. Header: Calendar icon + Formatted Date + Duration pill + Eye button (IMG_9719)
             Row(

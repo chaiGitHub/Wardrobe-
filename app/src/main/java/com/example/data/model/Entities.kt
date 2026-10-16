@@ -28,7 +28,9 @@ data class GarmentEntity(
     val fanSleepLegFeeling: String = "", // when sleep under fan: leg feeling
     val fanSleepLegExplain: String = "", // when sleep under fan: leg explanation
     val standBreast: String = "",        // e.g. "center chest" / "stand breast"
-    val sitBreast: String = "",          // e.g. "sit breast ok"
+    val sitBreast: String = "",          // legacy sit breast ok
+    val sitBreastGatherBra: String = "", // sit breast ok: With 聚拢bra:
+    val sitBreastSideOutBra: String = "", // sit breast ok: with side out bra
     val beautiful: String = "",          // e.g. "Beautiful", "not so beautiful"
     val beautifulReason: String = "",    // e.g. "beatiful reason"
     val wet: String = "",                // e.g. "dry", "wet"

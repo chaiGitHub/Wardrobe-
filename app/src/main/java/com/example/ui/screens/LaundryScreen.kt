@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -155,13 +157,27 @@ fun LaundryScreen(
 
     val activeBundles = if (selectedTab == 0) needWashBundles else cleanBundles
 
-    LazyColumn(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC)),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        contentAlignment = Alignment.TopCenter
     ) {
+        val screenWidth = maxWidth
+        val isWide = screenWidth >= 550.dp
+        val columns = when {
+            screenWidth >= 1000.dp -> 3
+            screenWidth >= 550.dp -> 2
+            else -> 1
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .widthIn(max = 1440.dp)
+                .fillMaxSize(),
+            contentPadding = PaddingValues(if (isWide) 8.dp else 6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
         // 1. HEADER & WASH BATCH CONTROLS CARD
         item {
             Card(
@@ -172,8 +188,8 @@ fun LaundryScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    modifier = Modifier.padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -210,26 +226,29 @@ fun LaundryScreen(
                         }
                     }
 
-                    // KPI Stats Row
+                    // KPI Stats Row matching LaundryCare.tsx
+                    val totalLifetimeWashes = remember(clothes) {
+                        clothes.sumOf { it.wearingFrequency + it.trackedAppWashes }
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         StatusStatBox(
                             count = "${needWashBundles.size}",
-                            label = "Garments Need Wash",
+                            label = "wash stated: need wash",
                             color = BrandAmber,
                             modifier = Modifier.weight(1f)
                         )
                         StatusStatBox(
                             count = "${totalUnwashedHours}h",
-                            label = "Unwashed Rollup ($totalUnwashedSessions logs)",
+                            label = "unwash time rollup",
                             color = BrandPurple,
-                            modifier = Modifier.weight(1.2f)
+                            modifier = Modifier.weight(1.1f)
                         )
                         StatusStatBox(
-                            count = "${cleanBundles.size}",
-                            label = "Clean & Ready",
+                            count = "$totalLifetimeWashes",
+                            label = "Total Washed Count",
                             color = BrandEmerald,
                             modifier = Modifier.weight(1f)
                         )
@@ -478,16 +497,42 @@ fun LaundryScreen(
                 }
             }
         } else {
-            items(activeBundles, key = { it.garment.id }) { bundle ->
-                GarmentLaundryCard(
-                    bundle = bundle,
-                    washDateStr = washDateStr,
-                    reportsById = reportsById,
-                    onSelectGarment = { onSelectGarment?.invoke(bundle.garment) },
-                    onMarkGarmentClean = {
-                        pendingWashBundle = bundle
+            if (columns == 1) {
+                items(activeBundles, key = { it.garment.id }) { bundle ->
+                    GarmentLaundryCard(
+                        bundle = bundle,
+                        washDateStr = washDateStr,
+                        reportsById = reportsById,
+                        onSelectGarment = { onSelectGarment?.invoke(bundle.garment) },
+                        onMarkGarmentClean = {
+                            pendingWashBundle = bundle
+                        }
+                    )
+                }
+            } else {
+                items(activeBundles.chunked(columns), key = { row -> "laundry_row_${row.first().garment.id}" }) { rowItems ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        rowItems.forEach { bundle ->
+                            GarmentLaundryCard(
+                                bundle = bundle,
+                                washDateStr = washDateStr,
+                                reportsById = reportsById,
+                                onSelectGarment = { onSelectGarment?.invoke(bundle.garment) },
+                                onMarkGarmentClean = {
+                                    pendingWashBundle = bundle
+                                },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        repeat(columns - rowItems.size) {
+                            Spacer(modifier = Modifier.weight(1f))
+                        }
                     }
-                )
+                }
             }
         }
     }
@@ -513,6 +558,7 @@ fun LaundryScreen(
         )
     }
 }
+}
 
 @Composable
 private fun StatusStatBox(
@@ -528,13 +574,13 @@ private fun StatusStatBox(
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(vertical = 10.dp, horizontal = 8.dp),
+            modifier = Modifier.padding(vertical = 6.dp, horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = count,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 18.sp,
+                fontSize = 16.sp,
                 color = color,
                 maxLines = 1
             )
@@ -582,8 +628,8 @@ private fun GarmentLaundryCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(
-            modifier = Modifier.padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             // Top Row: Thumbnail + Title + Unwash Time Rollup
             Row(

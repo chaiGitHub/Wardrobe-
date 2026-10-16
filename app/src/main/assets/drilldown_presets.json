@@ -1,0 +1,247 @@
+[
+  {
+    "id": "preset-aircond-hot",
+    "name": "Aircond Suitable: Upper Body (not cold / hot)",
+    "description": "Tier 1: when with aircond: hot feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
+    "groupTiers": [
+      "when with aircond: hot feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when with aircond: hot feeling",
+      "when with aircond: leg feeling",
+      "material",
+      "thick clothes"
+    ]
+  },
+  {
+    "id": "preset-aircond-leg",
+    "name": "Aircond Suitable: Leg Feeling (not cold leg)",
+    "description": "Tier 1: when with aircond: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
+    "groupTiers": [
+      "when with aircond: leg feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when with aircond: leg feeling",
+      "when with aircond: hot feeling",
+      "material",
+      "long dress"
+    ]
+  },
+  {
+    "id": "preset-without-aircond-hot",
+    "name": "Normal / No Aircond: Upper Body (hot feeling)",
+    "description": "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
+    "groupTiers": [
+      "when without aircond: hot feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when without aircond: hot feeling",
+      "when without aircond: leg feeling",
+      "material",
+      "thick clothes"
+    ]
+  },
+  {
+    "id": "preset-without-aircond-leg",
+    "name": "Normal / No Aircond: Leg Feeling (not cold leg)",
+    "description": "Tier 1: when without aircond: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
+    "groupTiers": [
+      "when without aircond: leg feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when without aircond: leg feeling",
+      "when without aircond: hot feeling",
+      "material",
+      "thick clothes"
+    ]
+  },
+  {
+    "id": "preset-sleep-fan-hot",
+    "name": "Sleep Under Fan: Upper Body (hot feeling)",
+    "description": "Tier 1: when sleep under fan: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type.",
+    "groupTiers": [
+      "when sleep under fan: hot feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when sleep under fan: hot feeling",
+      "when sleep under fan: leg feeling",
+      "material",
+      "long dress"
+    ]
+  },
+  {
+    "id": "preset-sleep-fan-leg",
+    "name": "Sleep Under Fan: Leg Feeling (not cold leg)",
+    "description": "Tier 1: when sleep under fan: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
+    "groupTiers": [
+      "when sleep under fan: leg feeling",
+      "Clothes Type"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "when sleep under fan: leg feeling",
+      "when sleep under fan: hot feeling",
+      "material",
+      "long dress"
+    ]
+  },
+  {
+    "id": "preset-wet-performance",
+    "name": "Clothes Wet / Dry Performance",
+    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
+    "groupTiers": [
+      "Clothes Type",
+      "wet"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "wet",
+      "wet reason",
+      "material",
+      "Hot at noon"
+    ]
+  },
+  {
+    "id": "preset-breast-gather-bra",
+    "name": "Breast Fit: With 聚拢bra",
+    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: sit breast ok: With 聚拢bra.",
+    "groupTiers": [
+      "Clothes Type",
+      "sit breast ok: With 聚拢bra"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "sit breast ok: With 聚拢bra",
+      "side breast ok: with 聚拢 bra",
+      "beautiful",
+      "diao dai"
+    ]
+  },
+  {
+    "id": "preset-thickness-climate",
+    "name": "Thickness & Climate",
+    "description": "Hierarchical drill by clothing category, noon thermal feel, and fabric thickness.",
+    "groupTiers": [
+      "Clothes Type",
+      "Hot at noon",
+      "thick clothes"
+    ],
+    "sortField": "wearing frequency(how many times legacy washed)",
+    "sortOrder": "desc",
+    "visibleFields": [
+      "Clothes Type",
+      "material",
+      "thick clothes",
+      "Hot at noon",
+      "beautiful",
+      "wearing frequency(how many times legacy washed)",
+      "wash stated"
+    ]
+  },
+  {
+    "id": "preset-aesthetic-fit",
+    "name": "Aesthetic & Fit Ratings",
+    "description": "Drill down by category, aesthetic score, and strap/chest silhouette.",
+    "groupTiers": [
+      "Clothes Type",
+      "beautiful",
+      "diao dai"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "beautiful",
+      "diao dai",
+      "side breast ok",
+      "material",
+      "price"
+    ]
+  },
+  {
+    "id": "preset-wash-care",
+    "name": "Wash Care & Laundry Priority",
+    "description": "Exclusive drill by wash backlog state, clothing category, and fabric material.",
+    "groupTiers": [
+      "wash stated",
+      "Clothes Type",
+      "material"
+    ],
+    "sortField": "wearing frequency(how many times legacy washed)",
+    "sortOrder": "desc",
+    "visibleFields": [
+      "wash stated",
+      "Clothes Type",
+      "material",
+      "Tracked App Washes",
+      "Total Washed Count",
+      "Last Washed"
+    ]
+  },
+  {
+    "id": "preset-sensory-heat",
+    "name": "Sensory Heat & Moisture",
+    "description": "Drill by midday heat sensitivity, moisture performance, and thickness.",
+    "groupTiers": [
+      "Hot at noon",
+      "wet",
+      "thick clothes"
+    ],
+    "sortField": "wearing frequency(how many times legacy washed)",
+    "sortOrder": "desc",
+    "visibleFields": [
+      "Clothes Type",
+      "Hot at noon",
+      "wet",
+      "thick clothes",
+      "material",
+      "beautiful"
+    ]
+  },
+  {
+    "id": "preset-declutter-audit",
+    "name": "Declutter & Discard Audit",
+    "description": "Audit garments flagged for possible decluttering or disposal by category.",
+    "groupTiers": [
+      "may throw",
+      "Clothes Type",
+      "beautiful"
+    ],
+    "sortField": "wearing frequency(how many times legacy washed)",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "may throw",
+      "Clothes Type",
+      "material",
+      "beautiful",
+      "price",
+      "wearing frequency(how many times legacy washed)"
+    ]
+  }
+]

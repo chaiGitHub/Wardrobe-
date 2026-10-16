@@ -34,16 +34,65 @@ class WardrobeRepository(private val context: Context) {
     val allJunctions: Flow<List<JunctionEntity>> = dao.getAllJunctions()
 
     suspend fun checkAndSeedDatabase() = withContext(Dispatchers.IO) {
+        val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
+        val seedVersion = prefs.getInt("seed_imported_version", 0)
         val count = dao.getClothesCount()
-        if (count == 0) {
+        if (count == 0 || seedVersion < 5) {
             try {
+                copySeedPhotosToDisk()
                 context.assets.open("initial_seed.json").use { stream ->
                     val reader = BufferedReader(InputStreamReader(stream))
                     val jsonStr = reader.readText()
                     importFromJsonString(jsonStr, clearExisting = false)
                 }
+                prefs.edit().putInt("seed_imported_version", 5).apply()
             } catch (e: Exception) {
                 Log.e("WardrobeRepo", "Seed database error: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun copySeedPhotosToDisk() {
+        try {
+            val photosDir = File(context.filesDir, "photos")
+            if (!photosDir.exists()) photosDir.mkdirs()
+            copyAssetFolder("seed_photos", photosDir)
+        } catch (e: Exception) {
+            Log.e("WardrobeRepo", "Copy seed photos error: ${e.message}", e)
+        }
+    }
+
+    private fun copyAssetFolder(assetPath: String, destDir: File) {
+        val list = context.assets.list(assetPath) ?: return
+        val photosDir = File(context.filesDir, "photos")
+        for (item in list) {
+            val subAsset = "$assetPath/$item"
+            val subList = context.assets.list(subAsset)
+            if (!subList.isNullOrEmpty()) {
+                val subDest = File(destDir, item)
+                if (!subDest.exists()) subDest.mkdirs()
+                copyAssetFolder(subAsset, subDest)
+            } else {
+                val outFile = File(destDir, item)
+                if (!outFile.exists() || outFile.length() == 0L) {
+                    try {
+                        context.assets.open(subAsset).use { input ->
+                            FileOutputStream(outFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+                val flatFile = File(photosDir, item)
+                if (!flatFile.exists() || flatFile.length() == 0L) {
+                    try {
+                        context.assets.open(subAsset).use { input ->
+                            FileOutputStream(flatFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
             }
         }
     }
@@ -343,21 +392,38 @@ class WardrobeRepository(private val context: Context) {
         garmentZipPhotos: Map<String, List<String>> = emptyMap(),
         reportZipPhotos: Map<String, List<String>> = emptyMap()
     ) = withContext(Dispatchers.IO) {
-        val root = JSONObject(jsonStr)
-        val clothesArray = root.optJSONArray("clothes")
-            ?: root.optJSONArray("garments")
-            ?: JSONArray()
-        val reportsArray = root.optJSONArray("reports")
-            ?: root.optJSONArray("wearingReports")
-            ?: JSONArray()
-        val junctionsArray = root.optJSONArray("junctions")
-            ?: root.optJSONArray("reportClothes")
-            ?: JSONArray()
+        val (clothesArray, reportsArray, junctionsArray) = if (jsonStr.trimStart().startsWith("[")) {
+            val arr = try { JSONArray(jsonStr) } catch (_: Exception) { JSONArray() }
+            Triple(arr, JSONArray(), JSONArray())
+        } else {
+            val root = try { JSONObject(jsonStr) } catch (_: Exception) { JSONObject() }
+            val clothes = root.optJSONArray("clothes")
+                ?: root.optJSONArray("garments")
+                ?: root.optJSONArray("Clothes")
+                ?: root.optJSONObject("data")?.optJSONArray("clothes")
+                ?: root.optJSONObject("tables")?.optJSONArray("clothes")
+                ?: JSONArray()
+            val reports = root.optJSONArray("reports")
+                ?: root.optJSONArray("wearingReports")
+                ?: root.optJSONArray("wearing_reports")
+                ?: root.optJSONArray("wearing_report")
+                ?: root.optJSONObject("data")?.optJSONArray("reports")
+                ?: root.optJSONObject("tables")?.optJSONArray("reports")
+                ?: JSONArray()
+            val junctions = root.optJSONArray("junctions")
+                ?: root.optJSONArray("reportClothes")
+                ?: root.optJSONArray("report_clothes_junctions")
+                ?: root.optJSONArray("report_clothes")
+                ?: root.optJSONObject("data")?.optJSONArray("junctions")
+                ?: JSONArray()
+            Triple(clothes, reports, junctions)
+        }
 
         val parsedClothes = mutableListOf<GarmentEntity>()
         for (i in 0 until clothesArray.length()) {
-            val obj = clothesArray.getJSONObject(i)
-            val id = obj.optString("id", UUID.randomUUID().toString())
+            val rawObj = clothesArray.getJSONObject(i)
+            val obj = rawObj.optJSONObject("fields") ?: rawObj
+            val id = rawObj.optString("id", obj.optString("id", UUID.randomUUID().toString()))
             val name = obj.optString("name", obj.optString("Name", "Untitled Garment"))
             val type = obj.optString("clothesType", obj.optString("Clothes Type", ""))
             val material = obj.optString("material", obj.optString("materialProp", ""))
@@ -385,6 +451,8 @@ class WardrobeRepository(private val context: Context) {
 
             val standOk = obj.optString("center chest", obj.optString("stand breast", obj.optString("standBreast", "")))
             val sitOk = obj.optString("sit breast ok", obj.optString("sit breast", obj.optString("sitBreast", "")))
+            val sitGather = obj.optString("sitBreastGatherBra", obj.optString("sit breast ok: With 聚拢bra", obj.optString("sit breast ok: With 聚拢bra:", obj.optString("sit breast ok: with 聚拢 bra", sitOk))))
+            val sitSideOut = obj.optString("sitBreastSideOutBra", obj.optString("sit breast ok: with side out bra", ""))
             val beautiful = obj.optString("beautiful", "")
             val beautifulReason = obj.optString("beatiful reason", obj.optString("beautiful reason", obj.optString("beautifulReason", "")))
             val wet = obj.optString("wet", "")
@@ -442,6 +510,8 @@ class WardrobeRepository(private val context: Context) {
                     fanSleepLegExplain = fanSleepLegExp,
                     standBreast = standOk,
                     sitBreast = sitOk,
+                    sitBreastGatherBra = sitGather,
+                    sitBreastSideOutBra = sitSideOut,
                     beautiful = beautiful,
                     beautifulReason = beautifulReason,
                     wet = wet,
@@ -467,8 +537,9 @@ class WardrobeRepository(private val context: Context) {
 
         val parsedReports = mutableListOf<ReportEntity>()
         for (i in 0 until reportsArray.length()) {
-            val obj = reportsArray.getJSONObject(i)
-            val id = obj.optString("id", UUID.randomUUID().toString())
+            val rawObj = reportsArray.getJSONObject(i)
+            val obj = rawObj.optJSONObject("fields") ?: rawObj
+            val id = rawObj.optString("id", obj.optString("id", UUID.randomUUID().toString()))
             val name = obj.optString("name", obj.optString("Name", "Wearing Report"))
             val wearDate = obj.optString("wearDate", obj.optString("wear date", ""))
             val created = obj.optString("created", "")
@@ -522,8 +593,9 @@ class WardrobeRepository(private val context: Context) {
 
         val parsedJunctions = mutableListOf<JunctionEntity>()
         for (i in 0 until junctionsArray.length()) {
-            val obj = junctionsArray.getJSONObject(i)
-            val id = obj.optString("id", UUID.randomUUID().toString())
+            val rawObj = junctionsArray.getJSONObject(i)
+            val obj = rawObj.optJSONObject("fields") ?: rawObj
+            val id = rawObj.optString("id", obj.optString("id", UUID.randomUUID().toString()))
             val name = obj.optInt("name", i + 1)
             val reportObj = obj.optJSONObject("wearing report id")
             val reportId = obj.optString("wearingReportId", "").ifBlank {
@@ -578,12 +650,17 @@ class WardrobeRepository(private val context: Context) {
         Triple(parsedClothes.size, parsedReports.size, parsedJunctions.size)
     }
 
-    suspend fun restoreFromZipUri(uri: Uri, onProgress: (String, Int) -> Unit): Result<String> = withContext(Dispatchers.IO) {
+    suspend fun restoreFromZipUri(
+        uri: Uri,
+        clearExisting: Boolean = false,
+        onProgress: (String, Int) -> Unit
+    ): Result<String> = withContext(Dispatchers.IO) {
         try {
             onProgress("Opening backup archive...", 15)
             val photosDir = File(context.filesDir, "photos")
             if (!photosDir.exists()) photosDir.mkdirs()
 
+            var drilldownPresetsZipContent: String? = null
             var databaseJsonContent: String? = null
             var fallbackJsonContent: String? = null
             var photoCount = 0
@@ -606,15 +683,22 @@ class WardrobeRepository(private val context: Context) {
                             !cleanPath.contains("..")
                         ) {
                             val lowerName = cleanPath.lowercase(Locale.ROOT)
-                            if (lowerName == "database.json" || lowerName.endsWith("/database.json") ||
+                            if (lowerName == "drilldown_presets.json" || lowerName.endsWith("/drilldown_presets.json") ||
+                                lowerName == "presets.json" || lowerName.endsWith("/presets.json") ||
+                                lowerName == "report_presets.json" || lowerName.endsWith("/report_presets.json")
+                            ) {
+                                drilldownPresetsZipContent = zis.bufferedReader(Charsets.UTF_8).readText()
+                            } else if (lowerName == "database.json" || lowerName.endsWith("/database.json") ||
                                 lowerName == "initialdata.json" || lowerName.endsWith("/initialdata.json") ||
                                 lowerName == "local_db.json" || lowerName.endsWith("/local_db.json") ||
-                                lowerName == "initial_seed.json" || lowerName.endsWith("/initial_seed.json")
+                                lowerName == "initial_seed.json" || lowerName.endsWith("/initial_seed.json") ||
+                                lowerName == "teable_dump.json" || lowerName.endsWith("/teable_dump.json") ||
+                                lowerName == "backup.json" || lowerName.endsWith("/backup.json")
                             ) {
                                 databaseJsonContent = zis.bufferedReader(Charsets.UTF_8).readText()
                             } else if (lowerName.endsWith(".json")) {
                                 val text = zis.bufferedReader(Charsets.UTF_8).readText()
-                                if (text.contains("\"clothes\"") || text.contains("\"garments\"")) {
+                                if (text.contains("\"clothes\"") || text.contains("\"garments\"") || text.contains("\"Clothes\"")) {
                                     fallbackJsonContent = text
                                 }
                             } else {
@@ -685,16 +769,54 @@ class WardrobeRepository(private val context: Context) {
                 return@withContext Result.failure(Exception("Invalid backup: missing database.json inside ZIP archive"))
             }
 
+            // Extract, restore and save drilldownPresets from ZIP or database.json to both file and SharedPreferences
+            try {
+                var presetsArrayToSave: JSONArray? = null
+                if (!drilldownPresetsZipContent.isNullOrBlank()) {
+                    try {
+                        presetsArrayToSave = JSONArray(drilldownPresetsZipContent)
+                    } catch (_: Exception) {
+                        try {
+                            val obj = JSONObject(drilldownPresetsZipContent)
+                            presetsArrayToSave = obj.optJSONArray("drilldownPresets") ?: obj.optJSONArray("presets")
+                        } catch (_: Exception) {}
+                    }
+                }
+
+                if (presetsArrayToSave == null || presetsArrayToSave.length() == 0) {
+                    val rootObj = JSONObject(finalJson)
+                    presetsArrayToSave = rootObj.optJSONArray("drilldownPresets")
+                        ?: rootObj.optJSONArray("presets")
+                        ?: rootObj.optJSONArray("drillPresets")
+                }
+
+                if (presetsArrayToSave != null && presetsArrayToSave.length() > 0) {
+                    val presetsString = presetsArrayToSave.toString(2)
+                    // 1. Write file
+                    val presetsFile = File(context.filesDir, "drilldown_presets.json")
+                    FileOutputStream(presetsFile).use { fos ->
+                        fos.write(presetsString.toByteArray(Charsets.UTF_8))
+                    }
+                    // 2. Write to SharedPreferences so ReportPresetService picks it up instantly
+                    val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
+                    prefs.edit().putString("custom_presets_json_v3", presetsArrayToSave.toString()).apply()
+                    Log.i("WardrobeRepo", "Successfully restored ${presetsArrayToSave.length()} drilldown presets from backup into SharedPreferences!")
+                }
+            } catch (e: Exception) {
+                Log.w("WardrobeRepo", "Drilldown presets restore notice: ${e.message}")
+            }
+
             onProgress("Importing database records & linking $photoCount photos...", 60)
             val counts = importFromJsonString(
                 jsonStr = finalJson,
-                clearExisting = true,
+                clearExisting = clearExisting,
                 garmentZipPhotos = garmentZipPhotos,
                 reportZipPhotos = reportZipPhotos
             )
             onProgress("Restore complete!", 100)
 
-            Result.success("Restored ${counts.first} garments, ${counts.second} journal reports, ${counts.third} outfit sessions, and $photoCount photos.")
+            val modeLabel = if (clearExisting) "Full Overwrite" else "Smart Merge"
+            Result.success("Restored ($modeLabel): ${counts.first} garments, ${counts.second} journal reports, ${counts.third} outfit sessions, and $photoCount photos.")
         } catch (e: Exception) {
             Log.e("WardrobeRepo", "Restore ZIP failed", e)
             Result.failure(e)
@@ -710,6 +832,31 @@ class WardrobeRepository(private val context: Context) {
         root.put("version", "2.0")
         root.put("app", "Wardrobe & Wear Journal")
         root.put("exportedAt", SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(Date()))
+        root.put("totalClothes", clothesList.size)
+        root.put("totalReports", reportsList.size)
+        root.put("totalJunctions", junctionsList.size)
+
+        // Read and embed drilldownPresets from SharedPreferences first, then file or asset fallback
+        val presetsArr = try {
+            val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
+            val spPresets = prefs.getString("custom_presets_json_v3", null)
+            if (!spPresets.isNullOrBlank()) {
+                JSONArray(spPresets)
+            } else {
+                val presetsFile = File(context.filesDir, "drilldown_presets.json")
+                val raw = if (presetsFile.exists()) {
+                    presetsFile.readText(Charsets.UTF_8)
+                } else {
+                    context.assets.open("drilldown_presets.json").bufferedReader().use { it.readText() }
+                }
+                JSONArray(raw)
+            }
+        } catch (_: Exception) {
+            JSONArray()
+        }
+        root.put("totalDrilldownPresets", presetsArr.length())
+        root.put("drilldownPresets", presetsArr)
+        root.put("presets", presetsArr)
 
         val clothesArr = JSONArray()
         for (g in clothesList) {
@@ -724,23 +871,22 @@ class WardrobeRepository(private val context: Context) {
             obj.put("noAircondHotExplain", g.noAircondHotExplain)
             obj.put("noAircondLegFeeling", g.noAircondLegFeeling)
             obj.put("noAircondLegExplain", g.noAircondLegExplain)
-
             obj.put("aircondHotFeeling", g.aircondHotFeeling)
             obj.put("aircondHotExplain", g.aircondHotExplain)
             obj.put("aircondLegFeeling", g.aircondLegFeeling)
             obj.put("aircondLegExplain", g.aircondLegExplain)
-
             obj.put("fanSleepHotFeeling", g.fanSleepHotFeeling)
             obj.put("fanSleepHotExplain", g.fanSleepHotExplain)
             obj.put("fanSleepLegFeeling", g.fanSleepLegFeeling)
             obj.put("fanSleepLegExplain", g.fanSleepLegExplain)
-
             obj.put("diao dai", g.diaoDai)
             obj.put("side breast ok", if (g.sideBreastGatherBra.isNotBlank()) g.sideBreastGatherBra else g.sideBreastOk)
             obj.put("sideBreastGatherBra", g.sideBreastGatherBra)
             obj.put("sideBreastSideOutBra", g.sideBreastSideOutBra)
             obj.put("stand breast", g.standBreast)
-            obj.put("sit breast ok", g.sitBreast)
+            obj.put("sit breast ok", if (g.sitBreastGatherBra.isNotBlank()) g.sitBreastGatherBra else g.sitBreast)
+            obj.put("sitBreastGatherBra", g.sitBreastGatherBra)
+            obj.put("sitBreastSideOutBra", g.sitBreastSideOutBra)
             obj.put("beautiful", g.beautiful)
             obj.put("wet", g.wet)
             obj.put("price", g.price)
@@ -810,7 +956,28 @@ class WardrobeRepository(private val context: Context) {
                     zos.write(jsonContent.toByteArray(Charsets.UTF_8))
                     zos.closeEntry()
 
-                    // 2. Pack photos
+                    // 2. Also write drilldown_presets.json and presets.json at root
+                    try {
+                        val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
+                        val spPresets = prefs.getString("custom_presets_json_v3", null)
+                        val presetsBytes = if (!spPresets.isNullOrBlank()) {
+                            spPresets.toByteArray(Charsets.UTF_8)
+                        } else {
+                            val presetsFile = File(context.filesDir, "drilldown_presets.json")
+                            if (presetsFile.exists()) presetsFile.readBytes() else {
+                                context.assets.open("drilldown_presets.json").readBytes()
+                            }
+                        }
+                        zos.putNextEntry(ZipEntry("drilldown_presets.json"))
+                        zos.write(presetsBytes)
+                        zos.closeEntry()
+
+                        zos.putNextEntry(ZipEntry("presets.json"))
+                        zos.write(presetsBytes)
+                        zos.closeEntry()
+                    } catch (_: Exception) {}
+
+                    // 3. Pack photos
                     val photosDir = File(context.filesDir, "photos")
                     if (photosDir.exists() && photosDir.isDirectory) {
                         photosDir.listFiles()?.forEach { file ->
@@ -853,6 +1020,27 @@ class WardrobeRepository(private val context: Context) {
                 zos.putNextEntry(ZipEntry("database.json"))
                 zos.write(jsonContent.toByteArray(Charsets.UTF_8))
                 zos.closeEntry()
+
+                // Also write drilldown_presets.json and presets.json
+                try {
+                    val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
+                    val spPresets = prefs.getString("custom_presets_json_v3", null)
+                    val presetsBytes = if (!spPresets.isNullOrBlank()) {
+                        spPresets.toByteArray(Charsets.UTF_8)
+                    } else {
+                        val presetsFile = File(context.filesDir, "drilldown_presets.json")
+                        if (presetsFile.exists()) presetsFile.readBytes() else {
+                            context.assets.open("drilldown_presets.json").readBytes()
+                        }
+                    }
+                    zos.putNextEntry(ZipEntry("drilldown_presets.json"))
+                    zos.write(presetsBytes)
+                    zos.closeEntry()
+
+                    zos.putNextEntry(ZipEntry("presets.json"))
+                    zos.write(presetsBytes)
+                    zos.closeEntry()
+                } catch (_: Exception) {}
 
                 val photosDir = File(context.filesDir, "photos")
                 if (photosDir.exists() && photosDir.isDirectory) {

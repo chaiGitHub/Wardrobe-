@@ -132,6 +132,9 @@ fun AddGarmentDialog(
     var fanSleepLegFeeling by remember { mutableStateOf("middle cold") }
     var fanSleepLegExplain by remember { mutableStateOf("due to middle long dress, inner thin, easy fold up 裙底，even it is thick clothes outer") }
 
+    // Dedicated Sit Breast Bra fields
+    var sitBreastGatherBra by remember { mutableStateOf("sit breast shape ok") }
+    var sitBreastSideOutBra by remember { mutableStateOf("sit breast shape ok") }
     var sitBreast by remember { mutableStateOf("sit breast shape ok") }
     var centerChest by remember { mutableStateOf("no center chest") }
     var beautiful by remember { mutableStateOf("Beautiful") }
@@ -184,7 +187,8 @@ fun AddGarmentDialog(
                 "when without aircond: leg feeling" -> g.noAircondLegFeeling
                 "when sleep under fan: hot feeling" -> g.fanSleepHotFeeling
                 "when sleep under fan: leg feeling" -> g.fanSleepLegFeeling
-                "sit breast ok" -> g.sitBreast
+                "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> g.sitBreastGatherBra.ifBlank { g.sitBreast }
+                "sit breast ok: with side out bra" -> g.sitBreastSideOutBra
                 "center chest" -> g.standBreast
                 "beautiful" -> g.beautiful
                 "wet" -> g.wet
@@ -216,7 +220,8 @@ fun AddGarmentDialog(
             "diao dai" -> if (map.isEmpty()) listOf("diao dai", "not diao dai", "wide strap", "halter").forEach { map[it] = 1 }
             "side breast ok", "side breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { map[it] = 1 }
             "side breast ok: with side out bra" -> if (map.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { map[it] = 1 }
-            "sit breast ok" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose").forEach { map[it] = 1 }
+            "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose", "no underwire pressure", "comfortable when seated").forEach { map[it] = 1 }
+            "sit breast ok: with side out bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "full coverage relaxed", "no side bulge when seated", "tight underwire", "relaxed fit").forEach { map[it] = 1 }
             "beautiful" -> if (map.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { map[it] = 1 }
             "thick clothes" -> if (map.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { map[it] = 1 }
         }
@@ -576,20 +581,47 @@ fun AddGarmentDialog(
                                 dictionaryService = dictionaryService
                             )
 
-                            // Sit breast ok
+                            // Sit breast ok: With 聚拢bra:
                             FieldWithPreviousButton(
-                                label = "SIT BREAST OK",
-                                value = sitBreast,
+                                label = "SIT BREAST OK: WITH 聚拢BRA:",
+                                value = sitBreastGatherBra,
                                 placeholder = "sit breast shape ok",
-                                onValueChange = { sitBreast = it },
-                                onOpenPrevious = {
-                                    activePreviousPicker = "sit breast ok" to { sitBreast = it }
+                                onValueChange = { 
+                                    sitBreastGatherBra = it 
+                                    sitBreast = it
                                 },
-                                fieldKey = "sit breast ok",
-                                explainValue = fieldExplanations["sit breast ok"] ?: "",
-                                onExplainChange = { fieldExplanations["sit breast ok"] = it },
-                                isExplainExpanded = expandedExplainFields["sit breast ok"] == true,
-                                onToggleExplainExpand = { expandedExplainFields["sit breast ok"] = !(expandedExplainFields["sit breast ok"] ?: false) },
+                                onOpenPrevious = {
+                                    activePreviousPicker = "sit breast ok: With 聚拢bra:" to { 
+                                        sitBreastGatherBra = it 
+                                        sitBreast = it
+                                    }
+                                },
+                                fieldKey = "sit breast ok: With 聚拢bra:",
+                                explainValue = fieldExplanations["sit breast ok: With 聚拢bra:"] ?: fieldExplanations["sit breast ok"] ?: "",
+                                onExplainChange = { 
+                                    fieldExplanations["sit breast ok: With 聚拢bra:"] = it 
+                                    fieldExplanations["sit breast ok"] = it
+                                },
+                                isExplainExpanded = expandedExplainFields["sit breast ok: With 聚拢bra:"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["sit breast ok: With 聚拢bra:"] = !(expandedExplainFields["sit breast ok: With 聚拢bra:"] ?: false) },
+                                allClothes = existingClothes,
+                                dictionaryService = dictionaryService
+                            )
+
+                            // Sit breast ok: with side out bra
+                            FieldWithPreviousButton(
+                                label = "SIT BREAST OK: WITH SIDE OUT BRA",
+                                value = sitBreastSideOutBra,
+                                placeholder = "sit breast shape ok",
+                                onValueChange = { sitBreastSideOutBra = it },
+                                onOpenPrevious = {
+                                    activePreviousPicker = "sit breast ok: with side out bra" to { sitBreastSideOutBra = it }
+                                },
+                                fieldKey = "sit breast ok: with side out bra",
+                                explainValue = fieldExplanations["sit breast ok: with side out bra"] ?: "",
+                                onExplainChange = { fieldExplanations["sit breast ok: with side out bra"] = it },
+                                isExplainExpanded = expandedExplainFields["sit breast ok: with side out bra"] == true,
+                                onToggleExplainExpand = { expandedExplainFields["sit breast ok: with side out bra"] = !(expandedExplainFields["sit breast ok: with side out bra"] ?: false) },
                                 allClothes = existingClothes,
                                 dictionaryService = dictionaryService
                             )
@@ -906,7 +938,9 @@ fun AddGarmentDialog(
                             text = "Cancel",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold,
-                            color = Slate600
+                            color = Slate600,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
 
@@ -971,7 +1005,9 @@ fun AddGarmentDialog(
                                 fanSleepLegFeeling = fanSleepLegFeeling,
                                 fanSleepLegExplain = fanSleepLegExplain,
                                 standBreast = centerChest,
-                                sitBreast = sitBreast,
+                                sitBreast = sitBreastGatherBra.ifBlank { sitBreast },
+                                sitBreastGatherBra = sitBreastGatherBra,
+                                sitBreastSideOutBra = sitBreastSideOutBra,
                                 beautiful = beautiful,
                                 wet = wet,
                                 wetReason = wetReason,
@@ -998,7 +1034,9 @@ fun AddGarmentDialog(
                             text = "Add to Wardrobe",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = Color.White,
+                            maxLines = 1,
+                            softWrap = false
                         )
                     }
                 }

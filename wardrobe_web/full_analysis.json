@@ -1,0 +1,1776 @@
+{
+  "Clothes (new design)": {
+    "id": "tblrHfBAYrA6gRCYbPN",
+    "fieldsCount": 33,
+    "recordsCount": 35,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "longText"
+      },
+      {
+        "name": "Clothes Type",
+        "type": "singleSelect",
+        "options": [
+          "Dress",
+          "bra",
+          "Tshirt",
+          "Pant"
+        ]
+      },
+      {
+        "name": "material",
+        "type": "singleSelect",
+        "options": [
+          "(blank 1)",
+          "lace",
+          "soft chiffon",
+          "middle chiffon",
+          "plain middle thick",
+          "thick chiffon",
+          "plain thick",
+          "the material after wash easy broken",
+          "Tshirt thin",
+          "Aaa"
+        ]
+      },
+      {
+        "name": "AI Clothes Analysis",
+        "type": "longText"
+      },
+      {
+        "name": "side breast ok",
+        "type": "singleSelect",
+        "options": [
+          "side breast shape ok",
+          "(blank 2)",
+          "Ddd"
+        ]
+      },
+      {
+        "name": "Descriptions",
+        "type": "longText"
+      },
+      {
+        "name": "thick clothes",
+        "type": "singleSelect",
+        "options": [
+          "01 not thick clothes",
+          "02 middle thick clothes",
+          "03 thick clothes",
+          "quick thick material bra",
+          "not so thick bra",
+          "Super"
+        ]
+      },
+      {
+        "name": "Tracked App Washes",
+        "type": "number"
+      },
+      {
+        "name": "diao dai",
+        "type": "singleSelect",
+        "options": [
+          "diao dai",
+          "wide diao dai",
+          "not diao dai",
+          "(blank 4)",
+          "Tes"
+        ]
+      },
+      {
+        "name": "Hot at noon",
+        "type": "singleSelect",
+        "options": [
+          "Not hot",
+          "Middle",
+          "Hot",
+          "(blank 4)"
+        ]
+      },
+      {
+        "name": "From field: Records (Nested)",
+        "type": "link",
+        "options": "Links to: tblrHfBAYrA6gRCYbPN"
+      },
+      {
+        "name": "Pictures",
+        "type": "attachment"
+      },
+      {
+        "name": "created",
+        "type": "date"
+      },
+      {
+        "name": "Records (Nested)",
+        "type": "link",
+        "options": "Links to: tblrHfBAYrA6gRCYbPN"
+      },
+      {
+        "name": "last comment or action",
+        "type": "longText"
+      },
+      {
+        "name": "tags",
+        "type": "multipleSelect",
+        "options": [
+          "#clothes"
+        ]
+      },
+      {
+        "name": "beautiful",
+        "type": "singleSelect",
+        "options": [
+          "Beautiful",
+          "Middle beautiful",
+          "not so beautiful"
+        ]
+      },
+      {
+        "name": "wearing frequency(how many times legacy washed)",
+        "type": "number"
+      },
+      {
+        "name": "AI Analysis Reports",
+        "type": "link",
+        "options": "Links to: tblj2QlZQfjxyHnvpkD"
+      },
+      {
+        "name": "wet reason",
+        "type": "longText"
+      },
+      {
+        "name": "may throw",
+        "type": "longText"
+      },
+      {
+        "name": "Last Washed",
+        "type": "date"
+      },
+      {
+        "name": "long dress",
+        "type": "singleSelect",
+        "options": [
+          "long dress",
+          "short dress",
+          "middle dress",
+          "(blank 4)"
+        ]
+      },
+      {
+        "name": "beatiful reason",
+        "type": "longText"
+      },
+      {
+        "name": "wet",
+        "type": "singleSelect",
+        "options": [
+          "dry",
+          "litle wet",
+          "little wet",
+          "wet",
+          "(blank 5)"
+        ]
+      },
+      {
+        "name": "center chest",
+        "type": "singleSelect",
+        "options": [
+          "(blank 1)",
+          "center chest",
+          "no center chest",
+          "yes center chest bra",
+          "not center but side open"
+        ]
+      },
+      {
+        "name": "unwash time rollup",
+        "type": "rollup",
+        "options": "sum({values})"
+      },
+      {
+        "name": "Descriptions 2",
+        "type": "longText"
+      },
+      {
+        "name": "wash stated (from Full Wearing Report (new design) clothes list (linked))",
+        "type": "singleSelect",
+        "options": [
+          "wash",
+          "need wash"
+        ]
+      },
+      {
+        "name": "Full Wearing Report (new design) clothes list (linked)",
+        "type": "link",
+        "options": "Links to: tbl0BBxOfZbH6SKR9gd"
+      },
+      {
+        "name": "sit breast ok",
+        "type": "singleSelect",
+        "options": [
+          "sit breast shape ok",
+          "(blank 2)",
+          "stand breast ugly, because loose tie not as white marry",
+          "?",
+          "stand breast ugly, because alot zhouwhen"
+        ]
+      },
+      {
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "name": "Total Washed Count",
+        "type": "formula",
+        "options": "SUM({fldaZn1Z1cPdIp6fAt2},{fldIA1v388613CdQIn1})"
+      }
+    ],
+    "views": [
+      {
+        "name": "group by clothes type dry, beautiful, sort by hot at noon",
+        "type": "grid",
+        "sort": {
+          "sortObjs": [
+            {
+              "fieldId": "fldge98QPqKgQDPsQCY",
+              "order": "asc"
+            }
+          ],
+          "manualSort": false
+        },
+        "group": [
+          {
+            "fieldId": "fldleRV0c1MI4AJw9cL",
+            "order": "asc"
+          },
+          {
+            "fieldId": "fld06atm7hiNUZbtNSC",
+            "order": "asc"
+          },
+          {
+            "fieldId": "fldXyAQ6fFhyjAsda13",
+            "order": "asc"
+          }
+        ]
+      },
+      {
+        "name": "group by thick,hot, sort by beautiful",
+        "type": "grid",
+        "group": [
+          {
+            "fieldId": "fldnduLsWyujW9FrqVj",
+            "order": "asc"
+          },
+          {
+            "fieldId": "fldge98QPqKgQDPsQCY",
+            "order": "asc"
+          },
+          {
+            "fieldId": "fldXyAQ6fFhyjAsda13",
+            "order": "asc"
+          }
+        ]
+      },
+      {
+        "name": "Gallery",
+        "type": "gallery"
+      },
+      {
+        "name": "full clothes",
+        "type": "grid",
+        "sort": {
+          "sortObjs": [
+            {
+              "fieldId": "fldmaW3ZEf0sePJqLXO",
+              "order": "asc"
+            }
+          ],
+          "manualSort": false
+        }
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "blue dress",
+        "Clothes Type": "Dress",
+        "material": "soft chiffon",
+        "AI Clothes Analysis": "### Overall assessment\n**Observed:** A short dress made from soft chiffon, described as light, soft, feminine, and beautifully cut. It is marked “Beautiful” and costs **$53.00**.  \n**Inference:** The item appears suitable for regular warm-weather wear and remains a strong wardrobe piece.\n\n### Comfort and climate\n**Observed:** The dress is not thick, does not feel hot at noon, and dries well because of the chiffon fabric.  \n**Inference:** It should be comfortable in warm conditions and practical when quick drying is useful.\n\n### Fit and appearance\n**Observed:** It is a short, non-strap dress with no center-chest issue. The bust shape remains acceptable while sitting.  \n**Missing data:** Side-bust fit and the specific reason for the “Beautiful” rating were not provided.\n\n### Care and wash priority\n**Observed:** Both unwashed clothing time and unwashed bra time are **0:00**, so there is no recorded wash backlog. The dress is currently marked dry.  \n**Recommendation:** No immediate washing is indicated. Follow chiffon-appropriate gentle-care instructions when cleaning.\n\n### Usage value\n**Observed:** Wearing frequency is **39.0**, with three linked wearing reports dated **2026-07-10** and **2026-07-11**.  \n**Inference:** If 39.0 represents a wear count, the dress has relatively strong usage value; however, the frequency unit is not specified.\n\n### Recommended next action\nKeep the dress and continue wearing it, especially in warm weather. At the next wear, record the **side fit**, detailed appearance reason, and any comfort changes. **Last action, disposal status (“may throw”), additional description, and related bra reports are missing**, so no disposal recommendation can be made from those fields.",
+        "Descriptions": "quite beautiful with this fabric,very light and soft feel, cutting design, but still very femiline skirt",
+        "thick clothes": "01 not thick clothes",
+        "Tracked App Washes": 2,
+        "diao dai": "not diao dai",
+        "Hot at noon": "Not hot",
+        "Pictures": [
+          {
+            "id": "act8PoNGOoOxrf9Ie0Q",
+            "name": "NotebookLM Mind Map (2) (1).png",
+            "path": "table/s7IdTCrr6mLZ",
+            "size": 1265236,
+            "token": "s7IdTCrr6mLZ",
+            "width": 6554,
+            "height": 4437,
+            "mimetype": "image/png",
+            "presignedUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/s7IdTCrr6mLZ?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T053647Z&X-Amz-Expires=518400&X-Amz-Signature=c9a56444a523f09fe8c030678d97bb03458795074d6b6e726338f6ac8da8aadd&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27NotebookLM%2520Mind%2520Map%2520%282%29%2520%281%29.png&response-content-type=image%2Fpng&x-id=GetObject",
+            "smThumbnailUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/s7IdTCrr6mLZ_sm?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T053648Z&X-Amz-Expires=518400&X-Amz-Signature=15c2f2f393c853d5faa4592dd454bb5d6152d4217a488149d42fd8d020bb5839&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-type=image%2Fpng&x-id=GetObject",
+            "lgThumbnailUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/s7IdTCrr6mLZ_lg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T053648Z&X-Amz-Expires=518400&X-Amz-Signature=7b27c5cf3c777a93200e237716247d28d98a16953b889596415a8039afb6f74e&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-type=image%2Fpng&x-id=GetObject"
+          }
+        ],
+        "created": "2026-06-11T00:00:00.000Z",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency(how many times legacy washed)": 39,
+        "wet reason": "dry due to chiffon",
+        "Last Washed": "2026-08-12T01:10:49.000Z",
+        "long dress": "short dress",
+        "wet": "dry",
+        "center chest": "no center chest",
+        "unwash time rollup": 27000,
+        "wash stated (from Full Wearing Report (new design) clothes list (linked))": [
+          "need wash"
+        ],
+        "Full Wearing Report (new design) clothes list (linked)": [
+          {
+            "id": "recLkskG1l8nTNqecT5",
+            "title": "13"
+          },
+          {
+            "id": "recpOyXkYs3Bc4Y4MwJ",
+            "title": "62"
+          },
+          {
+            "id": "rec0h4gvsawm8wk4zVi",
+            "title": "106"
+          },
+          {
+            "id": "rec0354ZbYqTYnpUmRo",
+            "title": "120"
+          }
+        ],
+        "sit breast ok": "sit breast shape ok",
+        "price": 53,
+        "Total Washed Count": 41
+      },
+      {
+        "Name": "white marry old",
+        "Clothes Type": "Dress",
+        "material": "lace",
+        "AI Clothes Analysis": "## Overall assessment\n**Observed:** “white marry old” is a **long lace dress** priced at **$44.00**. It is marked **Beautiful**, **Hot**, and **03 thick clothes**. The description also calls it affordable, hot, and thick.  \n**Inference:** It appears visually successful and reasonably priced, but warmth may limit when it is comfortable to wear.\n\n## Comfort and climate\n**Observed:** The dress is hot at noon, thick, long, and not a strap dress. Its latest drying status is **dry**.  \n**Inference:** It is probably better suited to cooler weather, mornings/evenings, or air-conditioned settings than hot midday conditions.\n\n## Fit and appearance\n**Observed:** It has a **center-chest** design, and the sitting breast shape is recorded as acceptable.  \n**Missing data:** No side-fit result or specific reason for the “Beautiful” rating is provided. The wording “white marry old” and “affordable center chest” is unclear, so no further style conclusion can be made.\n\n## Care and wash priority\n**Observed:** Unwashed clothing time is **10:00**; unwashed bra time is **0:00**. The dress is currently recorded as dry.  \n**Recommendation:** Wash the dress next rather than extending wear, especially given its thick lace construction and accumulated 10 hours. Follow its care label; no washing method is provided.\n\n## Usage value\n**Observed:** Wearing frequency is listed as **160.0**, but its unit and meaning are missing. There are eight linked report entries, including an apparent copy of the **2026-07-31 1054** report, so they may represent seven distinct wear events.  \n**Inference:** The records suggest repeated use, but cost per wear cannot be calculated reliably without clarifying the frequency field and duplicate report.\n\n## Recommended next action\nWash and fully dry the dress, then retain it for cooler periods or non-noon use. Review the duplicated July 31 report and clarify the **160.0** frequency value. No recommendation to discard can be made because the **may throw**, last-action, side-fit, and damage/condition fields are missing.",
+        "Descriptions": "a affordable center chest , and hot thick dress",
+        "thick clothes": "03 thick clothes",
+        "Tracked App Washes": 1,
+        "diao dai": "not diao dai",
+        "Hot at noon": "Hot",
+        "created": "2026-06-01T00:00:00.000Z",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency(how many times legacy washed)": 160,
+        "Last Washed": "2026-08-12T01:10:00.000Z",
+        "long dress": "long dress",
+        "wet": "dry",
+        "center chest": "center chest",
+        "unwash time rollup": 0,
+        "Full Wearing Report (new design) clothes list (linked)": [
+          {
+            "id": "recRYG9ExdRniocltX7",
+            "title": "5"
+          },
+          {
+            "id": "recQdokkDah3bkGCQzu",
+            "title": "54"
+          },
+          {
+            "id": "reccvYfgXO8IKcoGAkF",
+            "title": "64"
+          },
+          {
+            "id": "reciaN261XxAbnYMCvv",
+            "title": "78"
+          },
+          {
+            "id": "recMPSfDp9uXWbBQRI2",
+            "title": "84"
+          },
+          {
+            "id": "recI19IG3pYUYH2JWbz",
+            "title": "110"
+          },
+          {
+            "id": "recKUn0cNjwAudt346z",
+            "title": "118"
+          },
+          {
+            "id": "recoy4tYYN48EUq10bF",
+            "title": "124"
+          }
+        ],
+        "sit breast ok": "sit breast shape ok",
+        "price": 44,
+        "Total Washed Count": 161
+      },
+      {
+        "Name": "pink side flower dress",
+        "Clothes Type": "Dress",
+        "material": "soft chiffon",
+        "AI Clothes Analysis": "### Overall assessment\n**Observed:** A feminine, soft-chiffon pink dress with a side-flower detail. It is marked **Beautiful**, **short**, and **not thick**. Three related wearing reports are listed.  \n**Inference:** It appears best suited to dressy or feminine warm-weather use rather than cold conditions.\n\n### Comfort and climate\n**Observed:** Noon heat is rated **Middle**. The description says the skirt falls around the knee and offers a little warmth, but the short length still feels cold. It is not a thick garment.  \n**Inference:** Most practical in mild or warm weather; consider an outer layer or tights in cooler conditions.\n\n### Fit and appearance\n**Observed:** The breast and waist are described as attractive, and the breast shape is acceptable while sitting. The dress is not a strap style and has center-chest coverage. Sitting length is acceptable, but it becomes short when sleeping or reclining.  \n**Missing:** Side-breast fit and the specific reason for the “Beautiful” rating.\n\n### Care and wash priority\n**Observed:** Accumulated unwashed dress time is **10:00 hours**; unwashed bra time is **0:00**. Drying result is recorded as **dry**.  \n**Missing:** Drying-result reason and exact care-label instructions.  \n**Recommendation:** Wash soon due to the accumulated wear time. Because it is soft chiffon, follow the garment label and use gentle handling; avoid assuming it is machine-washable.\n\n### Usage value\n**Observed:** Price is **$89.00**, and wearing frequency is recorded as **30.0**, though its unit is not defined. Three clothing reports are linked.  \n**Inference:** If 30.0 represents a wear count, the approximate cost per wear is **$2.97**, indicating good usage value. This calculation is conditional on that interpretation.\n\n### Recommended next action\nWash the dress according to its care label, then continue using it for mild or warm-weather occasions. Avoid relying on it for sleeping/reclining or cold conditions because of the short length. Reassess after washing for chiffon condition, side fit, and whether it should be kept or discarded.\n\n**Missing decision data:** Last action/comment, “may throw” status, side fit, and related bra wearing reports.",
+        "Descriptions": "pink side flower dress,sit still ok length, sleep short length, breast and waist beautiful.",
+        "thick clothes": "01 not thick clothes",
+        "Tracked App Washes": 3,
+        "diao dai": "not diao dai",
+        "Hot at noon": "Middle",
+        "created": "2026-05-29T00:00:00.000Z",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency(how many times legacy washed)": 30,
+        "long dress": "short dress",
+        "wet": "dry",
+        "center chest": "center chest",
+        "unwash time rollup": 36000,
+        "Descriptions 2": "Very femenine, and the skirt sink to knee. So little warm protect cold. But still cold due to short.",
+        "wash stated (from Full Wearing Report (new design) clothes list (linked))": [
+          "need wash",
+          "need wash"
+        ],
+        "Full Wearing Report (new design) clothes list (linked)": [
+          {
+            "id": "recsd2yMvcy1UNGj4O7",
+            "title": "80"
+          },
+          {
+            "id": "recEmktBCLZc2RQfjcX",
+            "title": "112"
+          }
+        ],
+        "sit breast ok": "sit breast shape ok",
+        "price": 89,
+        "Total Washed Count": 33
+      }
+    ]
+  },
+  "Full Wearing Report (new design)": {
+    "id": "tblRBWTgaP6dH4SU1RQ",
+    "fieldsCount": 16,
+    "recordsCount": 52,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "longText"
+      },
+      {
+        "name": "wear date",
+        "type": "date"
+      },
+      {
+        "name": "created",
+        "type": "date"
+      },
+      {
+        "name": "categories",
+        "type": "multipleSelect",
+        "options": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ]
+      },
+      {
+        "name": "shoulder feel",
+        "type": "longText"
+      },
+      {
+        "name": "report detail",
+        "type": "longText"
+      },
+      {
+        "name": "night leg feel",
+        "type": "longText"
+      },
+      {
+        "name": "sweat",
+        "type": "longText"
+      },
+      {
+        "name": "leg feel",
+        "type": "longText"
+      },
+      {
+        "name": "night sweat",
+        "type": "longText"
+      },
+      {
+        "name": "AI Wearing Analysis",
+        "type": "longText"
+      },
+      {
+        "name": "tags",
+        "type": "multipleSelect",
+        "options": [
+          "#journal",
+          "#notes",
+          "#wearingreport",
+          "#episodes",
+          "#clothes"
+        ]
+      },
+      {
+        "name": "night mid breast",
+        "type": "longText"
+      },
+      {
+        "name": "mid breast",
+        "type": "longText"
+      },
+      {
+        "name": "Pictures",
+        "type": "attachment"
+      },
+      {
+        "name": "Full Wearing Report (new design) clothes list",
+        "type": "link",
+        "options": "Links to: tbl0BBxOfZbH6SKR9gd"
+      }
+    ],
+    "views": [
+      {
+        "name": "clothes not yet wash, group by clothes",
+        "type": "grid",
+        "sort": {
+          "sortObjs": [
+            {
+              "fieldId": "fldNhtbIbjTbnkuo1gS",
+              "order": "asc"
+            }
+          ],
+          "manualSort": false
+        },
+        "group": [
+          {
+            "fieldId": "fldjn1zUIHc246fhHPv",
+            "order": "asc"
+          }
+        ]
+      },
+      {
+        "name": "bra not yet wash, group by bra copy",
+        "type": "grid"
+      },
+      {
+        "name": "full wearing report",
+        "type": "grid"
+      },
+      {
+        "name": "Form",
+        "type": "form"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "2026-08-07 1257 wearing report",
+        "wear date": "2026-08-06T00:00:00.000Z",
+        "created": "2026-08-07T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "report detail": "9-1am",
+        "night leg feel": "Short dress, thin, cold for leg",
+        "night sweat": "Still ok under fans, not so sweat, no under fans, little sweat",
+        "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-08-07 1257 wearing report\n- **Wear date:** 2026-08-06\n- **Clothes:** Pink diao dai chiffon\n- **Bra:** Hugo bra new 2\n- **Duration:** 14,400 seconds (**4 hours**)\n- **Reported time:** 9–1am; whether this means 9pm–1am is **not specified**.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** At night, the breast appeared “quite small” while wearing the Hugo bra.\n- **Fact:** The short, thin dress left the legs feeling cold.\n- **Inference:** The outfit may need an extra leg layer in similarly cool conditions.\n- **Missing:** Daytime breast fit, shoulder comfort, and daytime leg feedback were not provided.\n\n## Heat and sweat\n- **Fact:** Sweat was manageable under fans.\n- **Fact:** Without fans, there was a little sweating.\n- **Inference:** Fan airflow improved thermal comfort.\n- **Missing:** Daytime sweat information and room temperature were not recorded.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No further washing action is currently indicated.\n\n## Follow-up\n- Note whether the bra’s smaller-looking shape is desirable and whether it remains comfortable over longer wear.\n- For future reports, record shoulder comfort, daytime observations, temperature, and clarify the exact 9–1am time range.",
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "night mid breast": "With hugo bra , quitr small breast.",
+        "Pictures": [
+          {
+            "id": "act3hPEDZZ542Gvsevb",
+            "name": "IMG_2389 (2).PNG",
+            "path": "table/q8TLJMP7YZlW",
+            "size": 226924,
+            "token": "q8TLJMP7YZlW",
+            "width": 1170,
+            "height": 2532,
+            "mimetype": "image/png",
+            "presignedUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/q8TLJMP7YZlW?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T070224Z&X-Amz-Expires=518400&X-Amz-Signature=915c1af564481ba1bb04029888b57065d72ee6a2db6b89e6e15d2841bb661d00&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-disposition=attachment%3B%20filename%2A%3DUTF-8%27%27IMG_2389%2520%282%29.PNG&response-content-type=image%2Fpng&x-id=GetObject",
+            "smThumbnailUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/q8TLJMP7YZlW_sm?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T070225Z&X-Amz-Expires=518400&X-Amz-Signature=93c63a2004518386aeff34881b44e22dd7dce3d886d308cb46e606145a24ff50&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-type=image%2Fpng&x-id=GetObject",
+            "lgThumbnailUrl": "https://s3.us-west-2.amazonaws.com/storage-private.teable.io/table/q8TLJMP7YZlW_lg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAZOU4IL5VJJW3Y5OJ%2F20260910%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260910T070225Z&X-Amz-Expires=518400&X-Amz-Signature=4836c977d272c588d3bae08b912abf68ddbe2462634fef7f32d011a593f744fb&X-Amz-SignedHeaders=host&response-cache-control=private%2C%20max-age%3D86400&response-content-type=image%2Fpng&x-id=GetObject"
+          }
+        ],
+        "Full Wearing Report (new design) clothes list": [
+          {
+            "id": "recuCPStsVsXuQR7Mv2",
+            "title": "1"
+          },
+          {
+            "id": "recPdadsrtfQvjqQW6k",
+            "title": "2"
+          }
+        ]
+      },
+      {
+        "Name": "2026-06-03 1044 wearing report",
+        "wear date": "2026-06-03T00:00:00.000Z",
+        "created": "2026-06-03T00:00:00.000Z",
+        "categories": [
+          "[[Wearing Report]]"
+        ],
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "sweat": "thick clothes also more hot and swear, under fan sleep still ok hot",
+        "leg feel": "like dress not pant, same like dress when sleep easy fold up and pee",
+        "AI Wearing Analysis": "## Wearing summary\n- **Fact:** Worn on **2026-06-03** for **21,600 seconds (6 hours)**.\n- **Clothes:** “white marry old.”\n- **Bra:** “hugo bra.”\n- Category/tag: **Wearing Report / #wearingreport**.\n- **Missing data:** General report detail and separate night observations were not provided.\n\n## Comfort and fit\n- **Fact:** The mid-breast area felt slightly small with the Hugo bra, with some side exposure, but the overall appearance was considered feminine and acceptable.\n- **Fact:** The shoulder area felt less irritated and painful without “diao dai” straps.\n- **Fact:** The garment felt more like a dress than pants. It could fold or ride up during sleep, but made urination easier.\n- **Inference:** Breast fit and side coverage may need checking with a different bra or size.\n\n## Heat and sweat\n- **Fact:** The thick fabric felt hotter and caused more sweating.\n- **Fact:** Sleeping under a fan was manageable, although it still felt hot.\n- **Missing data:** No separate night sweat assessment was recorded.\n\n## Wash recommendation\n- **Fact:** Both the clothes and bra have already been washed.\n- No immediate wash action is required.\n\n## Follow-up\n- Compare the mid-breast fit with another bra or bra size.\n- Note whether the garment continues to fold or ride up during a full night.\n- Record separate night breast, leg, and sweat observations next time.",
+        "tags": [
+          "#wearingreport"
+        ],
+        "mid breast": "mid breast is little small when pair with [[hugo]] bra.side out, but still femiline , ok la.",
+        "Full Wearing Report (new design) clothes list": [
+          {
+            "id": "recRYG9ExdRniocltX7",
+            "title": "5"
+          },
+          {
+            "id": "reckoFn8DZYzEruYHfr",
+            "title": "6"
+          }
+        ]
+      },
+      {
+        "Name": "2026-06-23 0833 wearing report",
+        "wear date": "2026-06-22T00:00:00.000Z",
+        "created": "2026-06-23T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "report detail": "1.30 to 7",
+        "sweat": "\"middle\" thick lace clothes also more hot and swear",
+        "leg feel": "like dress not pant, skirt quite middle thick , but short, so middle cold leg",
+        "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-06-23 0833 wearing report\n- **Wear date:** 2026-06-22\n- **Clothes:** Pink flower, RM30\n- **Bra:** Small bra\n- **Wear duration:** 19,800 seconds (**5 hours 30 minutes**)\n- **Recorded period:** 1:30 to 7:00, consistent with 5.5 hours, though AM/PM is not specified.\n\n## Comfort and fit\n- **Fact:** Mid-breast/side fit was described as “OK.”\n- **Fact:** The dress’s middle cut had noticeable “zhouwhen,” making it look less attractive. The exact meaning of “zhouwhen” is unclear, possibly wrinkling or gathering.\n- **Fact:** The non-strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was moderately thick but short, leaving the legs somewhat cold.\n- **Inference:** The shoulder design appears comfortable, but the dress may need improvement around the middle cut and skirt length.\n\n## Heat and sweat\n- **Fact:** The moderately thick lace made the outfit feel hotter and caused more sweating.\n- **Missing data:** Night sweat and other nighttime observations were not provided.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional immediate washing is needed. Dry both fully and follow their care labels before storage or reuse.\n\n## Follow-up\n- Clarify what “zhouwhen” means and where it occurred.\n- Record whether the wear period was AM or PM.\n- Add the missing **night mid-breast, night leg, and night sweat** observations if applicable.\n- On the next wear, check whether the middle cut, short length, and heat remain concerns.",
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "mid breast": "Ok side, but the dress cutting of mid is quite alot zhouwhen, not so beautiful",
+        "Full Wearing Report (new design) clothes list": [
+          {
+            "id": "receq124SUmtSUDIGP8",
+            "title": "7"
+          },
+          {
+            "id": "recowmsmXR2jYOtXh1X",
+            "title": "8"
+          }
+        ]
+      }
+    ]
+  },
+  "Full Wearing Report (new design) clothes list": {
+    "id": "tbl0BBxOfZbH6SKR9gd",
+    "fieldsCount": 6,
+    "recordsCount": 98,
+    "fields": [
+      {
+        "name": "name",
+        "type": "autoNumber",
+        "options": "AUTO_NUMBER()"
+      },
+      {
+        "name": "wearing report id",
+        "type": "link",
+        "options": "Links to: tblRBWTgaP6dH4SU1RQ"
+      },
+      {
+        "name": "clothes(new)",
+        "type": "link",
+        "options": "Links to: tblrHfBAYrA6gRCYbPN"
+      },
+      {
+        "name": "duration",
+        "type": "number"
+      },
+      {
+        "name": "wash stated",
+        "type": "singleSelect",
+        "options": [
+          "wash",
+          "need wash"
+        ]
+      },
+      {
+        "name": "Clothes Type (from clothes(new))",
+        "type": "singleSelect",
+        "options": [
+          "Dress",
+          "bra",
+          "Tshirt",
+          "Pant"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "name": "look up clothes type and group",
+        "type": "grid",
+        "filter": {
+          "conjunction": "and",
+          "filterSet": [
+            {
+              "fieldId": "fldSjVPGZ5lQJizsKf6",
+              "value": "need wash",
+              "operator": "is"
+            }
+          ]
+        },
+        "group": [
+          {
+            "fieldId": "fldye1t5qODNCOxFaEM",
+            "order": "asc"
+          },
+          {
+            "fieldId": "fldRejGrK27lNUlQuID",
+            "order": "asc"
+          }
+        ]
+      },
+      {
+        "name": "group by clothes, need wash",
+        "type": "grid",
+        "filter": {
+          "conjunction": "and",
+          "filterSet": [
+            {
+              "fieldId": "fldSjVPGZ5lQJizsKf6",
+              "value": "need wash",
+              "operator": "is"
+            }
+          ]
+        },
+        "group": [
+          {
+            "fieldId": "fldRejGrK27lNUlQuID",
+            "order": "asc"
+          }
+        ]
+      },
+      {
+        "name": "full clothes detail",
+        "type": "grid"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "name": 1,
+        "wearing report id": {
+          "id": "recLpU4ilzoVECASBvU",
+          "title": "2026-08-07 1257 wearing report"
+        },
+        "clothes(new)": {
+          "id": "recyjkI8vOuTncSZCch",
+          "title": "pink diao dai chiffon"
+        },
+        "duration": 14400,
+        "wash stated": "wash",
+        "Clothes Type (from clothes(new))": "Dress"
+      },
+      {
+        "name": 2,
+        "wearing report id": {
+          "id": "recLpU4ilzoVECASBvU",
+          "title": "2026-08-07 1257 wearing report"
+        },
+        "clothes(new)": {
+          "id": "receYRXEMznrbePfA7g",
+          "title": "hugo bra new 2\n"
+        },
+        "duration": 14400,
+        "wash stated": "wash",
+        "Clothes Type (from clothes(new))": "bra"
+      },
+      {
+        "name": 3,
+        "wearing report id": {
+          "id": "reci5Pb0ICoyBjFqNYF",
+          "title": "2026-06-19 1234 wearing report"
+        },
+        "clothes(new)": {
+          "id": "recd21qfqf7ixTXiEy2",
+          "title": "Blue side flower dress"
+        },
+        "duration": 25200,
+        "wash stated": "need wash",
+        "Clothes Type (from clothes(new))": "Dress"
+      }
+    ]
+  },
+  "Clothes": {
+    "id": "tbll5LBGSzsCRz06LT2",
+    "fieldsCount": 35,
+    "recordsCount": 34,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "longText"
+      },
+      {
+        "name": "Total unwash bra time",
+        "type": "rollup",
+        "options": "sum({values})"
+      },
+      {
+        "name": "Clothes Type",
+        "type": "singleSelect",
+        "options": [
+          "Dress",
+          "bra",
+          "Tshirt",
+          "Pant"
+        ]
+      },
+      {
+        "name": "material",
+        "type": "singleSelect",
+        "options": [
+          "(blank 1)",
+          "lace",
+          "soft chiffon",
+          "middle chiffon",
+          "plain middle thick",
+          "thick chiffon",
+          "plain thick",
+          "the material after wash easy broken",
+          "Tshirt thin",
+          "Aaa"
+        ]
+      },
+      {
+        "name": "AI Clothes Analysis",
+        "type": "longText"
+      },
+      {
+        "name": "side breast ok",
+        "type": "singleSelect",
+        "options": [
+          "side breast shape ok",
+          "(blank 2)",
+          "Ddd"
+        ]
+      },
+      {
+        "name": "Descriptions",
+        "type": "longText"
+      },
+      {
+        "name": "thick clothes",
+        "type": "singleSelect",
+        "options": [
+          "01 not thick clothes",
+          "02 middle thick clothes",
+          "03 thick clothes",
+          "quick thick material bra",
+          "not so thick bra",
+          "Super"
+        ]
+      },
+      {
+        "name": "Tracked App Washes",
+        "type": "number"
+      },
+      {
+        "name": "diao dai",
+        "type": "singleSelect",
+        "options": [
+          "diao dai",
+          "wide diao dai",
+          "not diao dai",
+          "(blank 4)",
+          "Tes"
+        ]
+      },
+      {
+        "name": "Hot at noon",
+        "type": "singleSelect",
+        "options": [
+          "Not hot",
+          "Middle",
+          "Hot",
+          "(blank 4)"
+        ]
+      },
+      {
+        "name": "From field: Records (Nested)",
+        "type": "link",
+        "options": "Links to: tbll5LBGSzsCRz06LT2"
+      },
+      {
+        "name": "Pictures",
+        "type": "attachment"
+      },
+      {
+        "name": "created",
+        "type": "date"
+      },
+      {
+        "name": "total unwash bra time (hour:mins)",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Records (Nested)",
+        "type": "link",
+        "options": "Links to: tbll5LBGSzsCRz06LT2"
+      },
+      {
+        "name": "last comment or action",
+        "type": "longText"
+      },
+      {
+        "name": "tags",
+        "type": "multipleSelect",
+        "options": [
+          "#clothes"
+        ]
+      },
+      {
+        "name": "beautiful",
+        "type": "singleSelect",
+        "options": [
+          "Beautiful",
+          "Middle beautiful",
+          "not so beautiful"
+        ]
+      },
+      {
+        "name": "wearing frequency",
+        "type": "number"
+      },
+      {
+        "name": "Total clothes unwash time",
+        "type": "rollup",
+        "options": "sum({values})"
+      },
+      {
+        "name": "AI Analysis Reports",
+        "type": "link",
+        "options": "Links to: tblj2QlZQfjxyHnvpkD"
+      },
+      {
+        "name": "wet reason",
+        "type": "longText"
+      },
+      {
+        "name": "Full Bra Wearing Report",
+        "type": "link",
+        "options": "Links to: tblmbW3D6WWSgRWKhbV"
+      },
+      {
+        "name": "may throw",
+        "type": "longText"
+      },
+      {
+        "name": "Last Washed",
+        "type": "date"
+      },
+      {
+        "name": "long dress",
+        "type": "singleSelect",
+        "options": [
+          "long dress",
+          "short dress",
+          "middle dress",
+          "(blank 4)"
+        ]
+      },
+      {
+        "name": "beatiful reason",
+        "type": "longText"
+      },
+      {
+        "name": "total clothes unwash time (hour:mins)",
+        "type": "singleLineText"
+      },
+      {
+        "name": "wet",
+        "type": "singleSelect",
+        "options": [
+          "dry",
+          "litle wet",
+          "little wet",
+          "wet",
+          "(blank 5)"
+        ]
+      },
+      {
+        "name": "center chest",
+        "type": "singleSelect",
+        "options": [
+          "(blank 1)",
+          "center chest",
+          "no center chest",
+          "yes center chest bra",
+          "not center but side open"
+        ]
+      },
+      {
+        "name": "Descriptions 2",
+        "type": "longText"
+      },
+      {
+        "name": "sit breast ok",
+        "type": "singleSelect",
+        "options": [
+          "sit breast shape ok",
+          "(blank 2)",
+          "stand breast ugly, because loose tie not as white marry",
+          "?",
+          "stand breast ugly, because alot zhouwhen"
+        ]
+      },
+      {
+        "name": "price",
+        "type": "number"
+      },
+      {
+        "name": "Full  Clothes Wearing Report",
+        "type": "link",
+        "options": "Links to: tblmbW3D6WWSgRWKhbV"
+      }
+    ],
+    "views": [
+      {
+        "name": "group by clothes type dry, beautiful, sort by hot at noon",
+        "type": "grid"
+      },
+      {
+        "name": "group by thick,hot, sort by beautiful",
+        "type": "grid"
+      },
+      {
+        "name": "Gallery",
+        "type": "gallery"
+      },
+      {
+        "name": "full clothes",
+        "type": "grid"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "blue dress",
+        "Total unwash bra time": 0,
+        "Clothes Type": "Dress",
+        "material": "soft chiffon",
+        "AI Clothes Analysis": "### Overall assessment\n**Observed:** A short dress made from soft chiffon, described as light, soft, feminine, and beautifully cut. It is marked “Beautiful” and costs **$53.00**.  \n**Inference:** The item appears suitable for regular warm-weather wear and remains a strong wardrobe piece.\n\n### Comfort and climate\n**Observed:** The dress is not thick, does not feel hot at noon, and dries well because of the chiffon fabric.  \n**Inference:** It should be comfortable in warm conditions and practical when quick drying is useful.\n\n### Fit and appearance\n**Observed:** It is a short, non-strap dress with no center-chest issue. The bust shape remains acceptable while sitting.  \n**Missing data:** Side-bust fit and the specific reason for the “Beautiful” rating were not provided.\n\n### Care and wash priority\n**Observed:** Both unwashed clothing time and unwashed bra time are **0:00**, so there is no recorded wash backlog. The dress is currently marked dry.  \n**Recommendation:** No immediate washing is indicated. Follow chiffon-appropriate gentle-care instructions when cleaning.\n\n### Usage value\n**Observed:** Wearing frequency is **39.0**, with three linked wearing reports dated **2026-07-10** and **2026-07-11**.  \n**Inference:** If 39.0 represents a wear count, the dress has relatively strong usage value; however, the frequency unit is not specified.\n\n### Recommended next action\nKeep the dress and continue wearing it, especially in warm weather. At the next wear, record the **side fit**, detailed appearance reason, and any comfort changes. **Last action, disposal status (“may throw”), additional description, and related bra reports are missing**, so no disposal recommendation can be made from those fields.",
+        "Descriptions": "quite beautiful with this fabric,very light and soft feel, cutting design, but still very femiline skirt",
+        "thick clothes": "01 not thick clothes",
+        "diao dai": "not diao dai",
+        "Hot at noon": "Not hot",
+        "created": "2026-06-11T00:00:00.000Z",
+        "total unwash bra time (hour:mins)": "0:00",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency": 39,
+        "Total clothes unwash time": 36000,
+        "wet reason": "dry due to chiffon",
+        "long dress": "short dress",
+        "total clothes unwash time (hour:mins)": "0:00",
+        "wet": "dry",
+        "center chest": "no center chest",
+        "sit breast ok": "sit breast shape ok",
+        "price": 53,
+        "Full  Clothes Wearing Report": [
+          {
+            "id": "recJwFfAnd5AGtgaJuq",
+            "title": "2026-07-10 1432 wearing report"
+          },
+          {
+            "id": "recvQllCcpJNDyNoJiN",
+            "title": "2026-07-10 1441 wearing report"
+          },
+          {
+            "id": "recYL74pabmA96ERa6E",
+            "title": "2026-07-11 0814 wearing report"
+          }
+        ]
+      },
+      {
+        "Name": "white marry old",
+        "Total unwash bra time": 0,
+        "Clothes Type": "Dress",
+        "material": "lace",
+        "AI Clothes Analysis": "## Overall assessment\n**Observed:** “white marry old” is a **long lace dress** priced at **$44.00**. It is marked **Beautiful**, **Hot**, and **03 thick clothes**. The description also calls it affordable, hot, and thick.  \n**Inference:** It appears visually successful and reasonably priced, but warmth may limit when it is comfortable to wear.\n\n## Comfort and climate\n**Observed:** The dress is hot at noon, thick, long, and not a strap dress. Its latest drying status is **dry**.  \n**Inference:** It is probably better suited to cooler weather, mornings/evenings, or air-conditioned settings than hot midday conditions.\n\n## Fit and appearance\n**Observed:** It has a **center-chest** design, and the sitting breast shape is recorded as acceptable.  \n**Missing data:** No side-fit result or specific reason for the “Beautiful” rating is provided. The wording “white marry old” and “affordable center chest” is unclear, so no further style conclusion can be made.\n\n## Care and wash priority\n**Observed:** Unwashed clothing time is **10:00**; unwashed bra time is **0:00**. The dress is currently recorded as dry.  \n**Recommendation:** Wash the dress next rather than extending wear, especially given its thick lace construction and accumulated 10 hours. Follow its care label; no washing method is provided.\n\n## Usage value\n**Observed:** Wearing frequency is listed as **160.0**, but its unit and meaning are missing. There are eight linked report entries, including an apparent copy of the **2026-07-31 1054** report, so they may represent seven distinct wear events.  \n**Inference:** The records suggest repeated use, but cost per wear cannot be calculated reliably without clarifying the frequency field and duplicate report.\n\n## Recommended next action\nWash and fully dry the dress, then retain it for cooler periods or non-noon use. Review the duplicated July 31 report and clarify the **160.0** frequency value. No recommendation to discard can be made because the **may throw**, last-action, side-fit, and damage/condition fields are missing.",
+        "Descriptions": "a affordable center chest , and hot thick dress",
+        "thick clothes": "03 thick clothes",
+        "diao dai": "not diao dai",
+        "Hot at noon": "Hot",
+        "created": "2026-06-01T00:00:00.000Z",
+        "total unwash bra time (hour:mins)": "0:00",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency": 160,
+        "Total clothes unwash time": 160200,
+        "long dress": "long dress",
+        "total clothes unwash time (hour:mins)": "10:00",
+        "wet": "dry",
+        "center chest": "center chest",
+        "sit breast ok": "sit breast shape ok",
+        "price": 44,
+        "Full  Clothes Wearing Report": [
+          {
+            "id": "recmkX56nGBVMd03258",
+            "title": "2026-07-06 1408 wearing report"
+          },
+          {
+            "id": "recNbCnjnDm38EwMOCL",
+            "title": "2026-07-09 1011 wearing report"
+          },
+          {
+            "id": "recjGEIlxWnTun6ynwJ",
+            "title": "2026-07-31 1054 wearing report"
+          },
+          {
+            "id": "rec1ZiVboxPDFOrRrFj",
+            "title": "2026-08-07 1338 wesring report"
+          },
+          {
+            "id": "recRKYqByKLQdSUnlGQ",
+            "title": "2026-07-31 1054 wearing report copy"
+          },
+          {
+            "id": "recoQEgUMyAl6534Tjz",
+            "title": "2026-06-03 1044 wearing report"
+          },
+          {
+            "id": "recXjkzptfWnhPWG1LV",
+            "title": "2026-06-19 wearing report"
+          },
+          {
+            "id": "recrMeFQj3nlS5Ochgl",
+            "title": "2026-06-20 1054 wearing report"
+          }
+        ]
+      },
+      {
+        "Name": "pink side flower dress",
+        "Total unwash bra time": 0,
+        "Clothes Type": "Dress",
+        "material": "soft chiffon",
+        "AI Clothes Analysis": "### Overall assessment\n**Observed:** A feminine, soft-chiffon pink dress with a side-flower detail. It is marked **Beautiful**, **short**, and **not thick**. Three related wearing reports are listed.  \n**Inference:** It appears best suited to dressy or feminine warm-weather use rather than cold conditions.\n\n### Comfort and climate\n**Observed:** Noon heat is rated **Middle**. The description says the skirt falls around the knee and offers a little warmth, but the short length still feels cold. It is not a thick garment.  \n**Inference:** Most practical in mild or warm weather; consider an outer layer or tights in cooler conditions.\n\n### Fit and appearance\n**Observed:** The breast and waist are described as attractive, and the breast shape is acceptable while sitting. The dress is not a strap style and has center-chest coverage. Sitting length is acceptable, but it becomes short when sleeping or reclining.  \n**Missing:** Side-breast fit and the specific reason for the “Beautiful” rating.\n\n### Care and wash priority\n**Observed:** Accumulated unwashed dress time is **10:00 hours**; unwashed bra time is **0:00**. Drying result is recorded as **dry**.  \n**Missing:** Drying-result reason and exact care-label instructions.  \n**Recommendation:** Wash soon due to the accumulated wear time. Because it is soft chiffon, follow the garment label and use gentle handling; avoid assuming it is machine-washable.\n\n### Usage value\n**Observed:** Price is **$89.00**, and wearing frequency is recorded as **30.0**, though its unit is not defined. Three clothing reports are linked.  \n**Inference:** If 30.0 represents a wear count, the approximate cost per wear is **$2.97**, indicating good usage value. This calculation is conditional on that interpretation.\n\n### Recommended next action\nWash the dress according to its care label, then continue using it for mild or warm-weather occasions. Avoid relying on it for sleeping/reclining or cold conditions because of the short length. Reassess after washing for chiffon condition, side fit, and whether it should be kept or discarded.\n\n**Missing decision data:** Last action/comment, “may throw” status, side fit, and related bra wearing reports.",
+        "Descriptions": "pink side flower dress,sit still ok length, sleep short length, breast and waist beautiful.",
+        "thick clothes": "01 not thick clothes",
+        "diao dai": "not diao dai",
+        "Hot at noon": "Middle",
+        "created": "2026-05-29T00:00:00.000Z",
+        "total unwash bra time (hour:mins)": "0:00",
+        "tags": [
+          "#clothes"
+        ],
+        "beautiful": "Beautiful",
+        "wearing frequency": 30,
+        "Total clothes unwash time": 36000,
+        "long dress": "short dress",
+        "total clothes unwash time (hour:mins)": "10:00",
+        "wet": "dry",
+        "center chest": "center chest",
+        "Descriptions 2": "Very femenine, and the skirt sink to knee. So little warm protect cold. But still cold due to short.",
+        "sit breast ok": "sit breast shape ok",
+        "price": 89,
+        "Full  Clothes Wearing Report": [
+          {
+            "id": "rec4SPq9BXao6J4adis",
+            "title": "2026-06-04 wearing report 3"
+          },
+          {
+            "id": "recxJ1v588mIzmcD38G",
+            "title": "2026-07-02 1635 wearing report"
+          },
+          {
+            "id": "recuT4M8e3VaF5dhfDI",
+            "title": "2026-08-13 1441 wearing report copy"
+          }
+        ]
+      }
+    ]
+  },
+  "Full Wearing Report": {
+    "id": "tblmbW3D6WWSgRWKhbV",
+    "fieldsCount": 21,
+    "recordsCount": 53,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "longText"
+      },
+      {
+        "name": "bra copy",
+        "type": "link",
+        "options": "Links to: tbll5LBGSzsCRz06LT2"
+      },
+      {
+        "name": "not yet wash clothes",
+        "type": "singleSelect",
+        "options": [
+          "already wash",
+          "(blank 2)",
+          "not yet wash",
+          "don't need wash"
+        ]
+      },
+      {
+        "name": "wear time copy",
+        "type": "number"
+      },
+      {
+        "name": "wear date",
+        "type": "date"
+      },
+      {
+        "name": "created",
+        "type": "date"
+      },
+      {
+        "name": "categories",
+        "type": "multipleSelect",
+        "options": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ]
+      },
+      {
+        "name": "Not yet wash bra",
+        "type": "singleSelect",
+        "options": [
+          "Not yet wash",
+          "Wash",
+          "(blank 3)",
+          "don't need wash"
+        ]
+      },
+      {
+        "name": "wear time copy (hour:mins)",
+        "type": "formula",
+        "options": "IF({fldBVMU1qd59SrEjL7u} = BLANK(), BLANK(), CONCATENATE(FLOOR({fldBVMU1qd59SrEjL7u} / 3600), ':', IF(MOD(FLOOR({fldBVMU1qd59SrEjL7u} / 60), 60) < 10, '0', ''), MOD(FLOOR({fldBVMU1qd59SrEjL7u} / 60), 60)))"
+      },
+      {
+        "name": "shoulder feel",
+        "type": "longText"
+      },
+      {
+        "name": "report detail",
+        "type": "longText"
+      },
+      {
+        "name": "night leg feel",
+        "type": "longText"
+      },
+      {
+        "name": "sweat",
+        "type": "longText"
+      },
+      {
+        "name": "leg feel",
+        "type": "longText"
+      },
+      {
+        "name": "night sweat",
+        "type": "longText"
+      },
+      {
+        "name": "clothes copy",
+        "type": "link",
+        "options": "Links to: tbll5LBGSzsCRz06LT2"
+      },
+      {
+        "name": "AI Wearing Analysis",
+        "type": "longText"
+      },
+      {
+        "name": "tags",
+        "type": "multipleSelect",
+        "options": [
+          "#journal",
+          "#notes",
+          "#wearingreport",
+          "#episodes",
+          "#clothes"
+        ]
+      },
+      {
+        "name": "night mid breast",
+        "type": "longText"
+      },
+      {
+        "name": "mid breast",
+        "type": "longText"
+      },
+      {
+        "name": "Pictures",
+        "type": "attachment"
+      }
+    ],
+    "views": [
+      {
+        "name": "clothes not yet wash, group by clothes",
+        "type": "grid"
+      },
+      {
+        "name": "bra not yet wash, group by bra copy",
+        "type": "grid"
+      },
+      {
+        "name": "full wearing report",
+        "type": "grid"
+      },
+      {
+        "name": "Form",
+        "type": "form"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "2026-08-07 1257 wearing report",
+        "bra copy": [
+          {
+            "id": "recQKpUXmmkdWQJtUcW",
+            "title": "hugo bra new 2\n"
+          }
+        ],
+        "not yet wash clothes": "already wash",
+        "wear time copy": 14400,
+        "wear date": "2026-08-06T00:00:00.000Z",
+        "created": "2026-08-07T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "Not yet wash bra": "Wash",
+        "wear time copy (hour:mins)": "4:00",
+        "report detail": "9-1am",
+        "night leg feel": "Short dress, thin, cold for leg",
+        "night sweat": "Still ok under fans, not so sweat, no under fans, little sweat",
+        "clothes copy": [
+          {
+            "id": "rec9zLwCcmwtXbJ63nz",
+            "title": "pink diao dai chiffon"
+          }
+        ],
+        "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-08-07 1257 wearing report\n- **Wear date:** 2026-08-06\n- **Clothes:** Pink diao dai chiffon\n- **Bra:** Hugo bra new 2\n- **Duration:** 14,400 seconds (**4 hours**)\n- **Reported time:** 9–1am; whether this means 9pm–1am is **not specified**.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** At night, the breast appeared “quite small” while wearing the Hugo bra.\n- **Fact:** The short, thin dress left the legs feeling cold.\n- **Inference:** The outfit may need an extra leg layer in similarly cool conditions.\n- **Missing:** Daytime breast fit, shoulder comfort, and daytime leg feedback were not provided.\n\n## Heat and sweat\n- **Fact:** Sweat was manageable under fans.\n- **Fact:** Without fans, there was a little sweating.\n- **Inference:** Fan airflow improved thermal comfort.\n- **Missing:** Daytime sweat information and room temperature were not recorded.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No further washing action is currently indicated.\n\n## Follow-up\n- Note whether the bra’s smaller-looking shape is desirable and whether it remains comfortable over longer wear.\n- For future reports, record shoulder comfort, daytime observations, temperature, and clarify the exact 9–1am time range.",
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "night mid breast": "With hugo bra , quitr small breast."
+      },
+      {
+        "Name": "2026-06-03 1044 wearing report",
+        "bra copy": [
+          {
+            "id": "recQHgfFlXroTp1O0kf",
+            "title": "hugo bra"
+          }
+        ],
+        "not yet wash clothes": "already wash",
+        "wear time copy": 21600,
+        "wear date": "2026-06-03T00:00:00.000Z",
+        "created": "2026-06-03T00:00:00.000Z",
+        "categories": [
+          "[[Wearing Report]]"
+        ],
+        "Not yet wash bra": "Wash",
+        "wear time copy (hour:mins)": "6:00",
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "sweat": "thick clothes also more hot and swear, under fan sleep still ok hot",
+        "leg feel": "like dress not pant, same like dress when sleep easy fold up and pee",
+        "clothes copy": [
+          {
+            "id": "reckNHLOvEXjWYXqU5Q",
+            "title": "white marry old"
+          }
+        ],
+        "AI Wearing Analysis": "## Wearing summary\n- **Fact:** Worn on **2026-06-03** for **21,600 seconds (6 hours)**.\n- **Clothes:** “white marry old.”\n- **Bra:** “hugo bra.”\n- Category/tag: **Wearing Report / #wearingreport**.\n- **Missing data:** General report detail and separate night observations were not provided.\n\n## Comfort and fit\n- **Fact:** The mid-breast area felt slightly small with the Hugo bra, with some side exposure, but the overall appearance was considered feminine and acceptable.\n- **Fact:** The shoulder area felt less irritated and painful without “diao dai” straps.\n- **Fact:** The garment felt more like a dress than pants. It could fold or ride up during sleep, but made urination easier.\n- **Inference:** Breast fit and side coverage may need checking with a different bra or size.\n\n## Heat and sweat\n- **Fact:** The thick fabric felt hotter and caused more sweating.\n- **Fact:** Sleeping under a fan was manageable, although it still felt hot.\n- **Missing data:** No separate night sweat assessment was recorded.\n\n## Wash recommendation\n- **Fact:** Both the clothes and bra have already been washed.\n- No immediate wash action is required.\n\n## Follow-up\n- Compare the mid-breast fit with another bra or bra size.\n- Note whether the garment continues to fold or ride up during a full night.\n- Record separate night breast, leg, and sweat observations next time.",
+        "tags": [
+          "#wearingreport"
+        ],
+        "mid breast": "mid breast is little small when pair with [[hugo]] bra.side out, but still femiline , ok la."
+      },
+      {
+        "Name": "2026-06-23 0833 wearing report",
+        "bra copy": [
+          {
+            "id": "recq2CYGmlzzgKHw6mz",
+            "title": "small bra"
+          }
+        ],
+        "not yet wash clothes": "already wash",
+        "wear time copy": 19800,
+        "wear date": "2026-06-22T00:00:00.000Z",
+        "created": "2026-06-23T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "Not yet wash bra": "Wash",
+        "wear time copy (hour:mins)": "5:30",
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "report detail": "1.30 to 7",
+        "sweat": "\"middle\" thick lace clothes also more hot and swear",
+        "leg feel": "like dress not pant, skirt quite middle thick , but short, so middle cold leg",
+        "clothes copy": [
+          {
+            "id": "recLziSBPMW15m5DKqV",
+            "title": "pink flower  rm30"
+          }
+        ],
+        "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-06-23 0833 wearing report\n- **Wear date:** 2026-06-22\n- **Clothes:** Pink flower, RM30\n- **Bra:** Small bra\n- **Wear duration:** 19,800 seconds (**5 hours 30 minutes**)\n- **Recorded period:** 1:30 to 7:00, consistent with 5.5 hours, though AM/PM is not specified.\n\n## Comfort and fit\n- **Fact:** Mid-breast/side fit was described as “OK.”\n- **Fact:** The dress’s middle cut had noticeable “zhouwhen,” making it look less attractive. The exact meaning of “zhouwhen” is unclear, possibly wrinkling or gathering.\n- **Fact:** The non-strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was moderately thick but short, leaving the legs somewhat cold.\n- **Inference:** The shoulder design appears comfortable, but the dress may need improvement around the middle cut and skirt length.\n\n## Heat and sweat\n- **Fact:** The moderately thick lace made the outfit feel hotter and caused more sweating.\n- **Missing data:** Night sweat and other nighttime observations were not provided.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional immediate washing is needed. Dry both fully and follow their care labels before storage or reuse.\n\n## Follow-up\n- Clarify what “zhouwhen” means and where it occurred.\n- Record whether the wear period was AM or PM.\n- Add the missing **night mid-breast, night leg, and night sweat** observations if applicable.\n- On the next wear, check whether the middle cut, short length, and heat remain concerns.",
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "mid breast": "Ok side, but the dress cutting of mid is quite alot zhouwhen, not so beautiful"
+      }
+    ]
+  },
+  "AI Analysis Reports": {
+    "id": "tblj2QlZQfjxyHnvpkD",
+    "fieldsCount": 10,
+    "recordsCount": 2,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "longText"
+      },
+      {
+        "name": "Clothes",
+        "type": "link",
+        "options": "Links to: tbll5LBGSzsCRz06LT2"
+      },
+      {
+        "name": "Attachments",
+        "type": "attachment"
+      },
+      {
+        "name": "Analysis Scope",
+        "type": "longText"
+      },
+      {
+        "name": "Report Type",
+        "type": "singleSelect",
+        "options": [
+          "Wardrobe overview",
+          "Single clothes",
+          "Wearing patterns",
+          "Wash and care"
+        ]
+      },
+      {
+        "name": "Attachment Summary",
+        "type": "longText"
+      },
+      {
+        "name": "Assignee",
+        "type": "user"
+      },
+      {
+        "name": "Notes",
+        "type": "longText"
+      },
+      {
+        "name": "Generated At",
+        "type": "createdTime",
+        "options": "CREATED_TIME()"
+      },
+      {
+        "name": "Status",
+        "type": "singleSelect",
+        "options": [
+          "Todo",
+          "In progress",
+          "Done"
+        ]
+      }
+    ],
+    "views": [
+      {
+        "name": "Grid view",
+        "type": "grid"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "report omni 1\n",
+        "Notes": "Here is a summary of the wearing experience for each clothing item, based on the wearing reports:\n\n\\*\\*apricot french rm30\\*\\* — Rated \\*Beautiful\\*. Works well with a big/hugo bra though breast size can look a bit small; the not-diao-dai design keeps the shoulder comfortable without irritation. Middle-thick fabric feels hotter and sweaty at noon, but at night it's fine under a fan; long dress keeps legs warm though it can get cold around 4am.\n\n\\*\\*blue diao dai thick\\*\\* — Rated \\*Middle beautiful\\*. Breast looks full and beautiful but the dress cut makes it dip a little in the middle; the shoulder drops and needs an outer fit, making it quite hot. Thick fabric is hot and sweaty, though still okay sleeping under a fan; feels like a dress rather than pants (easy to fold up).\n\n\\*\\*blue dress\\*\\* — Rated \\*Beautiful\\*. Full and beautiful shape, best with a big bra (small bra needs manual adjustment). Thin chiffon fabric only gets hot at the fitted chest area, other areas stay cool; short dress means cold legs at night. Not-diao-dai design keeps shoulders comfortable.\n\n\\*\\*Blue french dress\\*\\* — Rated \\*Middle beautiful\\*. Mid breast looks beautiful from the top and feels heavier due to the center-breast bra pairing; the not-diao-dai style avoids shoulder irritation. Feels like a dress not pants.\n\n\\*\\*Blue side flower dress\\*\\* — Rated \\*Middle beautiful\\*. Full and beautiful shape, but the diao dai design irritates and hurts the shoulder. Middle-thick lace fabric makes it hotter and sweaty, though only lightly sweaty in mild weather; middle-thick skirt keeps legs from getting too cold.\n\n\\*\\*Green diao dai\\*\\* — Rated \\*Beautiful\\*. A tight mid design makes the bra sit smaller and stick to the chest; the diao dai irritates the shoulder but is not hot at noon. Middle-thick lace fabric is warmer and sweaty; short dress with middle-thick material is only slightly cold on legs.\n\n\\*\\*hugo bra\\*\\* — Rated \\*Beautiful\\*. Worn for long durations as a bra item.\n\n\\*\\*pink bridesmaid\\*\\* — Rated \\*Middle beautiful\\*. The mid design isn't very flattering with either small or big bra; shoulder sometimes drops. Thick fabric is hot and sweaty; the long, thin skirt inner tends to stick to the legs and may cause sweat.\n\n\\*\\*pink diao dai chiffon\\*\\* — Rated \\*Middle beautiful\\*. Tight mid design squeezes the bra smaller and sticks to the chest, looking less flattering and hot at the middle; other areas and the thin chiffon skirt stay cool. Diao dai irritates the shoulder; short dress means cold legs at night.\n\n\\*\\*pink flower rm30\\*\\* — Rated \\*Not so beautiful\\*. Big bra gives a better shape but the waist design is ugly with a lot of wrinkling (zhouwhen); not-diao-dai keeps shoulders comfortable. Middle-thick lace is hot and sweaty; short skirt makes legs moderately cold.\n\n\\*\\*pink lace old\\*\\* — Rated \\*Beautiful\\*. Mid breast looks a little small with a small bra but is still feminine and okay; not-diao-dai avoids shoulder irritation. Middle-thick lace is hot and sweaty but okay sleeping under a fan.\n\n\\*\\*pink side flower dress\\*\\* — Rated \\*Beautiful\\*. Mid breast is a little small with the hugo bra but still feminine; the not-diao-dai design keeps the shoulder comfortable.\n\n\\*\\*pink white dress\\*\\* — Rated \\*Not so beautiful\\*. The tight mid design makes the bra smaller and wrinkled (zhouwhen), sticking to the chest; the wide diao dai makes the shoulder drop and irritates but doesn't hurt or feel hot at noon. Middle-thick plain fabric is hot, sweaty and tight to the chest; short middle-thick skirt makes legs moderately cold.\n\n\\*\\*red soft big new\\*\\* — Rated \\*Not so beautiful\\*. Full and beautiful shape but needs a big bra and a waist belt, and gets hot and sweaty at noon; not-diao-dai is comfortable on the shoulder though the long shoulder size may feel hot. Long dress is hot at noon but keeps legs warm at night.\n\n\\*\\*white heavy new\\*\\* — Rated \\*Middle beautiful\\*. Full and warm breast with a big bra; with hugo bra breast looks quite small. Comfortable at night under a fan; long dress generally keeps legs warm, though on some nights the skirt rides out and legs feel cold.\n\n\\*\\*white marry old\\*\\* — Rated \\*Beautiful\\*. Full and warm breast with hugo/big bra and nicely centered; blue big bra makes it look very large. Not-diao-dai keeps the shoulder comfortable. Thick fabric is hot and sweaty but okay under a fan; long dress keeps legs warm, though the short skirt inner sometimes rides up at night.\n\n\\*\\*Note:\\*\\* A few reports had little or no written feedback and only recorded wear time, so they aren't detailed above.\n\nWould you like this broken down further — for example, comparing which items stay coolest at noon or which pair best with each bra?\n\n",
+        "Generated At": "2026-09-03T17:07:34.189Z"
+      },
+      {
+        "Name": "Wardrobe analysis",
+        "Clothes": [
+          {
+            "id": "recn6gXYgMqUMeeWYTK",
+            "title": "apricot french rm30"
+          },
+          {
+            "id": "recypjUzwcK1q7FM7ZT",
+            "title": "pink white dress"
+          },
+          {
+            "id": "recVfcVebzbLiwdkt3v",
+            "title": "pink side flower dress"
+          },
+          {
+            "id": "rec0ULfnedN4SYMZEbJ",
+            "title": "white marry 2"
+          },
+          {
+            "id": "recGvXuJdivPglqFIjv",
+            "title": "Blue side flower dress"
+          },
+          {
+            "id": "recOSpKpLbEecs8OUQY",
+            "title": "blue dress"
+          },
+          {
+            "id": "recKOhVgXyv6hWp62KD",
+            "title": "Hugo bra new 3"
+          },
+          {
+            "id": "reckNHLOvEXjWYXqU5Q",
+            "title": "white marry old"
+          },
+          {
+            "id": "recRtuBZVI8uKUTOGQ9",
+            "title": "purple old bra"
+          },
+          {
+            "id": "recpV4qIbDB2Y5NpqFR",
+            "title": "pink lace old"
+          },
+          {
+            "id": "recaz3oPTZFSSxRHxYb",
+            "title": "blue hanfu"
+          },
+          {
+            "id": "recoyckoIQY51SaaTPG",
+            "title": "white wedding big"
+          },
+          {
+            "id": "recQKpUXmmkdWQJtUcW",
+            "title": "hugo bra new 2\n"
+          },
+          {
+            "id": "recN3cfBC518UKSETER",
+            "title": "yellow diao dai"
+          },
+          {
+            "id": "recgLZARszSZYAw0aCv",
+            "title": "white light new"
+          },
+          {
+            "id": "recLziSBPMW15m5DKqV",
+            "title": "pink flower  rm30"
+          },
+          {
+            "id": "recQHgfFlXroTp1O0kf",
+            "title": "hugo bra"
+          },
+          {
+            "id": "recZwWzBkNef6kcfZMo",
+            "title": "Tshirt"
+          },
+          {
+            "id": "recxYNoZ24nyr0va6c0",
+            "title": "pink old bra"
+          },
+          {
+            "id": "recq2CYGmlzzgKHw6mz",
+            "title": "small bra"
+          },
+          {
+            "id": "rec9zLwCcmwtXbJ63nz",
+            "title": "pink diao dai chiffon"
+          },
+          {
+            "id": "recgsjW8IIs2ilAeIJw",
+            "title": "white rm30"
+          },
+          {
+            "id": "recFOPI41yu8PVHfGPZ",
+            "title": "white marry orange"
+          },
+          {
+            "id": "recfQyGCs8Q60dtLHZc",
+            "title": "pink lady dress"
+          },
+          {
+            "id": "recgCMSlw3iGbLrLxDi",
+            "title": "green dress"
+          },
+          {
+            "id": "recM3wxdqj2ZeVfRNab",
+            "title": "red soft big new"
+          },
+          {
+            "id": "recoEcVvR3ZGvBpxvrh",
+            "title": "pink bridesmaid"
+          },
+          {
+            "id": "recfjyr0whHJaH5G2LD",
+            "title": "blue diao dai thick"
+          },
+          {
+            "id": "recr9oql5R2JkVyFZol",
+            "title": "white baby dress"
+          },
+          {
+            "id": "recoE9SghFMgAH1u9ve",
+            "title": "blue old bra"
+          },
+          {
+            "id": "recPM0b1PpdBQNUk5F9",
+            "title": "Blue french dress"
+          },
+          {
+            "id": "recNvELkXXkpBUPzUqV",
+            "title": "Test2"
+          },
+          {
+            "id": "recPkoFjZK3vDZ3EZv8",
+            "title": "Green diao dai"
+          },
+          {
+            "id": "rec4j9qXCem8rw2popM",
+            "title": "white heavy new"
+          }
+        ],
+        "Analysis Scope": "All 34 clothes",
+        "Report Type": "Wardrobe overview",
+        "Notes": "# Wardrobe Overview\n\n## Scope and data limitations\n\n### Observed facts\n- The requested scope is **34 clothes**, but the supplied source contains **32 complete records and one partially visible record**, **“Green diao dai.”** The source is truncated before that item ends, and the 34th record is not visible.\n- The visible records comprise:\n  - **23 complete dresses**\n  - **7 bras**\n  - **2 T-shirts**\n  - **1 partially supplied dress**\n- The actual linked wearing reports were not included as raw records. Only item-level summaries mention their dates, counts, duplicates, and selected findings.\n- This report incorporates all report-derived information visible in those summaries, but it cannot independently review every linked report or verify omitted details.\n\n### Inference\nThe wardrobe is overwhelmingly dress-focused. The most important recurring issues are heat, loose or unattractive chest construction, incomplete wash tracking, and inconsistent data entry.\n\n---\n\n# 1. Usage and wardrobe value\n\n## Observed facts\n\nThe meaning and time period of **“wearing frequency” are undefined**, so these numbers cannot safely be treated as confirmed wear counts. Nevertheless, the highest recorded values among the complete records are:\n\n- **white marry old — 160**\n- **white baby dress — 150**\n- **pink lady dress — 140**\n- **pink lace old — 106**\n- **green dress — 100**\n- **Blue french dress — 45**\n- **blue dress — 39**\n- **white marry 2 — 37**\n- **pink side flower dress — 30**\n- **Blue side flower dress — 25**\n- **pink diao dai chiffon — 25**\n- **white wedding big — 25**\n\nLow recorded dress values include:\n\n- **pink white dress — 4**\n- **yellow diao dai — 4.5**\n- **white rm30 — 5**\n- **apricot french rm30 — 7**\n- **red soft big new — 8**\n\nAll seven bras have a recorded frequency of **0**, even though several have multiple linked report references:\n\n- **purple old bra — 11 references**\n- **Hugo bra — 8**\n- **small bra — 8**\n- **blue old bra — 7**\n- **pink old bra — 4**\n- **hugo bra new 2 — multiple reports, including a duplicate**\n- **Hugo bra new 3 — no detailed reports supplied**\n\nOther linked-report evidence includes:\n\n- **white marry old:** eight references, apparently seven distinct events because one is duplicated.\n- **Blue side flower dress:** five clothing reports and one related bra report.\n- **pink diao dai chiffon:** four clothing reports, including one marked as a copy.\n- **Blue french dress:** four reports.\n- **blue dress, pink side flower dress, and blue diao dai thick:** three reports each.\n- **apricot french rm30, pink white dress, pink flower rm30, and red soft big new:** two reports each.\n\n## Inference\n\nThe frequency field appears useful as a relative activity indicator for dresses, but it is not reliable enough for exact cost-per-wear calculations. The bra frequency data are clearly inconsistent with their linked reports.\n\nThe strongest combination of high recorded use and generally positive appearance is found in:\n\n- **white marry old**\n- **white baby dress**\n- **pink lace old**\n- **green dress**, subject to fixing the bust\n- **blue dress**\n- **white marry 2**\n\nBy contrast, **pink lady dress** has very high historical use but is now explicitly considered unattractive and possibly disposable. High past use should not automatically justify keeping it if current fit dissatisfaction persists.\n\n---\n\n# 2. Climate, heat, and repeated comfort patterns\n\n## Observed facts\n\nAmong the **23 complete dress records**:\n\n- **17 are rated Hot at noon**\n- **5 are rated Middle**\n- Only **blue dress** is rated **Not hot**\n\nThe partial **Green diao dai** record is rated **Middle**.\n\n### Repeated thick-and-hot pattern\n\nThe following are both thick and hot:\n\n- **white marry 2**\n- **white marry old**\n- **white wedding big**\n- **yellow diao dai**\n- **white rm30**\n- **white marry orange**\n- **red soft big new**\n- **pink bridesmaid**\n- **blue diao dai thick**\n- **white baby dress**\n- **Blue french dress**\n\nSeveral descriptions reinforce the structured fields:\n\n- **red soft big new:** “hot, heavy”\n- **Blue french dress:** becomes hot quickly\n- **white wedding big:** quite hot at night without air conditioning, especially at the upper body\n- **white baby dress:** upper body quite hot at night and hot at noon\n- **white marry old, white marry 2, and white marry orange:** all described as thick, hot dresses\n- **blue hanfu:** hot, irritating, and difficult to wear\n\n### Chiffon does not produce one consistent result\n\nThin, soft chiffon performs better:\n\n- **blue dress:** light, soft, not thick, and **Not hot**\n- **pink side flower dress:** thin and **Middle** heat\n- **pink diao dai chiffon:** thin and **Middle** heat\n\nMedium or thick chiffon performs worse:\n\n- **green dress:** medium chiffon, medium thickness, **Hot**\n- **red soft big new:** thick chiffon, **Hot**, heavy, and slow to dry\n- **Blue french dress:** thick chiffon, **Hot** and quickly overheats\n- **pink lady dress:** drying note mentions chiffon, but it is medium thickness and **Hot**\n\n### Bras show the same thickness pattern\n\nThe three old center-chest bras are repeatedly described as hot at noon:\n\n- **purple old bra**\n- **pink old bra**\n- **blue old bra**\n\nAll are described as thick, and their notes attribute heat to both the material and center-chest coverage. Nighttime comfort is usually acceptable depending on weather.\n\nThe thinner side-open bras are rated **Middle** rather than Hot:\n\n- **Hugo bra**\n- **hugo bra new 2**\n- **small bra**\n\nHowever, all three are said to stick to the body, causing moderate heat.\n\n**Hugo bra new 3** is the only bra rated **Not hot**, but it has no demonstrated wear history or detailed comfort report.\n\n## Inference\n\nThickness and body coverage are more reliable heat predictors than the broad fabric name. Thin chiffon can work well in warm conditions, while thick chiffon performs poorly.\n\nThe wardrobe has a climate mismatch: most dresses are recorded as hot at noon, yet many are still used frequently. A practical rotation should distinguish between:\n\n- warm-weather daytime dresses,\n- air-conditioned or evening dresses,\n- and cooler-weather/night garments.\n\n---\n\n# 3. Fit and appearance patterns\n\n## Observed facts\n\n### Overall appearance distribution for complete dresses\n\n- **8 Beautiful**\n- **9 Middle beautiful**\n- **6 Not so beautiful**\n\nThe partial **Green diao dai** record is marked **Beautiful**.\n\n### Consistently positive upper-body fit\n\nThe following have acceptable sitting bust shape and otherwise favorable appearance:\n\n- **apricot french rm30**\n- **pink side flower dress**\n- **white marry 2**\n- **blue dress**\n- **white marry old**\n- **pink lace old**\n- **white marry orange**\n- **white baby dress**\n\n**white baby dress** has the most complete positive fit record: center chest, sitting breast shape, and side breast shape are all marked acceptable. It is also Beautiful and has a frequency value of 150, although it remains hot.\n\n### Repeated loose-tie or loose-bust problem\n\nA nearly identical standing-fit problem appears across multiple records:\n\n- **blue hanfu**\n- **yellow diao dai**\n- **white light new**\n- **pink lady dress**\n- **green dress**\n- **red soft big new**\n- **blue diao dai thick**\n\nThese records say the bust looks unattractive while standing because of a loose tie or loose construction. Additional evidence includes:\n\n- **green dress:** loose bust and may need a larger or more supportive bra.\n- **blue diao dai thick:** chest looks unattractive without suitable center support; straps also fall easily.\n- **red soft big new:** overall size is too big.\n- **pink lady dress:** waist, sitting bust, and skirt-side appearance are also disliked, so the problem is broader than the tie.\n- **blue hanfu:** hard to wear and irritating in addition to poor chest appearance.\n\n### Wrinkling is a separate repeated appearance problem\n\n- **pink white dress:** many wrinkles around the waist and strap design; rated not so beautiful.\n- **pink flower rm30:** substantial wrinkling around the middle and bust when standing and sitting; rated not so beautiful.\n\n### Shortness and movement\n\n- **pink side flower dress:** sitting length is acceptable, but it becomes short when sleeping or reclining.\n- **pink flower rm30:** skirt is a little short.\n- **pink diao dai chiffon:** explicitly described as short.\n- **Blue french dress:** long skirt rides up easily.\n- **pink bridesmaid:** long skirt can still ride up while sleeping.\n- **Blue side flower dress:** categorized as short, but described as sitting slightly over the knee.\n\n### Shoulder and bra interaction\n\n**pink white dress** has a distinctive repeated comfort problem:\n\n- irritates the shoulders,\n- presses or sticks the bra to the chest,\n- and makes any bra feel hot.\n\nThis is more serious than a purely visual complaint because it affects both comfort and bra performance.\n\n## Inference\n\nThe wardrobe’s central fit issue is not general sizing alone; it is repeated loose or poorly secured bust construction. A supportive bra may help **green dress** and **blue diao dai thick**, but it is less likely to solve the multiple silhouette problems in **pink lady dress** or the overall oversizing of **red soft big new**.\n\nWrinkling should be tested separately from structural fit. If steaming does not improve **pink white dress** or **pink flower rm30**, the issue may be construction or fit rather than care.\n\n---\n\n# 4. Repeated wearing experience by practical role\n\n## Warm-weather strengths\n\n### Observed facts\n- **blue dress:** soft chiffon, light, thin, quick-drying, Beautiful, and the only complete dress rated Not hot.\n- **pink side flower dress:** soft chiffon, thin, feminine, Beautiful, and medium heat, though short in reclining positions.\n- **Blue side flower dress:** thin and moderately warm, with acceptable sitting bust shape.\n- **pink diao dai chiffon:** thin and medium heat, but short and only moderately flattering at the chest.\n- **apricot french rm30:** Beautiful with acceptable sitting and side fit, but climate data conflict between “Hot” and “a little cold at noon.”\n\n### Inference\n**blue dress** is the clearest warm-weather core item. The thin chiffon dresses are generally more practical for heat than the thick dress group.\n\n## Cooler, evening, or air-conditioned strengths\n\n### Observed facts\n- **white marry old, white marry 2, and white marry orange:** Beautiful, long, thick, center-chest dresses with acceptable sitting bust shape, but hot at noon.\n- **white baby dress:** Beautiful and well-fitting, but hot at noon and at the upper body during warm nights.\n- **pink lace old:** Beautiful and highly used, but hot at noon.\n- **green dress:** soft and feminine, but hot and loose at the bust.\n- **Blue french dress:** suitable for nighttime according to its description, but hot, with a loose waist and a skirt that rides up.\n\n### Inference\nThese items are more useful when consciously assigned to cooler times or air-conditioned settings instead of being treated as all-day warm-weather dresses.\n\n## Low-satisfaction candidates\n\n### Observed facts\n- **blue hanfu:** irritating, hot, difficult to wear, unattractive chest fit, and explicitly considered for removal; uniqueness is the only stated reason to retain it.\n- **yellow diao dai:** thick, hot, sleepwear-like, not beautiful, loose chest tie, wet, and marked “may throw.”\n- **pink lady dress:** not beautiful, poor waist and bust appearance, skirt-side shadowing, and marked as a possible discard.\n- **red soft big new:** expensive, hot, heavy, oversized, infrequently worn, wet/slow-drying, and unattractive.\n- **Test2:** description says “may throw,” but it is categorized as a T-shirt while discussing a skirt side, making the record unreliable.\n- **pink white dress:** shoulder irritation and bra-related heat persist alongside low appearance satisfaction.\n\n### Inference\nThe first four are the clearest candidates for a final repair-or-release decision. **Test2** requires identity correction before any decision, while **pink white dress** deserves only a short controlled reassessment because irritation is already documented.\n\n---\n\n# 5. Wash and drying status\n\n## Immediate wash priorities\n\n### Observed facts\nRecorded unwashed times are:\n\n1. **hugo bra new 2 — 37:00**\n2. **Blue french dress — 19:00**\n3. **purple old bra — 17:30**\n4. **pink diao dai chiffon — 12:00**\n5. **pink side flower dress — 10:00**\n6. **white marry old — 10:00**\n7. **Blue side flower dress — 8:00**\n\nAll other complete records either show **0:00** or have no wash-time data.\n\nEvery visible record has **trackedWashes: 0**, including items with substantial unwashed time and numerous linked wear reports.\n\n## Wet or incompletely dried items\n\n### Observed facts\n- **white wedding big — wet**\n- **yellow diao dai — wet**\n- **red soft big new — wet**\n- **pink bridesmaid — wet**\n- **Blue french dress — little wet**\n\nThe reasons are incomplete except:\n\n- **pink bridesmaid:** wet because of a thick middle section.\n- **red soft big new:** explicitly not easy to dry.\n- **Blue french dress:** simply recorded as “little wet.”\n\n## Inference\n\nThe urgent care problem is not only washing. Wet and partly wet garments should be fully dried before storage, regardless of their 0:00 unwashed timer.\n\nThe universal zero in **trackedWashes** means the database does not provide a dependable care history. “0:00” should not be interpreted as proof that an item is clean; it may instead indicate a reset, missing entry, or untracked wear.\n\n---\n\n# 6. Bras\n\n## Observed facts\n\n### Old center-chest group\n- **purple old bra, pink old bra, and blue old bra**\n- All are Beautiful, thick, center-chest, dry, and Hot at noon.\n- Their repeated note says nighttime use is usually acceptable depending on weather.\n- **purple old bra** has 17:30 unwashed time and 11 report references.\n\n### Side-open group\n- **Hugo bra, hugo bra new 2, and small bra**\n- All are Beautiful, not very thick, and Middle heat.\n- All stick to the body and become moderately hot.\n- **hugo bra new 2** has 37:00 unwashed time.\n- **small bra** is described as fragile and prone to breaking after washing.\n\n### Untested or under-documented group\n- **Hugo bra new 3**\n- Beautiful, Not hot, dry, but frequency is 0 and detailed fit information is absent.\n\n## Inference\n\nThe old thick bras are usable as cooler-weather or evening bras, but age, elastic condition, and support need inspection. The side-open bras appear more breathable than the old bras, but body sticking remains a repeated limitation.\n\n**Hugo bra new 3** may fill a warm-weather gap, but it needs an actual trial before it can be considered a reliable replacement.\n\n---\n\n# 7. Missing and contradictory data\n\n## Major contradictions\n\n- **Requested 34 items vs supplied data:** only 32 complete items plus one partial item are visible.\n- **Bra frequency:** all bras show frequency 0 despite numerous linked wearing reports.\n- **apricot french rm30:** noon heat is Hot, but the description says it felt a little cold at noon.\n- **white rm30:** classified as thick and Hot at noon but cold in air conditioning without a blanket.\n- **pink bridesmaid:** long skirt is described as thin, while the garment and middle section are recorded as thick.\n- **yellow diao dai:** the name suggests “diao dai,” but the straps field says “not diao dai.”\n- **Blue side flower dress:** categorized as short but described as sitting over the knee.\n- **Blue french dress:** appearance text says sitting/sleeping bust fit is acceptable, while sitting fit is “?”\n- Several **sittingFit** fields actually contain standing-fit comments.\n- **Test2:** categorized as a T-shirt but discusses a skirt side.\n- **pink flower rm30:** the name implies “rm30,” while the summarized price is $40; currency and price source are unclear.\n- Drying reasons such as **“maybe not wet”** and **“maybe dry due to plain thick”** are uncertain rather than measured observations.\n\n## Broad missing fields\n\n- Side fit is missing for nearly every item; **white baby dress** and **apricot french rm30** are notable exceptions.\n- Material is missing for many dresses and most bras.\n- Care-label instructions are absent.\n- Appearance reasons are often blank even where appearance ratings are supplied.\n- Prices are mentioned in AI summaries but are not present in the visible base fields, so they cannot be independently verified.\n- Duration, sweat, odor, irritation, and extended comfort are not consistently captured.\n- “May throw” and last-action fields are usually blank.\n- Raw linked wearing-report text is unavailable, preventing direct comparison of each event.\n\n---\n\n# Prioritized actionable recommendations\n\n1. **Wash the highest-duration items first.**  \n   Wash **hugo bra new 2 (37:00)**, **Blue french dress (19:00)**, **purple old bra (17:30)**, **pink diao dai chiffon (12:00)**, **pink side flower dress (10:00)**, **white marry old (10:00)**, and **Blue side flower dress (8:00)** before further wear.\n\n2. **Fully dry every wet item before storage.**  \n   Prioritize **white wedding big, yellow diao dai, red soft big new, pink bridesmaid**, and **Blue french dress**. Give extra airflow and drying time to the thick middle or thick-chiffon areas.\n\n3. **Use a climate-based rotation.**  \n   Make **blue dress** the primary documented hot-weather option. Use thin chiffon dresses in mild or warm conditions. Reserve the thick “white marry” dresses, lace dresses, **white baby dress**, **green dress**, and **Blue french dress** for cooler, evening, or air-conditioned use.\n\n4. **Conduct one focused fit trial for the loose-bust group.**  \n   Test **green dress** and **blue diao dai thick** with a supportive bra and secured tie. Test **white light new** after tightening the tie. Record standing, sitting, and side fit separately rather than putting standing comments in the sitting field.\n\n5. **Make final repair-or-release decisions on the clearest low-satisfaction items.**  \n   - **yellow diao dai:** release if one cool indoor trial does not improve the loose fit or appearance.\n   - **blue hanfu:** keep only if its uniqueness justifies the irritation, heat, and difficult dressing.\n   - **pink lady dress:** alter or release if tie adjustment does not fix the waist, bust, and skirt-side problems.\n   - **red soft big new:** consider resale or donation if a low-cost size adjustment does not resolve its heat, weight, fit, and low-use problems.\n\n6. **Limit another trial of pink white dress to a short, cool setting.**  \n   If shoulder irritation and bra-related heat recur, remove it from regular rotation; repeated physical irritation outweighs its attractive upper-bust view.\n\n7. **Inspect the old and fragile bras.**  \n   Check the elastic, cups, seams, side coverage, and straps of **purple old bra, pink old bra, blue old bra**, and especially **small bra**. Retire any bra with weakened elastic, tears, or insecure side coverage. Wash **small bra** gently because its material is reported to break easily.\n\n8. **Trial Hugo bra new 3 for warm weather.**  \n   Its Not-hot rating is promising, but record total duration, sweat, body sticking, strap comfort, center and side coverage, and seated fit before relying on it.\n\n9. **Correct the database before calculating value or disposal priority.**  \n   Define “wearing frequency,” reconcile bra frequencies with linked reports, remove duplicate report links, identify **Test2** correctly, complete **Green diao dai**, supply the missing 34th record, and record actual wash events. Until then, treat all cost-per-wear figures as provisional rather than factual.",
+        "Generated At": "2026-09-03T17:07:34.189Z",
+        "Status": "Done"
+      }
+    ]
+  },
+  "Wearing App Users": {
+    "id": "tblYNGw22tLx2yBcUAc",
+    "fieldsCount": 3,
+    "recordsCount": 5,
+    "fields": [
+      {
+        "name": "Name",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Wardrobe Presets",
+        "type": "longText"
+      },
+      {
+        "name": "Email",
+        "type": "singleLineText"
+      }
+    ],
+    "views": [
+      {
+        "name": "Authorized Users",
+        "type": "grid"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Name": "Yih Hein Chai",
+        "Email": "xchai2005@gmail.com"
+      },
+      {
+        "Name": "Xlee",
+        "Email": "2017xlee@gmail.com"
+      },
+      {
+        "Name": "Xchaiwork",
+        "Email": "xchaiwork@gmail.com"
+      }
+    ]
+  },
+  "Wardrobe App Presets": {
+    "id": "tblZfZ130UwonyLaizY",
+    "fieldsCount": 7,
+    "recordsCount": 7,
+    "fields": [
+      {
+        "name": "Preset Key",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Preset ID",
+        "type": "singleLineText"
+      },
+      {
+        "name": "User Email",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Table Key",
+        "type": "singleSelect",
+        "options": [
+          "Clothes",
+          "Reports"
+        ]
+      },
+      {
+        "name": "State JSON",
+        "type": "longText"
+      },
+      {
+        "name": "Updated At",
+        "type": "singleLineText"
+      },
+      {
+        "name": "Preset Name",
+        "type": "singleLineText"
+      }
+    ],
+    "views": [
+      {
+        "name": "Grid view",
+        "type": "grid"
+      }
+    ],
+    "sampleRecords": [
+      {
+        "Preset Key": "benc.2026.1@gmail.com:clothes:saved-clothes-1787714199707",
+        "Preset ID": "saved-clothes-1787714199707",
+        "User Email": "benc.2026.1@gmail.com",
+        "Table Key": "Clothes",
+        "State JSON": "{\"fifthGroup\":null,\"fifthDirection\":\"asc\",\"primary\":\"Clothes_Type\",\"primaryDirection\":\"desc\",\"subgroup\":\"wet\",\"subgroupDirection\":\"asc\",\"thirdGroup\":\"beautiful\",\"thirdDirection\":\"asc\",\"fourthGroup\":null,\"fourthDirection\":\"asc\",\"sorts\":[{\"field\":\"Hot_at_noon\",\"direction\":\"asc\"}],\"visibleFields\":[\"Name\",\"wet\",\"beautiful\",\"Hot_at_noon\",\"price\",\"wearing_frequency\",\"Clothes_Type\",\"wet_reason\",\"beatiful_reason\",\"thick_clothes\",\"material\",\"long_dress\",\"diao_dai\",\"center_chest\",\"sit_breast_ok\",\"side_breast_ok\",\"total_clothes_unwash_time_hour_mins\",\"total_unwash_bra_time_hour_mins\",\"may_throw\",\"last_comment_or_action\",\"Descriptions\",\"Descriptions_2\",\"tags\",\"created\",\"Full_Clothes_Wearing_Report\",\"Full_Bra_Wearing_Report\"]}",
+        "Updated At": "0",
+        "Preset Name": "Initial1"
+      },
+      {
+        "Preset Key": "benc.2026.1@gmail.com:clothes:viwvcVzajcEIU4FvZG5",
+        "Preset ID": "viwvcVzajcEIU4FvZG5",
+        "User Email": "benc.2026.1@gmail.com",
+        "Table Key": "Clothes",
+        "State JSON": "{\"fifthGroup\":null,\"fifthDirection\":\"asc\",\"primary\":\"Clothes_Type\",\"primaryDirection\":\"desc\",\"subgroup\":\"wet\",\"subgroupDirection\":\"asc\",\"thirdGroup\":\"beautiful\",\"thirdDirection\":\"asc\",\"fourthGroup\":null,\"fourthDirection\":\"asc\",\"sorts\":[{\"field\":\"Hot_at_noon\",\"direction\":\"asc\"}],\"visibleFields\":[\"Name\",\"Clothes_Type\",\"wet\",\"beautiful\",\"Hot_at_noon\",\"total_clothes_unwash_time_hour_mins\",\"price\",\"wearing_frequency\",\"wet_reason\",\"beatiful_reason\",\"thick_clothes\",\"material\",\"long_dress\",\"diao_dai\",\"center_chest\",\"sit_breast_ok\",\"side_breast_ok\",\"total_unwash_bra_time_hour_mins\",\"last_comment_or_action\",\"Descriptions_2\",\"may_throw\",\"Descriptions\",\"tags\",\"created\",\"Full_Clothes_Wearing_Report\",\"Full_Bra_Wearing_Report\"]}",
+        "Updated At": "0",
+        "Preset Name": "Type, dry & appearance"
+      },
+      {
+        "Preset Key": "benc.2026.1@gmail.com:clothes:saved-clothes-1787721018178",
+        "Preset ID": "saved-clothes-1787721018178",
+        "User Email": "benc.2026.1@gmail.com",
+        "Table Key": "Clothes",
+        "State JSON": "{\"fifthGroup\":null,\"fifthDirection\":\"asc\",\"primary\":\"Clothes_Type\",\"primaryDirection\":\"desc\",\"subgroup\":\"wet\",\"subgroupDirection\":\"asc\",\"thirdGroup\":\"beautiful\",\"thirdDirection\":\"asc\",\"fourthGroup\":\"long_dress\",\"fourthDirection\":\"asc\",\"sorts\":[{\"field\":\"Hot_at_noon\",\"direction\":\"asc\"}],\"visibleFields\":[\"Name\",\"wet\",\"beautiful\",\"Hot_at_noon\",\"price\",\"wearing_frequency\",\"Clothes_Type\",\"wet_reason\",\"beatiful_reason\",\"thick_clothes\",\"material\",\"long_dress\",\"diao_dai\",\"center_chest\",\"sit_breast_ok\",\"side_breast_ok\",\"total_clothes_unwash_time_hour_mins\",\"total_unwash_bra_time_hour_mins\",\"may_throw\",\"last_comment_or_action\",\"Descriptions\",\"Descriptions_2\",\"tags\",\"created\",\"Full_Clothes_Wearing_Report\",\"Full_Bra_Wearing_Report\"]}",
+        "Updated At": "0",
+        "Preset Name": "Initial test 2"
+      }
+    ]
+  }
+}

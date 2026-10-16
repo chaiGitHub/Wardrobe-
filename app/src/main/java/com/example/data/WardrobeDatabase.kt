@@ -11,7 +11,7 @@ import com.example.data.model.ReportEntity
 
 @Database(
     entities = [GarmentEntity::class, ReportEntity::class, JunctionEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class WardrobeDatabase : RoomDatabase() {
@@ -45,6 +45,16 @@ abstract class WardrobeDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : androidx.room.migration.Migration(3, 4) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE clothes ADD COLUMN sitBreastGatherBra TEXT NOT NULL DEFAULT ''")
+                db.execSQL("ALTER TABLE clothes ADD COLUMN sitBreastSideOutBra TEXT NOT NULL DEFAULT ''")
+
+                // Migrate historical sitBreast to sitBreastGatherBra (user decision: Map existing data to sit breast with 聚拢 bra)
+                db.execSQL("UPDATE clothes SET sitBreastGatherBra = sitBreast WHERE (sitBreastGatherBra IS NULL OR sitBreastGatherBra = '') AND (sitBreast IS NOT NULL AND sitBreast != '')")
+            }
+        }
+
         fun getDatabase(context: Context): WardrobeDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -52,7 +62,7 @@ abstract class WardrobeDatabase : RoomDatabase() {
                     WardrobeDatabase::class.java,
                     "wardrobe_database"
                 )
-                .addMigrations(MIGRATION_2_3)
+                .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
                 .fallbackToDestructiveMigration()
                 .build()
                 INSTANCE = instance
