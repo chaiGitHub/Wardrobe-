@@ -650,7 +650,7 @@ private fun GarmentLaundryCard(
                         AsyncImage(
                             model = imageModel,
                             contentDescription = garment.name,
-                            contentScale = ContentScale.Crop,
+                            contentScale = ContentScale.Fit,
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {

@@ -1473,7 +1473,7 @@ fun GarmentDetailDialog(
                                                     AsyncImage(
                                                         model = model,
                                                         contentDescription = "Garment photo",
-                                                        contentScale = ContentScale.Crop,
+                                                        contentScale = ContentScale.Fit,
                                                         modifier = Modifier.fillMaxSize()
                                                     )
                                                 } else {

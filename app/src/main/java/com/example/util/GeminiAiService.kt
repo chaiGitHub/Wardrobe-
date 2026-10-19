@@ -56,8 +56,9 @@ object GeminiAiService {
         if (customKey.isNotBlank()) return customKey
 
         val buildKey = try {
-            BuildConfig.GEMINI_API_KEY.trim()
-        } catch (_: Exception) {
+            val field = BuildConfig::class.java.getField("GEMINI_API_KEY")
+            (field.get(null) as? String)?.trim().orEmpty()
+        } catch (_: Throwable) {
             ""
         }
         if (buildKey.isNotBlank() &&

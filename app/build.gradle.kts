@@ -13,11 +13,11 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.aistudio.wardrobe.kxmpzq"
-    minSdk = 24
+    applicationId = "com.example"
+    minSdk = 26
     targetSdk = 36
-    versionCode = 2
-    versionName = "1.0.1"
+    versionCode = 1
+    versionName = "1.0"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -30,14 +30,11 @@ android {
       keyAlias = "upload"
       keyPassword = System.getenv("KEY_PASSWORD")
     }
-    val rootDebugKeystore = file("${rootDir}/debug.keystore")
-    if (rootDebugKeystore.exists()) {
-      getByName("debug") {
-        storeFile = rootDebugKeystore
-        storePassword = "android"
-        keyAlias = "androiddebugkey"
-        keyPassword = "android"
-      }
+    create("debugConfig") {
+      storeFile = file("${rootDir}/debug.keystore")
+      storePassword = "android"
+      keyAlias = "androiddebugkey"
+      keyPassword = "android"
     }
   }
 
@@ -48,9 +45,7 @@ android {
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       signingConfig = signingConfigs.getByName("release")
     }
-    debug {
-      signingConfig = signingConfigs.getByName("debug")
-    }
+    debug { signingConfig = signingConfigs.getByName("debugConfig") }
   }
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_11
@@ -138,4 +133,19 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
+}
+
+base {
+  archivesName.set("myward2")
+}
+
+tasks.register<Copy>("copyApkToTarget") {
+  from(layout.buildDirectory.dir("outputs/apk/debug"))
+  include("*.apk")
+  into(rootProject.file("apk"))
+  rename { "myward2.apk" }
+}
+
+tasks.matching { it.name == "assembleDebug" }.configureEach {
+  finalizedBy("copyApkToTarget")
 }

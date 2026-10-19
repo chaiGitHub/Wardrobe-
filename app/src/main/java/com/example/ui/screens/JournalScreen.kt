@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.EventNote
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -44,6 +46,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -80,6 +83,7 @@ import com.example.ui.dialogs.formatReportDate
 import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
+import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate600
@@ -182,34 +186,39 @@ fun JournalScreen(
 
     Box(modifier = modifier.fillMaxSize().background(Color(0xFFF8FAFC))) {
         if (viewMode == "calendar") {
-            Column(modifier = Modifier.fillMaxSize()) {
-                JournalHeaderCard(
-                    viewMode = viewMode,
-                    onViewModeChange = { viewMode = it },
-                    searchQuery = searchQuery,
-                    onSearchChange = { searchQuery = it },
-                    groupMode = groupMode,
-                    onGroupModeChange = { groupMode = it },
-                    onLogOutfitClick = onAddReportClick,
-                    onDeduplicateClick = { onDeduplicateClick?.invoke() }
-                )
-                WearCalendar(
-                    reports = reports,
-                    junctions = junctions,
-                    clothes = clothes,
-                    onSelectReport = { selectedReportForModal = it },
-                    onSelectGarment = { garment -> onSelectGarment?.invoke(garment) },
-                    onOpenLogModal = { _ -> onAddReportClick() },
-                    onMarkGarmentWashed = onMarkGarmentWashed,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp)
-                )
-            }
+            WearCalendar(
+                reports = reports,
+                junctions = junctions,
+                clothes = clothes,
+                onSelectReport = { selectedReportForModal = it },
+                onSelectGarment = { garment -> onSelectGarment?.invoke(garment) },
+                onOpenLogModal = { _ -> onAddReportClick() },
+                onMarkGarmentWashed = onMarkGarmentWashed,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp),
+                headerContent = {
+                    JournalHeaderCard(
+                        viewMode = viewMode,
+                        onViewModeChange = { viewMode = it },
+                        searchQuery = searchQuery,
+                        onSearchChange = { searchQuery = it },
+                        groupMode = groupMode,
+                        onGroupModeChange = { groupMode = it },
+                        onLogOutfitClick = onAddReportClick,
+                        onDeduplicateClick = { onDeduplicateClick?.invoke() }
+                    )
+                }
+            )
         } else {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = if (isWide) 8.dp else 6.dp, vertical = 6.dp),
+                contentPadding = PaddingValues(
+                    start = if (isWide) 8.dp else 6.dp,
+                    end = if (isWide) 8.dp else 6.dp,
+                    top = 6.dp,
+                    bottom = 96.dp
+                ),
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 // 1. Top Header Card (IMG_9718)
@@ -705,21 +714,45 @@ private fun JournalHeaderCard(
                     Text(
                         text = "Search report by name, sensory notes, or clothes...",
                         fontSize = 13.sp,
-                        color = Slate400,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF475569),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                 },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Search",
+                        tint = Color(0xFF475569),
+                        modifier = Modifier.size(18.dp)
+                    )
+                },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { onSearchChange("") }, modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear",
+                                tint = Slate500,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                },
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .heightIn(min = 48.dp)
                     .testTag("journal_search_input"),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF4F46E5),
-                    unfocusedBorderColor = Slate200,
+                    unfocusedBorderColor = Slate300,
                     focusedContainerColor = Color(0xFFF8FAFC),
-                    unfocusedContainerColor = Color(0xFFF8FAFC)
+                    unfocusedContainerColor = Color(0xFFF8FAFC),
+                    focusedTextColor = Slate900,
+                    unfocusedTextColor = Slate900
                 )
             )
 

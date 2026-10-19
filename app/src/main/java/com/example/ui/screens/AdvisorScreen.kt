@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -90,6 +91,7 @@ import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.BrandPurpleLight
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
+import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate600
@@ -584,16 +586,21 @@ fun AdvisorScreen(
                         OutlinedTextField(
                             value = macroCandidateSearch,
                             onValueChange = { macroCandidateSearch = it },
-                            placeholder = { Text("搜索候选衣物名称或材质...", fontSize = 11.sp, color = Slate400) },
+                            placeholder = { Text("搜索候选衣物名称或材质...", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF475569), modifier = Modifier.size(16.dp))
+                            },
                             singleLine = true,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier.weight(1f).heightIn(min = 48.dp),
                             shape = RoundedCornerShape(10.dp),
-                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Slate900),
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, color = Slate900),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedContainerColor = Color(0xFFF8FAFC),
                                 focusedContainerColor = Color.White,
-                                unfocusedBorderColor = Slate200,
-                                focusedBorderColor = BrandPurple
+                                unfocusedBorderColor = Slate300,
+                                focusedBorderColor = BrandPurple,
+                                focusedTextColor = Slate900,
+                                unfocusedTextColor = Slate900
                             )
                         )
                     }
@@ -1161,18 +1168,24 @@ fun AdvisorScreen(
                     OutlinedTextField(
                         value = clothesSearchQuery,
                         onValueChange = { clothesSearchQuery = it },
-                        placeholder = { Text("搜索衣物名称、材质或属性...", fontSize = 12.sp, color = Slate400) },
+                        placeholder = { Text("搜索衣物名称、材质或属性...", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF475569), modifier = Modifier.size(16.dp))
+                        },
                         singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .heightIn(min = 48.dp)
                             .testTag("audit_garment_search"),
                         shape = RoundedCornerShape(10.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Slate900),
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, color = Slate900),
                         colors = OutlinedTextFieldDefaults.colors(
                             unfocusedContainerColor = Color(0xFFF8FAFC),
                             focusedContainerColor = Color.White,
-                            unfocusedBorderColor = Slate200,
-                            focusedBorderColor = BrandPurple
+                            unfocusedBorderColor = Slate300,
+                            focusedBorderColor = BrandPurple,
+                            focusedTextColor = Slate900,
+                            unfocusedTextColor = Slate900
                         )
                     )
 
@@ -1456,11 +1469,22 @@ fun AdvisorScreen(
                     OutlinedTextField(
                         value = reportSearchQuery,
                         onValueChange = { reportSearchQuery = it },
-                        placeholder = { Text("搜索穿搭报告名称或日期...", fontSize = 12.sp, color = Slate400) },
+                        placeholder = { Text("搜索穿搭报告名称或日期...", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569)) },
+                        leadingIcon = {
+                            Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF475569), modifier = Modifier.size(16.dp))
+                        },
                         singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
                         shape = RoundedCornerShape(10.dp),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 12.sp, color = Slate900)
+                        textStyle = androidx.compose.ui.text.TextStyle(fontSize = 13.sp, color = Slate900),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedContainerColor = Color(0xFFF8FAFC),
+                            focusedContainerColor = Color.White,
+                            unfocusedBorderColor = Slate300,
+                            focusedBorderColor = BrandPurple,
+                            focusedTextColor = Slate900,
+                            unfocusedTextColor = Slate900
+                        )
                     )
 
                     val filteredReports = remember(reports, reportSearchQuery) {

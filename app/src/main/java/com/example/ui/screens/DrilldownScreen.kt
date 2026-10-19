@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -78,6 +79,7 @@ import com.example.data.model.*
 import com.example.ui.drilldown.ALL_AVAILABLE_FIELDS
 import com.example.ui.drilldown.DEFAULT_DRILL_PRESETS
 import com.example.ui.drilldown.DrillPreset
+import com.example.ui.drilldown.ReportFieldDef
 import com.example.ui.drilldown.DrillRecordCard
 import com.example.ui.drilldown.DrillRecordRow
 import com.example.ui.drilldown.DrilldownBreadcrumb
@@ -85,7 +87,6 @@ import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.drilldown.GroupSummary
 import com.example.ui.drilldown.PresetEditorModal
 import com.example.ui.drilldown.ReportPresetService
-import com.example.ui.drilldown.ReportFieldDef
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.ChevronRight
@@ -162,11 +163,6 @@ fun DrilldownScreen(
     var activePresetId by remember { mutableStateOf(presetService.getActivePresetId()) }
     val currentPreset = remember(presets, activePresetId) {
         presets.find { it.id == activePresetId } ?: presets.firstOrNull() ?: DEFAULT_DRILL_PRESETS.first()
-    }
-
-    androidx.compose.runtime.LaunchedEffect(clothes.size, reports.size) {
-        presets = presetService.getPresets()
-        activePresetId = presetService.getActivePresetId()
     }
     var showPresetEditor by remember { mutableStateOf(false) }
     var drillPath by remember(currentPreset.id) { mutableStateOf<List<DrilldownBreadcrumb>>(emptyList()) }
@@ -337,14 +333,14 @@ fun DrilldownScreen(
         val isWide = isTablet || isLaptop
 
         val subgroupColumns = when {
-            screenWidth >= 1000.dp -> 3
-            screenWidth >= 550.dp -> 2
+            screenWidth >= 1200.dp -> 3
+            screenWidth >= 640.dp -> 2
             else -> 1
         }
         val recordColumns = when {
-            screenWidth >= 1100.dp -> 4
-            screenWidth >= 800.dp -> 3
-            screenWidth >= 550.dp -> 2
+            screenWidth >= 1400.dp -> 4
+            screenWidth >= 1000.dp -> 3
+            screenWidth >= 640.dp -> 2
             else -> 1
         }
 
@@ -353,10 +349,12 @@ fun DrilldownScreen(
                 .widthIn(max = 1440.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = if (isWide) 8.dp else 6.dp,
-                vertical = 6.dp
+                start = if (isWide) 20.dp else 10.dp,
+                end = if (isWide) 20.dp else 10.dp,
+                top = 8.dp,
+                bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // 1. COMPACT HEADER & CONTROLS CARD
             item {
@@ -740,7 +738,7 @@ fun DrilldownScreen(
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(44.dp)
+                                .defaultMinSize(minHeight = 48.dp)
                         )
                     }
                 }
@@ -1020,7 +1018,7 @@ private fun DrilldownSearchField(
                 }
             }
         } else null,
-        modifier = modifier.height(44.dp),
+        modifier = modifier.defaultMinSize(minHeight = 48.dp),
         singleLine = true,
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -1182,7 +1180,7 @@ private fun DrilldownGarmentTreeCard(
                             AsyncImage(
                                 model = resolvedPhoto,
                                 contentDescription = garment.name,
-                                contentScale = ContentScale.Crop,
+                                contentScale = ContentScale.Fit,
                                 modifier = Modifier.fillMaxSize()
                             )
                         } else {
@@ -1732,7 +1730,7 @@ private fun DrilldownSplitGarmentExplorer(
                                             AsyncImage(
                                                 model = resolvedPhoto,
                                                 contentDescription = g.name,
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
                                             )
                                         } else {
@@ -1826,7 +1824,7 @@ private fun DrilldownSplitGarmentExplorer(
                                     AsyncImage(
                                         model = resolvedPhoto,
                                         contentDescription = activeGarment.name,
-                                        contentScale = ContentScale.Crop,
+                                        contentScale = ContentScale.Fit,
                                         modifier = Modifier.fillMaxSize()
                                     )
                                 } else {
@@ -2247,7 +2245,7 @@ private fun DrilldownFlatTableView(
                                 AsyncImage(
                                     model = resolvedPhoto,
                                     contentDescription = garment.name,
-                                    contentScale = ContentScale.Crop,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
@@ -2457,10 +2455,9 @@ private fun SubgroupCard(
                             }
                         }
                     }
-                    val desc = fieldDef?.description.orEmpty()
-                    if (desc.isNotBlank()) {
+                    if (!fieldDef?.description.isNullOrBlank()) {
                         Text(
-                            text = desc,
+                            text = fieldDef?.description ?: "",
                             fontSize = 10.sp,
                             color = Slate500,
                             maxLines = 1,
@@ -2473,7 +2470,8 @@ private fun SubgroupCard(
                     // Subgroup Value & Count Badges
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
                             text = if (isUndefined) "undefined" else sg.value,
@@ -2481,7 +2479,8 @@ private fun SubgroupCard(
                             fontWeight = FontWeight.Bold,
                             color = if (isUndefined) Slate500 else Slate900,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
                         Surface(
                             shape = RoundedCornerShape(6.dp),
@@ -2492,6 +2491,8 @@ private fun SubgroupCard(
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.SemiBold,
                                 color = Color(0xFF065F46),
+                                maxLines = 1,
+                                softWrap = false,
                                 modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                             )
                         }
@@ -2505,6 +2506,8 @@ private fun SubgroupCard(
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.SemiBold,
                                     color = Color(0xFF92400E),
+                                    maxLines = 1,
+                                    softWrap = false,
                                     modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                 )
                             }

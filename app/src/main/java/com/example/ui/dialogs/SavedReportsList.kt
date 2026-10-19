@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -426,29 +427,30 @@ fun AllAiReportsArchiveView(
                 placeholder = {
                     Text(
                         text = "搜索报告标题、衣物或内容...",
-                        fontSize = 12.sp,
-                        color = Slate400
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF475569)
                     )
                 },
                 leadingIcon = {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search",
-                        tint = Slate400,
-                        modifier = Modifier.size(16.dp)
+                        tint = Color(0xFF475569),
+                        modifier = Modifier.size(18.dp)
                     )
                 },
                 trailingIcon = {
                     if (searchQuery.isNotBlank()) {
                         IconButton(
                             onClick = { searchQuery = "" },
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(24.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Close,
                                 contentDescription = "Clear",
-                                tint = Slate400,
-                                modifier = Modifier.size(14.dp)
+                                tint = Slate500,
+                                modifier = Modifier.size(16.dp)
                             )
                         }
                     }
@@ -459,11 +461,13 @@ fun AllAiReportsArchiveView(
                     focusedContainerColor = Color(0xFFF8FAFC),
                     unfocusedContainerColor = Color(0xFFF8FAFC),
                     focusedBorderColor = Color(0xFF9333EA),
-                    unfocusedBorderColor = Slate200
+                    unfocusedBorderColor = Slate300,
+                    focusedTextColor = Slate900,
+                    unfocusedTextColor = Slate900
                 ),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(46.dp)
+                    .heightIn(min = 48.dp)
                     .testTag("archive_search_input")
             )
 

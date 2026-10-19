@@ -101,7 +101,7 @@ fun DrillRecordRow(
                     AsyncImage(
                         model = firstPhotoModel,
                         contentDescription = garment.name,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {

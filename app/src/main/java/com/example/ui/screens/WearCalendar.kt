@@ -131,7 +131,8 @@ fun WearCalendar(
     onSelectGarment: (GarmentEntity) -> Unit,
     onOpenLogModal: (String) -> Unit,
     onMarkGarmentWashed: ((String, String) -> Unit)? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    headerContent: (@Composable () -> Unit)? = null
 ) {
     val context = LocalContext.current
 
@@ -218,9 +219,15 @@ fun WearCalendar(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC)),
-        contentPadding = PaddingValues(bottom = 16.dp),
+        contentPadding = PaddingValues(bottom = 88.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (headerContent != null) {
+            item {
+                headerContent()
+            }
+        }
+
         // =========================================================================
         // 1. UNIFIED MAIN CALENDAR CARD (Matching WearCalendar.tsx / Ky)
         // =========================================================================
@@ -379,7 +386,9 @@ fun WearCalendar(
                                 border = BorderStroke(1.dp, Slate200.copy(alpha = 0.6f))
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(3.dp),
+                                    modifier = Modifier
+                                        .horizontalScroll(rememberScrollState())
+                                        .padding(3.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                                 ) {
@@ -423,7 +432,9 @@ fun WearCalendar(
                                                     text = mode.label,
                                                     fontSize = 11.sp,
                                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                                    color = if (isSelected) Slate900 else Slate600
+                                                    color = if (isSelected) Slate900 else Slate600,
+                                                    maxLines = 1,
+                                                    softWrap = false
                                                 )
                                             }
                                         }
@@ -1376,7 +1387,7 @@ private fun SelectedDateInspectorPanel(
                                                     AsyncImage(
                                                         model = photoModel,
                                                         contentDescription = g.name,
-                                                        contentScale = ContentScale.Crop,
+                                                        contentScale = ContentScale.Fit,
                                                         modifier = Modifier.fillMaxSize()
                                                     )
                                                 } else {
@@ -1495,7 +1506,7 @@ private fun SelectedDateInspectorPanel(
                                             AsyncImage(
                                                 model = photoModel,
                                                 contentDescription = item.garment.name,
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
                                             )
                                         } else {

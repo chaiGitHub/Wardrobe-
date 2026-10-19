@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -287,15 +288,15 @@ fun ClosetScreen(
 
         // Calculate responsive column counts for Cards and Grid modes matching webapp WardrobeStudio grid
         val cardsColumns = when {
-            screenWidth >= 1100.dp -> 4
-            screenWidth >= 800.dp -> 3
-            screenWidth >= 550.dp -> 2
+            screenWidth >= 1400.dp -> 4
+            screenWidth >= 980.dp -> 3
+            screenWidth >= 640.dp -> 2
             else -> 1
         }
         val gridColumns = when {
-            screenWidth >= 1100.dp -> 5
-            screenWidth >= 800.dp -> 4
-            screenWidth >= 550.dp -> 3
+            screenWidth >= 1200.dp -> 5
+            screenWidth >= 960.dp -> 4
+            screenWidth >= 600.dp -> 3
             else -> 2
         }
 
@@ -304,10 +305,12 @@ fun ClosetScreen(
                 .widthIn(max = 1440.dp)
                 .fillMaxSize(),
             contentPadding = PaddingValues(
-                horizontal = if (isWide) 8.dp else 6.dp,
-                vertical = 6.dp
+                start = if (isWide) 24.dp else 14.dp,
+                end = if (isWide) 24.dp else 14.dp,
+                top = 16.dp,
+                bottom = 96.dp
             ),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             // 1. HEADER ROW: Title + Stats on Left, [Cards | Grid | Table] Switcher on Right (Screenshot 222706)
             item {
@@ -443,8 +446,8 @@ fun ClosetScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(
-                        modifier = Modifier.padding(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         // Category Pills + [Select Mode] + [Add Clothes] Buttons (Responsive for Compact/Wide)
                         if (isWide) {
@@ -1059,7 +1062,7 @@ private fun ClosetSearchField(
         },
         singleLine = true,
         modifier = modifier
-            .height(44.dp)
+            .defaultMinSize(minHeight = 48.dp)
             .testTag("search_by_name_input"),
         shape = RoundedCornerShape(12.dp),
         colors = OutlinedTextFieldDefaults.colors(
@@ -1142,7 +1145,7 @@ fun GarmentStudioCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(165.dp)
+                    .height(220.dp)
                     .background(Color(0xFFF1F5F9))
             ) {
                 // Selection Checkbox in Select Mode
@@ -1173,7 +1176,7 @@ fun GarmentStudioCard(
                     AsyncImage(
                         model = resolvedPhotoModel,
                         contentDescription = garment.name,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -1343,8 +1346,8 @@ fun GarmentStudioCard(
 
             // Lower Card Body
             Column(
-                modifier = Modifier.padding(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                modifier = Modifier.padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 // Title
                 Text(
@@ -1632,7 +1635,7 @@ fun GarmentCompactGridCard(
                     AsyncImage(
                         model = resolvedPhotoModel,
                         contentDescription = garment.name,
-                        contentScale = ContentScale.Crop,
+                        contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxSize()
                     )
                 } else {
@@ -1884,7 +1887,7 @@ fun GarmentClosetTable(
                                 AsyncImage(
                                     model = resolvedPhotoModel,
                                     contentDescription = garment.name,
-                                    contentScale = ContentScale.Crop,
+                                    contentScale = ContentScale.Fit,
                                     modifier = Modifier.fillMaxSize()
                                 )
                             } else {
@@ -2181,7 +2184,7 @@ fun BatchTagManagerCard(
                             onValueChange = onTargetTagChange,
                             placeholder = { Text("Type tag name...", fontSize = 11.sp, color = Slate400) },
                             singleLine = true,
-                            modifier = Modifier.weight(1f).height(46.dp),
+                            modifier = Modifier.weight(1f).defaultMinSize(minHeight = 48.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedContainerColor = Color.White,

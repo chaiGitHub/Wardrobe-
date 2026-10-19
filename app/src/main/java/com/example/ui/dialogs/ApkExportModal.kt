@@ -160,7 +160,7 @@ fun ApkExportModal(
                                 color = Color(0xFF065F46)
                             )
                             Text(
-                                text = "app-debug.apk (~25 MB) · Debug Signed",
+                                text = "myward2.apk (~44 MB) · Debug Signed",
                                 fontSize = 11.sp,
                                 color = Color(0xFF047857)
                             )
@@ -181,7 +181,7 @@ fun ApkExportModal(
                     ) {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("文件名称:", fontSize = 11.sp, color = Slate600)
-                            Text("app-debug.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate900, fontFamily = FontFamily.Monospace)
+                            Text("myward2.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate900, fontFamily = FontFamily.Monospace)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("应用包名:", fontSize = 11.sp, color = Slate600)
@@ -189,11 +189,11 @@ fun ApkExportModal(
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("文件大小:", fontSize = 11.sp, color = Slate600)
-                            Text("~25 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
+                            Text("~44 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
                         }
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                             Text("存放位置:", fontSize = 11.sp, color = Slate600)
-                            Text("项目根目录 (Root Directory)", fontSize = 11.sp, color = Slate700)
+                            Text("apk/myward2.apk", fontSize = 11.sp, color = Slate700, fontFamily = FontFamily.Monospace)
                         }
                     }
                 }
@@ -203,13 +203,13 @@ fun ApkExportModal(
                     onClick = {
                         try {
                             val srcApk = File(context.applicationInfo.sourceDir)
-                            val dest = File(context.cacheDir, "app-debug.apk")
+                            val dest = File(context.cacheDir, "myward2.apk")
                             srcApk.copyTo(dest, overwrite = true)
                             val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", dest)
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "application/vnd.android.package-archive"
                                 putExtra(Intent.EXTRA_STREAM, uri)
-                                putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK")
+                                putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK (myward2.apk)")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
                             context.startActivity(Intent.createChooser(intent, "分享 / 保存 APK 安装包"))
@@ -233,19 +233,19 @@ fun ApkExportModal(
                 OutlinedButton(
                     onClick = {
                         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                        val clip = ClipData.newPlainText("APK Path", "app-debug.apk")
+                        val clip = ClipData.newPlainText("APK Path", "apk/myward2.apk")
                         clipboard.setPrimaryClip(clip)
-                        Toast.makeText(context, "已复制文件名！在 AI Studio 左侧文件栏右键 'app-debug.apk' 点击 Download 即可。", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "已复制路径！可在 AI Studio 左侧文件栏中下载 apk/myward2.apk。", Toast.LENGTH_SHORT).show()
                     },
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(44.dp)
+                        .height(48.dp)
                         .testTag("modal_copy_apk_path_button")
                 ) {
                     Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Slate700, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    ScrollableButtonText("📋 复制文件名 (app-debug.apk)", fontSize = 12.sp, color = Slate800, fontWeight = FontWeight.SemiBold)
+                    ScrollableButtonText("📋 复制路径 (apk/myward2.apk)", fontSize = 12.sp, color = Slate800, fontWeight = FontWeight.SemiBold)
                 }
 
                 // AI Studio Download Guide
@@ -266,13 +266,13 @@ fun ApkExportModal(
                             color = Slate800
                         )
                         Text(
-                            text = "1. 在 AI Studio 左侧文件树中，直接找到根目录下的 app-debug.apk 文件",
+                            text = "1. 在 AI Studio 左侧文件树中，进入 apk 目录找到 myward2.apk",
                             fontSize = 11.sp,
                             color = Slate600,
                             lineHeight = 15.sp
                         )
                         Text(
-                            text = "2. 鼠标右键点击该文件，选择「Download」即可直接下载到手机或电脑",
+                            text = "2. 鼠标右键点击 'myward2.apk'，选择「Download」即可直接下载",
                             fontSize = 11.sp,
                             color = Slate600,
                             lineHeight = 15.sp

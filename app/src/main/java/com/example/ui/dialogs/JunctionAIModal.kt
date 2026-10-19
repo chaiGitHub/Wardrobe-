@@ -203,7 +203,7 @@ fun JunctionAIModal(
                                     modifier = Modifier
                                         .size(64.dp)
                                         .clip(RoundedCornerShape(12.dp)),
-                                    contentScale = ContentScale.Crop
+                                    contentScale = ContentScale.Fit
                                 )
                             } else {
                                 val seed = garment?.name ?: "Wear"

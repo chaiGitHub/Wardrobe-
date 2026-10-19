@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +42,7 @@ import java.io.File
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.CloudDone
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
@@ -73,6 +75,7 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -110,6 +113,7 @@ import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
+import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate600
@@ -356,8 +360,10 @@ fun SyncScreen(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
                 .padding(
-                    horizontal = if (isWide) 24.dp else 14.dp,
-                    vertical = 16.dp
+                    start = if (isWide) 24.dp else 14.dp,
+                    end = if (isWide) 24.dp else 14.dp,
+                    top = 16.dp,
+                    bottom = 96.dp
                 ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -684,7 +690,7 @@ fun SyncScreen(
                                             singleLine = true,
                                             modifier = Modifier
                                                 .weight(1f)
-                                                .height(44.dp),
+                                                .heightIn(min = 48.dp),
                                             shape = RoundedCornerShape(10.dp),
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 unfocusedContainerColor = Color.White,
@@ -704,7 +710,7 @@ fun SyncScreen(
                                                 contentColor = Color.White
                                             ),
                                             shape = RoundedCornerShape(10.dp),
-                                            modifier = Modifier.height(42.dp)
+                                            modifier = Modifier.height(48.dp)
                                         ) {
                                             Text("Save URL", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                         }
@@ -894,7 +900,7 @@ fun SyncScreen(
                                                 singleLine = true,
                                                 modifier = Modifier
                                                     .weight(1f)
-                                                    .height(44.dp),
+                                                    .heightIn(min = 48.dp),
                                                 shape = RoundedCornerShape(10.dp),
                                                 colors = OutlinedTextFieldDefaults.colors(
                                                     unfocusedContainerColor = Color.White,
@@ -913,7 +919,7 @@ fun SyncScreen(
                                                     contentColor = Color.White
                                                 ),
                                                 shape = RoundedCornerShape(10.dp),
-                                                modifier = Modifier.height(42.dp)
+                                                modifier = Modifier.height(48.dp)
                                             ) {
                                                 Text("Save ID", fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                             }
@@ -1117,7 +1123,7 @@ fun SyncScreen(
                                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                                 Text("文件名 (File):", fontSize = 11.sp, color = Slate500)
-                                                Text("app-debug.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800, fontFamily = FontFamily.Monospace)
+                                                Text("myward2.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800, fontFamily = FontFamily.Monospace)
                                             }
                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                                 Text("包名 (Package):", fontSize = 11.sp, color = Slate500)
@@ -1125,11 +1131,11 @@ fun SyncScreen(
                                             }
                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                                 Text("大小 (Size):", fontSize = 11.sp, color = Slate500)
-                                                Text("~25 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
+                                                Text("~44 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
                                             }
                                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                                 Text("位置 (Location):", fontSize = 11.sp, color = Slate500)
-                                                Text("项目根目录 (Root Directory)", fontSize = 11.sp, color = Slate700)
+                                                Text("apk/myward2.apk", fontSize = 11.sp, color = Slate700, fontFamily = FontFamily.Monospace)
                                             }
                                         }
                                     }
@@ -1143,13 +1149,13 @@ fun SyncScreen(
                                             onClick = {
                                                 try {
                                                     val srcApk = File(context.applicationInfo.sourceDir)
-                                                    val dest = File(context.cacheDir, "app-debug.apk")
+                                                    val dest = File(context.cacheDir, "myward2.apk")
                                                     srcApk.copyTo(dest, overwrite = true)
                                                     val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", dest)
                                                     val intent = Intent(Intent.ACTION_SEND).apply {
                                                         type = "application/vnd.android.package-archive"
                                                         putExtra(Intent.EXTRA_STREAM, uri)
-                                                        putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK")
+                                                        putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK (myward2.apk)")
                                                         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                                     }
                                                     context.startActivity(Intent.createChooser(intent, "分享 / 保存 APK 安装包"))
@@ -1176,7 +1182,7 @@ fun SyncScreen(
 
                                         OutlinedButton(
                                             onClick = {
-                                                cloudBannerMsg = "已定位 APK！可在 Google AI Studio 左侧文件栏中直接右键 'app-debug.apk' 点击 Download 下载。"
+                                                cloudBannerMsg = "已定位 APK！可在 Google AI Studio 左侧文件栏中直接右键 'apk/myward2.apk' 点击 Download 下载。"
                                             },
                                             shape = RoundedCornerShape(10.dp),
                                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
@@ -1203,7 +1209,7 @@ fun SyncScreen(
                                     ) {
                                         Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                             Text("💡 如何在 Google AI Studio 中下载 APK：", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800)
-                                            Text("1. 在左侧文件树直接找到根目录下的 app-debug.apk 文件", fontSize = 10.sp, color = Slate600)
+                                            Text("1. 在左侧文件树直接进入 apk 目录找到 myward2.apk 文件", fontSize = 10.sp, color = Slate600)
                                             Text("2. 鼠标右键点击该文件，选择「Download」下载到电脑或手机", fontSize = 10.sp, color = Slate600)
                                             Text("3. 或者点击右上角设置/齿轮菜单 ->「Download APK」", fontSize = 10.sp, color = Slate600)
                                             Text("4. 【免频繁自动打包】：后续只需调整功能时，不会每次自动重新编译 APK，仅在您需要时才生成！", fontSize = 10.sp, color = BrandPurple, fontWeight = FontWeight.SemiBold)
@@ -1419,21 +1425,30 @@ fun SyncScreen(
                                 value = photoSearchQuery,
                                 onValueChange = { photoSearchQuery = it },
                                 placeholder = {
-                                    Text("Search garment to assign photo...", fontSize = 12.sp, color = Slate400)
+                                    Text("Search garment to assign photo...", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569))
                                 },
                                 leadingIcon = {
-                                    Icon(Icons.Default.Search, contentDescription = null, tint = Slate400, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF475569), modifier = Modifier.size(18.dp))
+                                },
+                                trailingIcon = {
+                                    if (photoSearchQuery.isNotEmpty()) {
+                                        IconButton(onClick = { photoSearchQuery = "" }, modifier = Modifier.size(24.dp)) {
+                                            Icon(Icons.Default.Close, contentDescription = "Clear", tint = Slate500, modifier = Modifier.size(16.dp))
+                                        }
+                                    }
                                 },
                                 singleLine = true,
                                 modifier = Modifier
                                     .weight(1f)
-                                    .height(42.dp),
+                                    .heightIn(min = 48.dp),
                                 shape = RoundedCornerShape(10.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
                                     unfocusedContainerColor = Color(0xFFF8FAFC),
                                     focusedContainerColor = Color.White,
-                                    unfocusedBorderColor = Slate200,
-                                    focusedBorderColor = BrandEmerald
+                                    unfocusedBorderColor = Slate300,
+                                    focusedBorderColor = BrandEmerald,
+                                    focusedTextColor = Slate900,
+                                    unfocusedTextColor = Slate900
                                 )
                             )
 
@@ -1450,21 +1465,30 @@ fun SyncScreen(
                             value = photoSearchQuery,
                             onValueChange = { photoSearchQuery = it },
                             placeholder = {
-                                Text("Search garment to assign photo...", fontSize = 12.sp, color = Slate400)
+                                Text("Search garment to assign photo...", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = Color(0xFF475569))
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.Search, contentDescription = null, tint = Slate400, modifier = Modifier.size(16.dp))
+                                Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF475569), modifier = Modifier.size(18.dp))
+                            },
+                            trailingIcon = {
+                                if (photoSearchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { photoSearchQuery = "" }, modifier = Modifier.size(24.dp)) {
+                                        Icon(Icons.Default.Close, contentDescription = "Clear", tint = Slate500, modifier = Modifier.size(16.dp))
+                                    }
+                                }
                             },
                             singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(42.dp),
+                                .heightIn(min = 48.dp),
                             shape = RoundedCornerShape(10.dp),
                             colors = OutlinedTextFieldDefaults.colors(
                                 unfocusedContainerColor = Color(0xFFF8FAFC),
                                 focusedContainerColor = Color.White,
-                                unfocusedBorderColor = Slate200,
-                                focusedBorderColor = BrandEmerald
+                                unfocusedBorderColor = Slate300,
+                                focusedBorderColor = BrandEmerald,
+                                focusedTextColor = Slate900,
+                                unfocusedTextColor = Slate900
                             )
                         )
 
@@ -1515,7 +1539,7 @@ fun SyncScreen(
                                                 AsyncImage(
                                                     model = resolvedPhotoModel,
                                                     contentDescription = garment.name,
-                                                    contentScale = ContentScale.Crop,
+                                                    contentScale = ContentScale.Fit,
                                                     modifier = Modifier.fillMaxSize()
                                                 )
                                             } else {
@@ -2148,33 +2172,36 @@ private fun LocalStorageCard(
                     modifier = Modifier.padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
                             text = "Junction Wash Date Breakdown",
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                             color = Slate800
                         )
-                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Text(
                                 text = "Clean: $cleanJunctions",
-                                fontSize = 10.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF047857)
                             )
                             Text(
                                 text = "Need Wash: $needWashJunctions",
-                                fontSize = 10.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFFB45309)
                             )
                             Text(
                                 text = "With Wash Date: $withWashDateJunctions",
-                                fontSize = 10.sp,
+                                fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = BrandBlue
                             )

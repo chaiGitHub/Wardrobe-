@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="100%" stop-color="#eab308" />
+    </linearGradient>
+  </defs>
+  <!-- Background with rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#grad)" />
+  <!-- Coat Hanger SVG path -->
+  <g fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 40)">
+    <!-- Hook -->
+    <path d="M 224 160 C 224 110, 264 70, 294 100 C 314 120, 284 160, 224 180" />
+    <!-- Triangle Hanger Base -->
+    <polygon points="224,180 54,300 394,300" stroke-width="24" />
+    <!-- Crossbar -->
+    <line x1="54" y1="300" x2="394" y2="300" stroke-width="24" />
+  </g>
+  <!-- Sparkles -->
+  <path d="M 380 120 Q 380 150 410 150 Q 380 150 380 180 Q 380 150 350 150 Q 380 150 380 120 Z" fill="url(#gold)" />
+  <circle cx="130" cy="160" r="10" fill="#ffffff" opacity="0.8" />
+  <circle cx="390" cy="380" r="8" fill="#ffffff" opacity="0.6" />
+</svg>

@@ -91,6 +91,7 @@ import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.BrandPurpleLight
 import com.example.ui.theme.Slate100
 import com.example.ui.theme.Slate200
+import com.example.ui.theme.Slate300
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate600
@@ -619,25 +620,40 @@ fun AddReportDialog(
                                                 Text(
                                                     "Type garment name or material...",
                                                     fontSize = 13.sp,
-                                                    color = Slate400
+                                                    fontWeight = FontWeight.Medium,
+                                                    color = Color(0xFF475569)
                                                 )
                                             },
                                             leadingIcon = {
                                                 Icon(
                                                     imageVector = Icons.Default.Search,
                                                     contentDescription = null,
-                                                    tint = Slate400,
+                                                    tint = Color(0xFF475569),
                                                     modifier = Modifier.size(18.dp)
                                                 )
                                             },
+                                            trailingIcon = if (closetSearchQuery.isNotEmpty()) {
+                                                {
+                                                    IconButton(onClick = { closetSearchQuery = "" }, modifier = Modifier.size(24.dp)) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Close,
+                                                            contentDescription = "Clear",
+                                                            tint = Slate500,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                    }
+                                                }
+                                            } else null,
                                             singleLine = true,
-                                            modifier = Modifier.fillMaxWidth(),
-                                            shape = RoundedCornerShape(14.dp),
+                                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                                            shape = RoundedCornerShape(12.dp),
                                             colors = OutlinedTextFieldDefaults.colors(
                                                 focusedBorderColor = Color(0xFF9333EA),
-                                                unfocusedBorderColor = Slate200,
+                                                unfocusedBorderColor = Slate300,
                                                 focusedContainerColor = Color(0xFFF8FAFC),
-                                                unfocusedContainerColor = Color(0xFFF8FAFC)
+                                                unfocusedContainerColor = Color(0xFFF8FAFC),
+                                                focusedTextColor = Slate900,
+                                                unfocusedTextColor = Slate900
                                             )
                                         )
 
@@ -1138,7 +1154,7 @@ fun AddReportDialog(
                                             AsyncImage(
                                                 model = ImageUtils.resolveImagePath(url, context),
                                                 contentDescription = "Outfit photo",
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
                                             )
                                             Box(

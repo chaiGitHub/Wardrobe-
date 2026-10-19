@@ -856,7 +856,7 @@ fun AddGarmentDialog(
                                             AsyncImage(
                                                 model = ImageUtils.resolveImagePath(url, context),
                                                 contentDescription = "Clothes photo",
-                                                contentScale = ContentScale.Crop,
+                                                contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
                                             )
                                             IconButton(

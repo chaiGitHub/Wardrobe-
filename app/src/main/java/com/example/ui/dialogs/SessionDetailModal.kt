@@ -638,7 +638,7 @@ fun SessionDetailModal(
                                                     AsyncImage(
                                                         model = ImageUtils.resolveImageModel(url, context),
                                                         contentDescription = "Session photo",
-                                                        contentScale = ContentScale.Crop,
+                                                        contentScale = ContentScale.Fit,
                                                         modifier = Modifier.fillMaxSize()
                                                     )
                                                     Box(
@@ -776,7 +776,7 @@ fun SessionDetailModal(
                                                             AsyncImage(
                                                                 model = photoModel,
                                                                 contentDescription = garment?.name,
-                                                                contentScale = ContentScale.Crop,
+                                                                contentScale = ContentScale.Fit,
                                                                 modifier = Modifier.fillMaxSize()
                                                             )
                                                         } else {
