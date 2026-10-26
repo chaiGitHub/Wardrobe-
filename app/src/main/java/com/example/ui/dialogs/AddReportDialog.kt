@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CameraAlt
@@ -118,11 +119,13 @@ fun AddReportDialog(
     existingReports: List<ReportEntity> = emptyList(),
     initialReport: ReportEntity? = null,
     initialJunctions: List<JunctionEntity> = emptyList(),
+    allJunctions: List<JunctionEntity> = emptyList(),
     onDismiss: () -> Unit,
     onSave: (ReportEntity, List<Pair<String, Long>>) -> Unit,
     onSaveWithWashMap: ((ReportEntity, List<Pair<String, Long>>, Map<String, String>) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val dictionaryService = remember { FieldDictionaryService(context) }
     val todayIso = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
     val todayDisplay = remember { SimpleDateFormat("dd MMM yyyy", Locale.US).format(Date()) }
 
@@ -161,15 +164,18 @@ fun AddReportDialog(
     }
 
     // Selected garments in outfit
-    val chosenGarments = remember {
+    val chosenGarments = remember(initialReport?.id, initialJunctions) {
         val list = mutableStateListOf<OutfitGarmentEntry>()
         if (initialReport != null && initialJunctions.isNotEmpty()) {
             initialJunctions.forEach { j ->
-                val g = clothes.find { it.id == j.clothesId } ?: GarmentEntity(
-                    id = j.clothesId,
-                    name = j.clothesTitle.ifBlank { "Garment" },
-                    clothesType = j.clothesType
-                )
+                val g = clothes.find { it.id == j.clothesId }
+                    ?: clothes.find { j.clothesTitle.isNotBlank() && it.name.equals(j.clothesTitle, ignoreCase = true) }
+                    ?: clothes.find { j.clothesId.isNotBlank() && it.name.equals(j.clothesId, ignoreCase = true) }
+                    ?: GarmentEntity(
+                        id = j.clothesId.ifBlank { j.clothesTitle },
+                        name = j.clothesTitle.ifBlank { j.clothesId.ifBlank { "Garment" } },
+                        clothesType = j.clothesType.ifBlank { "Dress" }
+                    )
                 val totalMin = (j.duration / 60).toInt()
                 val hr = totalMin / 60
                 val min = totalMin % 60
@@ -214,7 +220,21 @@ fun AddReportDialog(
     }
 
     fun getPreviousEntries(fieldKey: String): List<PreviousEntry> {
-        val counts = mutableMapOf<String, Int>()
+        val countMap = mutableMapOf<String, Int>()
+        val sourcesMap = mutableMapOf<String, MutableSet<String>>()
+
+        // Build reportId -> garment names map from allJunctions and initialJunctions
+        val reportGarmentsMap = mutableMapOf<String, MutableSet<String>>()
+        val combinedJunctions = (allJunctions + initialJunctions).distinctBy { it.id.ifBlank { "${it.wearingReportId}_${it.clothesId}" } }
+        combinedJunctions.forEach { j ->
+            val gName = j.clothesTitle.ifBlank {
+                clothes.find { it.id == j.clothesId }?.name ?: ""
+            }.trim()
+            if (gName.isNotBlank() && j.wearingReportId.isNotBlank()) {
+                reportGarmentsMap.getOrPut(j.wearingReportId) { mutableSetOf() }.add(gName)
+            }
+        }
+
         existingReports.forEach { r ->
             val v = when (fieldKey) {
                 "SHOULDER FEEL" -> r.shoulderFeel
@@ -225,58 +245,88 @@ fun AddReportDialog(
                 "LEG FEEL" -> r.legFeel
                 "NIGHT LEG FEEL" -> r.nightLegFeel
                 "REPORT DETAIL" -> r.reportDetail
-                else -> ""
+                else -> {
+                    try {
+                        org.json.JSONObject(r.customFields).optString(fieldKey, "")
+                    } catch (_: Exception) { "" }
+                }
             }.trim()
             if (v.isNotBlank()) {
-                counts[v] = (counts[v] ?: 0) + 1
+                countMap[v] = (countMap[v] ?: 0) + 1
+                val gNames = reportGarmentsMap[r.id] ?: emptySet()
+                if (gNames.isNotEmpty()) {
+                    sourcesMap.getOrPut(v) { mutableSetOf() }.addAll(gNames)
+                }
             }
         }
+
         // Fallback suggestions if history is empty
         when (fieldKey) {
-            "SHOULDER FEEL" -> if (counts.isEmpty()) listOf(
+            "SHOULDER FEEL" -> if (countMap.isEmpty()) listOf(
                 "relaxed and comfortable",
                 "the not diao dai make the shoulder no so irrate and pain",
                 "strap digs slightly after 3 hours",
                 "no shoulder tension"
-            ).forEach { counts[it] = 1 }
-            "MID BREAST" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "MID BREAST" -> if (countMap.isEmpty()) listOf(
                 "good support, no digging",
                 "mid breast is ok sizd when pair with [[small bra]] when sit",
                 "comfortable when seated",
                 "slightly tight at chest"
-            ).forEach { counts[it] = 1 }
-            "NIGHT MID BREAST" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "NIGHT MID BREAST" -> if (countMap.isEmpty()) listOf(
                 "comfortable for evening",
                 "no pressure at night",
                 "relaxed fit"
-            ).forEach { counts[it] = 1 }
-            "SWEAT" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "SWEAT" -> if (countMap.isEmpty()) listOf(
                 "low / dry",
                 "thick clothes also more hot and swear",
                 "breathable and cool",
                 "slight sweat at noon"
-            ).forEach { counts[it] = 1 }
-            "NIGHT SWEAT" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "NIGHT SWEAT" -> if (countMap.isEmpty()) listOf(
                 "dry and pleasant",
                 "cool in aircon",
                 "warm at night"
-            ).forEach { counts[it] = 1 }
-            "LEG FEEL" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "LEG FEEL" -> if (countMap.isEmpty()) listOf(
                 "free movement",
                 "like dress not pant, skirt quite middle thick , no so cold leg",
                 "soft drape on legs"
-            ).forEach { counts[it] = 1 }
-            "NIGHT LEG FEEL" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "NIGHT LEG FEEL" -> if (countMap.isEmpty()) listOf(
                 "airy and easy",
                 "warm enough for night"
-            ).forEach { counts[it] = 1 }
-            "REPORT DETAIL" -> if (counts.isEmpty()) listOf(
+            ).forEach { countMap[it] = 1 }
+            "REPORT DETAIL" -> if (countMap.isEmpty()) listOf(
                 "Comfortable indoor office and walk session",
                 "Worn during sunny afternoon commute",
                 "Relaxed home wear"
-            ).forEach { counts[it] = 1 }
+            ).forEach { countMap[it] = 1 }
         }
-        return counts.entries.map { PreviousEntry(it.key, it.value) }.sortedByDescending { it.count }
+
+        val dictFields = try { dictionaryService.getFields() } catch (_: Exception) { emptyList() }
+        val normKey = fieldKey.trim().lowercase(Locale.ROOT)
+        val dictValues = dictFields.find {
+            it.name.trim().lowercase(Locale.ROOT) == normKey ||
+            it.name.replace(" ", "").lowercase(Locale.ROOT) == normKey.replace(" ", "")
+        }?.typicalValues ?: emptyList()
+
+        return countMap.entries.map { e ->
+            val typical = dictValues.find { it.valueEn.equals(e.key, ignoreCase = true) }
+            val labelCn = typical?.valueCn?.ifBlank { null }?.takeIf { it != e.key }
+            val meaningCn = typical?.meaningCn?.ifBlank { null } ?: "真实穿搭历史记录值: \"${e.key}\""
+            val autoExtracted = Regex("\\[\\[(.*?)\\]\\]").findAll(e.key).map { it.groupValues[1] }.toList()
+            val sources = (sourcesMap[e.key]?.toList() ?: emptyList()).ifEmpty { autoExtracted }
+            PreviousEntry(
+                value = e.key,
+                count = e.value,
+                labelCn = labelCn,
+                meaningCn = meaningCn,
+                sources = sources
+            )
+        }.sortedByDescending { it.count }
     }
 
     val categories = remember(clothes) {
@@ -299,34 +349,42 @@ fun AddReportDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.95f)
+                .fillMaxSize()
                 .testTag("add_report_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            color = Color.White
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Top Header (matches IMG_9686: sparkle purple circle + "Log Wearing Report & Session" + X)
+                // Top Header (matches IMG_9686: Back button + sparkle purple circle + "Log Wearing Report & Session" + X)
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        IconButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Slate700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         Box(
                             modifier = Modifier
-                                .size(38.dp)
+                                .size(36.dp)
                                 .clip(CircleShape)
                                 .background(Color(0xFFF3E8FF)),
                             contentAlignment = Alignment.Center
@@ -335,7 +393,7 @@ fun AddReportDialog(
                                 imageVector = Icons.Default.AutoAwesome,
                                 contentDescription = null,
                                 tint = Color(0xFF9333EA),
-                                modifier = Modifier.size(20.dp)
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                         Text(
@@ -343,7 +401,7 @@ fun AddReportDialog(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.ExtraBold,
                             color = Slate900,
-                            fontSize = 18.sp
+                            fontSize = 17.sp
                         )
                     }
 

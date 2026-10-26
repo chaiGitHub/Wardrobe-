@@ -1107,6 +1107,7 @@ fun InlineFieldDictionaryCard(
     onFieldsUpdated: ((List<DictionaryFieldItem>) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val isAiPaused = remember(context) { com.example.util.GeminiAiService.isAiPaused(context) }
     var isExpanded by remember { mutableStateOf(false) }
     var selectedTab by remember { mutableStateOf("all") } // "all", "clothes", "wearingReport", "junction"
     var currentFields by remember(fields) { mutableStateOf(fields) }
@@ -1280,25 +1281,27 @@ fun InlineFieldDictionaryCard(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Button(
-                                onClick = {
-                                    val (addedCount, updatedFields) = dictionaryService.syncHistoricalValues(clothes, reports)
-                                    currentFields = updatedFields
-                                    onFieldsUpdated?.invoke(updatedFields)
-                                    if (addedCount > 0) {
-                                        Toast.makeText(context, "已成功将 $addedCount 条真实输入值同步至 AI 字段定义中！", Toast.LENGTH_LONG).show()
-                                    } else {
-                                        Toast.makeText(context, "所有真实穿搭历史记录已在字典中，无新增条目。", Toast.LENGTH_SHORT).show()
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
-                                shape = RoundedCornerShape(12.dp),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
-                                modifier = Modifier.height(34.dp).testTag("sync_historical_values_btn")
-                            ) {
-                                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(13.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text("同步穿搭输入值", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            if (!isAiPaused) {
+                                Button(
+                                    onClick = {
+                                        val (addedCount, updatedFields) = dictionaryService.syncHistoricalValues(clothes, reports)
+                                        currentFields = updatedFields
+                                        onFieldsUpdated?.invoke(updatedFields)
+                                        if (addedCount > 0) {
+                                            Toast.makeText(context, "已成功将 $addedCount 条真实输入值同步至 AI 字段定义中！", Toast.LENGTH_LONG).show()
+                                        } else {
+                                            Toast.makeText(context, "所有真实穿搭历史记录已在字典中，无新增条目。", Toast.LENGTH_SHORT).show()
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7E22CE)),
+                                    shape = RoundedCornerShape(12.dp),
+                                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                                    modifier = Modifier.height(34.dp).testTag("sync_historical_values_btn")
+                                ) {
+                                    Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(13.dp))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text("同步穿搭输入值", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                }
                             }
 
                             Button(

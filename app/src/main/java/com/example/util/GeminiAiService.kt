@@ -82,6 +82,21 @@ object GeminiAiService {
             .apply()
     }
 
+    private const val KEY_AI_PAUSED = "wardrobe_ai_generation_paused"
+
+    fun isAiPaused(context: Context?): Boolean {
+        if (context == null) return true
+        return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .getBoolean(KEY_AI_PAUSED, true)
+    }
+
+    fun setAiPaused(context: Context?, paused: Boolean) {
+        context?.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            ?.edit()
+            ?.putBoolean(KEY_AI_PAUSED, paused)
+            ?.apply()
+    }
+
     /**
      * Core call to Gemini 2.5 Flash REST API with Google Search Grounding (`{"google_search": {}}`).
      */

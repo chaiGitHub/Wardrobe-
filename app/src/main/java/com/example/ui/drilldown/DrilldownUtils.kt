@@ -142,11 +142,11 @@ object DrilldownUtils {
  */
 class ReportPresetService(private val context: Context) {
     private val prefs: SharedPreferences =
-        context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
+        context.getSharedPreferences("wardrobe_drilldown_presets_v4", Context.MODE_PRIVATE)
 
     companion object {
-        private const val PRESETS_KEY = "custom_presets_json_v3"
-        private const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v3"
+        private const val PRESETS_KEY = "custom_presets_json_v4"
+        private const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v4"
     }
 
     private fun loadPresetsFromAsset(): List<DrillPreset> {

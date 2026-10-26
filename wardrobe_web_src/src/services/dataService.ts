@@ -575,34 +575,97 @@ export class DataService {
   }
 
   /**
-   * Scans all database records to gather previously entered unique values with their usage frequency.
-   * Matches the Teable previous value selector design.
+   * Scans all database records to gather previously entered unique values with their usage frequency and source clothes.
+   * Matches the Teable previous value selector design with full source garments display.
    */
-  public getFieldPreviousValues(field: string, target: 'clothes' | 'reports' = 'clothes'): Array<{ value: string; count: number }> {
+  public getFieldPreviousValues(
+    field: string,
+    target: 'clothes' | 'reports' | 'all' = 'clothes'
+  ): Array<{ value: string; count: number; sources?: string[] }> {
     const counts = new Map<string, number>();
-    const items = target === 'clothes' ? this.clothes : this.reports;
+    const sourcesMap = new Map<string, Set<string>>();
 
-    items.forEach((item: any) => {
-      const val = item[field];
+    const toCamel = (s: string) => s.replace(/([-_ ][a-z])/ig, ($1) => $1.toUpperCase().replace('-', '').replace('_', '').replace(' ', ''));
+    const candidateKeys = Array.from(new Set([
+      field,
+      field.toLowerCase(),
+      field.replace(/\s+/g, ''),
+      field.replace(/\s+/g, '_'),
+      toCamel(field),
+      field.replace(/\s+([a-z])/g, (_, c) => c.toUpperCase()),
+      field.replace(/-/g, ''),
+      ...(field.toLowerCase().includes('clothes type') ? ['Clothes Type', 'clothesType', 'clothes_type', 'type'] : []),
+      ...(field.toLowerCase().includes('material') ? ['material', 'materialProp', 'Material'] : []),
+      ...(field.toLowerCase().includes('thick clothes') ? ['thick clothes', 'thickClothes', 'thick_clothes'] : []),
+      ...(field.toLowerCase().includes('hot at noon') || field.toLowerCase().includes('without aircond: hot') ? ['Hot at noon', 'hotAtNoon', 'noAircondHotFeeling', 'when without aircond: hot feeling'] : []),
+      ...(field.toLowerCase().includes('without aircond: leg') ? ['noAircondLegFeeling', 'when without aircond: leg feeling'] : []),
+      ...(field.toLowerCase().includes('with aircond: hot') ? ['aircondHotFeeling', 'when with aircond: hot feeling'] : []),
+      ...(field.toLowerCase().includes('with aircond: leg') ? ['aircondLegFeeling', 'when with aircond: leg feeling'] : []),
+      ...(field.toLowerCase().includes('sleep under fan: hot') ? ['fanSleepHotFeeling', 'when sleep under fan: hot feeling'] : []),
+      ...(field.toLowerCase().includes('sleep under fan: leg') ? ['fanSleepLegFeeling', 'when sleep under fan: leg feeling'] : []),
+      ...(field.toLowerCase().includes('side breast') ? ['side breast ok', 'sideBreastOk', 'sideBreastGatherBra', 'sideBreastOkWithGatherBra', 'side breast ok: with 聚拢 bra', 'side breast ok: with side out bra', 'sideBreastSideOutBra'] : []),
+      ...(field.toLowerCase().includes('sit breast') ? ['sit breast ok', 'sitBreastOk', 'sitBreastGatherBra', 'sitBreastOkWithGatherBra', 'sit breast ok: With 聚拢bra', 'sit breast ok: with side out bra', 'sitBreastSideOutBra', 'sitBreast'] : []),
+      ...(field.toLowerCase().includes('diao dai') ? ['diao dai', 'diaoDai', 'diao_dai'] : []),
+      ...(field.toLowerCase().includes('center chest') ? ['center chest', 'centerChest', 'standBreast'] : []),
+      ...(field.toLowerCase().includes('description') ? ['Descriptions', 'descriptions', 'lastComment', 'last comment or action'] : [])
+    ]));
+
+    const processItem = (item: any) => {
+      let itemSources: string[] = [];
+      const gName = (item['Name'] || item.name || '').trim();
+      if (gName) itemSources = [gName];
+
+      let val: any = undefined;
+      for (const k of candidateKeys) {
+        if (item[k] !== undefined && item[k] !== null && item[k] !== '') {
+          val = item[k];
+          break;
+        }
+      }
+      if ((val === undefined || val === null || val === '') && item.customFields) {
+        val = item.customFields[field] ?? item.customFields[field.toLowerCase()];
+      }
+
+      const recordValue = (str: string) => {
+        counts.set(str, (counts.get(str) || 0) + 1);
+        if (itemSources.length > 0) {
+          if (!sourcesMap.has(str)) {
+            sourcesMap.set(str, new Set<string>());
+          }
+          itemSources.forEach(s => sourcesMap.get(str)!.add(s));
+        }
+      };
+
       if (Array.isArray(val)) {
         val.forEach(v => {
           if (typeof v === 'string') {
             const str = v.trim();
-            if (str && str !== 'No data' && str !== 'N/A') {
-              counts.set(str, (counts.get(str) || 0) + 1);
+            if (str && str !== 'No data' && str !== 'N/A' && str !== '??') {
+              recordValue(str);
             }
           }
         });
       } else if (typeof val === 'string') {
         const str = val.trim();
-        if (str && str !== 'No data' && str !== 'N/A') {
-          counts.set(str, (counts.get(str) || 0) + 1);
+        if (str && str !== 'No data' && str !== 'N/A' && str !== '??') {
+          recordValue(str);
         }
       }
-    });
+    };
+
+    if (target === 'clothes' || target === 'all') {
+      this.clothes.forEach(item => processItem(item));
+    }
+    if (target === 'reports' || target === 'all') {
+      this.reports.forEach(item => processItem(item));
+    }
 
     return Array.from(counts.entries())
-      .map(([value, count]) => ({ value, count }))
+      .map(([value, count]) => ({
+        value,
+        count,
+        sources: sourcesMap.has(value) ? Array.from(sourcesMap.get(value)!) : []
+      }))
       .sort((a, b) => b.count - a.count);
   }
 

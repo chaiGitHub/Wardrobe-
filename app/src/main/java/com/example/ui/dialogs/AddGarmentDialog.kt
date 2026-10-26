@@ -28,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CameraAlt
@@ -172,6 +173,7 @@ fun AddGarmentDialog(
     // Helper to calculate previous values for a field from existing clothes
     fun getPreviousValuesForField(fieldKey: String): List<PreviousEntry> {
         val map = mutableMapOf<String, Int>()
+        val sourcesMap = mutableMapOf<String, MutableSet<String>>()
         existingClothes.forEach { g ->
             val v = when (fieldKey) {
                 "Clothes Type" -> g.clothesType
@@ -200,6 +202,10 @@ fun AddGarmentDialog(
             }.trim()
             if (v.isNotBlank() && v != "(Not specified)") {
                 map[v] = (map[v] ?: 0) + 1
+                val gName = g.name.ifBlank { "Garment" }.trim()
+                if (gName.isNotBlank()) {
+                    sourcesMap.getOrPut(v) { mutableSetOf() }.add(gName)
+                }
             }
         }
 
@@ -226,29 +232,44 @@ fun AddGarmentDialog(
             "thick clothes" -> if (map.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { map[it] = 1 }
         }
 
-        return map.entries.map { PreviousEntry(it.key, it.value) }.sortedByDescending { it.count }
+        val dictFields = try { dictionaryService.getFields() } catch (_: Exception) { emptyList() }
+        val normKey = fieldKey.trim().lowercase(java.util.Locale.ROOT)
+        val dictValues = dictFields.find {
+            it.name.trim().lowercase(java.util.Locale.ROOT) == normKey ||
+            it.name.replace(" ", "").lowercase(java.util.Locale.ROOT) == normKey.replace(" ", "")
+        }?.typicalValues ?: emptyList()
+
+        return map.entries.map { e ->
+            val typical = dictValues.find { it.valueEn.equals(e.key, ignoreCase = true) }
+            val labelCn = typical?.valueCn?.ifBlank { null }?.takeIf { it != e.key }
+            val meaningCn = typical?.meaningCn?.ifBlank { null } ?: "真实衣物历史记录值: \"${e.key}\""
+            PreviousEntry(
+                value = e.key,
+                count = e.value,
+                labelCn = labelCn,
+                meaningCn = meaningCn,
+                sources = sourcesMap[e.key]?.toList() ?: emptyList()
+            )
+        }.sortedByDescending { it.count }
     }
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.95f)
+                .fillMaxSize()
                 .testTag("add_garment_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            color = Color.White
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
-                // Header (matching screenshot: Purple checkroom badge, "Add New Clothes", close 'x')
+                // Header (matching screenshot: Back button, Purple checkroom badge, "Add New Clothes", close 'x')
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(Color.White)
-                        .padding(horizontal = 20.dp, vertical = 16.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -256,6 +277,17 @@ fun AddGarmentDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
+                        IconButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Back",
+                                tint = Slate700,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                         Box(
                             modifier = Modifier
                                 .size(36.dp)

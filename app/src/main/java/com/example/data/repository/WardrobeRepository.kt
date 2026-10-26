@@ -37,7 +37,7 @@ class WardrobeRepository(private val context: Context) {
         val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
         val seedVersion = prefs.getInt("seed_imported_version", 0)
         val count = dao.getClothesCount()
-        if (count == 0 || seedVersion < 5) {
+        if (count == 0 || seedVersion < 6) {
             try {
                 copySeedPhotosToDisk()
                 context.assets.open("initial_seed.json").use { stream ->
@@ -45,7 +45,7 @@ class WardrobeRepository(private val context: Context) {
                     val jsonStr = reader.readText()
                     importFromJsonString(jsonStr, clearExisting = false)
                 }
-                prefs.edit().putInt("seed_imported_version", 5).apply()
+                prefs.edit().putInt("seed_imported_version", 6).apply()
             } catch (e: Exception) {
                 Log.e("WardrobeRepo", "Seed database error: ${e.message}", e)
             }
@@ -431,8 +431,8 @@ class WardrobeRepository(private val context: Context) {
             val hotNoon = obj.optString("Hot at noon", obj.optString("hotAtNoon", ""))
             val diaoDai = obj.optString("diao dai", obj.optString("diaoDai", ""))
             val sideOk = obj.optString("side breast ok", obj.optString("side breast shape", obj.optString("sideBreastOk", "")))
-            val sideGather = obj.optString("sideBreastGatherBra", obj.optString("side breast ok: with 聚拢 bra", sideOk))
-            val sideSideOut = obj.optString("sideBreastSideOutBra", obj.optString("side breast ok: with side out bra", ""))
+            val sideGather = obj.optString("sideBreastGatherBra", obj.optString("side breast ok: with 聚拢 bra", obj.optString("sidebreastgatherbra", sideOk)))
+            val sideSideOut = obj.optString("sideBreastSideOutBra", obj.optString("side breast ok: with side out bra", obj.optString("sidebreastsideoutbra", obj.optString("sidebreastsifeoutbra", ""))))
 
             val aircondHot = obj.optString("aircondHotFeeling", obj.optString("when with aircond: hot feeling", ""))
             val aircondHotExp = obj.optString("aircondHotExplain", obj.optString("when with aircond: hot explanation", ""))
@@ -449,10 +449,10 @@ class WardrobeRepository(private val context: Context) {
             val fanSleepLeg = obj.optString("fanSleepLegFeeling", obj.optString("when sleep under fan: leg feeling", ""))
             val fanSleepLegExp = obj.optString("fanSleepLegExplain", obj.optString("when sleep under fan: leg explanation", ""))
 
-            val standOk = obj.optString("center chest", obj.optString("stand breast", obj.optString("standBreast", "")))
+            val standOk = obj.optString("center chest", obj.optString("stand breast", obj.optString("standBreast", obj.optString("stand breast ok", obj.optString("standBreastOk", "")))))
             val sitOk = obj.optString("sit breast ok", obj.optString("sit breast", obj.optString("sitBreast", "")))
-            val sitGather = obj.optString("sitBreastGatherBra", obj.optString("sit breast ok: With 聚拢bra", obj.optString("sit breast ok: With 聚拢bra:", obj.optString("sit breast ok: with 聚拢 bra", sitOk))))
-            val sitSideOut = obj.optString("sitBreastSideOutBra", obj.optString("sit breast ok: with side out bra", ""))
+            val sitGather = obj.optString("sitBreastGatherBra", obj.optString("sit breast ok: With 聚拢bra", obj.optString("sit breast ok: With 聚拢bra:", obj.optString("sit breast ok: with 聚拢 bra", obj.optString("sitbreastgatherbra", sitOk)))))
+            val sitSideOut = obj.optString("sitBreastSideOutBra", obj.optString("sit breast ok: with side out bra", obj.optString("sitbreastsideoutbra", "")))
             val beautiful = obj.optString("beautiful", "")
             val beautifulReason = obj.optString("beatiful reason", obj.optString("beautiful reason", obj.optString("beautifulReason", "")))
             val wet = obj.optString("wet", "")
@@ -480,9 +480,18 @@ class WardrobeRepository(private val context: Context) {
             )
             val tags = obj.optJSONArray("tags")?.toString() ?: "[]"
             val created = obj.optString("created", "")
-            val customFields = obj.optJSONObject("customFields")?.toString()
-                ?: obj.optJSONObject("extraAttributes")?.toString()
-                ?: "{}"
+            val customFieldsObj = obj.optJSONObject("customFields")
+                ?: obj.optJSONObject("extraAttributes")
+                ?: JSONObject()
+            val feObj = obj.optJSONObject("fieldExplanations")
+            if (feObj != null && !customFieldsObj.has("_fieldExplanations")) {
+                customFieldsObj.put("_fieldExplanations", feObj)
+            }
+            val deletedFieldsArr = obj.optJSONArray("_deletedCustomFields")
+            if (deletedFieldsArr != null && !customFieldsObj.has("_deletedCustomFields")) {
+                customFieldsObj.put("_deletedCustomFields", deletedFieldsArr)
+            }
+            val customFields = customFieldsObj.toString()
 
             parsedClothes.add(
                 GarmentEntity(
@@ -554,9 +563,18 @@ class WardrobeRepository(private val context: Context) {
             val detail = obj.optString("reportDetail", obj.optString("report detail", ""))
             val aiWearingAnalysis = obj.optString("AI Wearing Analysis", obj.optString("aiWearingAnalysis", ""))
             val aiReports = obj.optJSONArray("aiReports")?.toString() ?: "[]"
-            val customFields = obj.optJSONObject("customFields")?.toString()
-                ?: obj.optJSONObject("extraAttributes")?.toString()
-                ?: "{}"
+            val customFieldsObj = obj.optJSONObject("customFields")
+                ?: obj.optJSONObject("extraAttributes")
+                ?: JSONObject()
+            val feReportObj = obj.optJSONObject("fieldExplanations")
+            if (feReportObj != null && !customFieldsObj.has("_fieldExplanations")) {
+                customFieldsObj.put("_fieldExplanations", feReportObj)
+            }
+            val deletedReportFields = obj.optJSONArray("_deletedCustomFields")
+            if (deletedReportFields != null && !customFieldsObj.has("_deletedCustomFields")) {
+                customFieldsObj.put("_deletedCustomFields", deletedReportFields)
+            }
+            val customFields = customFieldsObj.toString()
             val rawReportPicsArr = obj.optJSONArray("Pictures")
                 ?: obj.optJSONArray("pictures")
                 ?: obj.optJSONArray("photos")

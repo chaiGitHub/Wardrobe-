@@ -1172,81 +1172,81 @@ export const GarmentModal: React.FC<GarmentModalProps> = ({
                   </h4>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-xs">
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">Clothes Type:</span>
-                      <span className="font-semibold text-slate-800">{garment['Clothes Type'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">Clothes Type:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['Clothes Type'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">material:</span>
-                      <span className="font-semibold text-slate-800">{garment['material'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">material:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['material'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">thick clothes:</span>
-                      <span className="font-semibold text-slate-800">{garment['thick clothes'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">thick clothes:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['thick clothes'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">Hot at noon:</span>
-                      <span className="font-semibold text-slate-800">{garment['Hot at noon'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">Hot at noon:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['Hot at noon'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">diao dai:</span>
-                      <span className="font-semibold text-slate-800">{garment['diao dai'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">diao dai:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['diao dai'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">side breast ok:</span>
-                      <span className="font-semibold text-slate-800">{garment['side breast ok'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">side breast ok:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['side breast ok'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">sit breast ok:</span>
-                      <span className="font-semibold text-slate-800">{garment['sit breast ok'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">sit breast ok:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['sit breast ok'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">center chest:</span>
-                      <span className="font-semibold text-slate-800">{garment['center chest'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">center chest:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['center chest'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">beautiful:</span>
-                      <span className="font-semibold text-slate-800">{garment['beautiful'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">beautiful:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['beautiful'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">wet:</span>
-                      <span className="font-semibold text-slate-800">{garment['wet'] || <span className="text-slate-400 font-normal italic">dry</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">wet:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['wet'] || <span className="text-slate-400 font-normal italic">dry</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">long dress:</span>
-                      <span className="font-semibold text-slate-800">{garment['long dress'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">long dress:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['long dress'] || <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">may throw:</span>
-                      <span className="font-semibold text-slate-800">{garment['may throw'] || <span className="text-slate-400 font-normal italic">no</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">may throw:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['may throw'] || <span className="text-slate-400 font-normal italic">no</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">price:</span>
-                      <span className="font-semibold text-slate-800">{typeof garment['price'] === 'number' ? `$${garment['price']}` : <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">price:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{typeof garment['price'] === 'number' ? `$${garment['price']}` : <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">wearing frequency(legacy):</span>
-                      <span className="font-semibold text-slate-800">{garment['wearing frequency(how many times legacy washed)'] !== undefined ? garment['wearing frequency(how many times legacy washed)'] : <span className="text-slate-400 font-normal italic">0</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">wearing frequency(legacy):</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['wearing frequency(how many times legacy washed)'] !== undefined ? garment['wearing frequency(how many times legacy washed)'] : <span className="text-slate-400 font-normal italic">0</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">Total Washed Count:</span>
-                      <span className="font-semibold text-slate-800">{garment['Total Washed Count'] ?? 0}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">Total Washed Count:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['Total Washed Count'] ?? 0}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">Tracked App Washes:</span>
-                      <span className="font-semibold text-slate-800">{garment['Tracked App Washes'] ?? 0}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">Tracked App Washes:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['Tracked App Washes'] ?? 0}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">Last Washed:</span>
-                      <span className="font-semibold text-slate-800">{garment['Last Washed'] ? new Date(garment['Last Washed']).toLocaleDateString() : <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">Last Washed:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['Last Washed'] ? new Date(garment['Last Washed']).toLocaleDateString() : <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60">
-                      <span className="font-mono text-slate-500">unwash time rollup:</span>
-                      <span className="font-semibold text-slate-800">{garment['unwash time rollup'] !== undefined ? `${garment['unwash time rollup']}s` : <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">unwash time rollup:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['unwash time rollup'] !== undefined ? `${garment['unwash time rollup']}s` : <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
-                    <div className="flex justify-between py-1.5 border-b border-slate-200/60 sm:col-span-2">
-                      <span className="font-mono text-slate-500">created:</span>
-                      <span className="font-semibold text-slate-800">{garment['created'] ? new Date(garment['created']).toLocaleDateString() : <span className="text-slate-400 font-normal italic">No data</span>}</span>
+                    <div className="flex flex-col gap-1 py-2 border-b border-slate-200/60 sm:col-span-2">
+                      <span className="font-mono text-slate-500 text-xs font-semibold">created:</span>
+                      <span className="font-semibold text-slate-900 text-left w-full break-words">{garment['created'] ? new Date(garment['created']).toLocaleDateString() : <span className="text-slate-400 font-normal italic">No data</span>}</span>
                     </div>
                   </div>
 

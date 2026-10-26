@@ -1,19 +1,23 @@
 import React, { useState, useMemo } from 'react';
-import { X, Search, History, Check, Plus, Trash2, ArrowLeft } from 'lucide-react';
+import { X, Search, History, Check, Plus, Trash2, ArrowLeft, Shirt, Sparkles } from 'lucide-react';
 
 export interface PreviousEntryItem {
   value: string;
   count: number;
+  labelCn?: string;
+  meaningCn?: string;
+  sources?: string[];
 }
 
 interface PreviousEntriesModalProps {
   isOpen: boolean;
-  fieldName: string;
+  fieldName?: string;
   fieldLabel: string;
   currentValue?: string;
   entries: PreviousEntryItem[];
   onSelect: (value: string) => void;
   onClose: () => void;
+  onAddOption?: (value: string, labelCn?: string, meaningCn?: string) => void;
 }
 
 export const PreviousEntriesModal: React.FC<PreviousEntriesModalProps> = ({
@@ -31,7 +35,12 @@ export const PreviousEntriesModal: React.FC<PreviousEntriesModalProps> = ({
   const filteredEntries = useMemo(() => {
     if (!searchQuery.trim()) return entries;
     const q = searchQuery.toLowerCase().trim();
-    return entries.filter(e => e.value.toLowerCase().includes(q));
+    return entries.filter(e =>
+      e.value.toLowerCase().includes(q) ||
+      (e.labelCn && e.labelCn.toLowerCase().includes(q)) ||
+      (e.meaningCn && e.meaningCn.toLowerCase().includes(q)) ||
+      (e.sources && e.sources.some(s => s.toLowerCase().includes(q)))
+    );
   }, [entries, searchQuery]);
 
   const hasExactMatch = useMemo(() => {
@@ -44,7 +53,7 @@ export const PreviousEntriesModal: React.FC<PreviousEntriesModalProps> = ({
       id="previous-entries-fullscreen"
       className="fixed inset-0 z-50 bg-white flex flex-col h-screen w-screen overflow-hidden animate-in fade-in duration-150"
     >
-      {/* Full-Screen Top Header: Neutral, Clean Border Styling, No Purple */}
+      {/* Full-Screen Top Header: Neutral, Clean Border Styling */}
       <div className="px-4 sm:px-8 py-3.5 border-b border-slate-200 bg-white flex items-center justify-between gap-3 shrink-0 shadow-2xs">
         <div className="flex items-center gap-3 min-w-0">
           <button
@@ -83,7 +92,7 @@ export const PreviousEntriesModal: React.FC<PreviousEntriesModalProps> = ({
             <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder={`Search or enter new ${fieldLabel.toLowerCase()}...`}
+              placeholder={`Search or enter new ${fieldLabel.toLowerCase()} (or search source clothes e.g. dress)...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               autoFocus
@@ -136,42 +145,90 @@ export const PreviousEntriesModal: React.FC<PreviousEntriesModalProps> = ({
           </button>
 
           {filteredEntries.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="space-y-3 w-full">
               {filteredEntries.map((entry, idx) => {
                 const isSelected = currentValue === entry.value;
                 return (
-                  <button
+                  <div
                     key={idx}
-                    type="button"
                     onClick={() => {
                       onSelect(entry.value);
                       onClose();
                     }}
-                    className={`w-full text-left p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
+                    className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-3 group cursor-pointer ${
                       isSelected
-                        ? 'border-slate-900 bg-white shadow-xs font-bold'
-                        : 'border-slate-200/90 hover:border-slate-400 bg-white'
+                        ? 'border-purple-600 bg-purple-50/80 shadow-xs ring-2 ring-purple-600/30'
+                        : 'border-slate-200 hover:border-purple-300 bg-white hover:bg-slate-50/70 shadow-2xs'
                     }`}
                   >
-                    <div className="flex flex-col items-start gap-1 min-w-0 pr-2">
-                      <span className={`text-xs sm:text-sm truncate ${
-                        isSelected ? 'text-slate-900 font-bold' : 'text-slate-800'
-                      }`}>
-                        {entry.value}
-                      </span>
-                      <span className="text-[10px] font-mono text-slate-500">
-                        Used {entry.count} {entry.count === 1 ? 'time' : 'times'}
-                      </span>
+                    <div className="flex-1 min-w-0 space-y-2">
+                      <div className="flex items-start gap-2 flex-wrap justify-between">
+                        <div className="text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words [overflow-wrap:break-word] text-slate-900 font-semibold select-text flex-1 min-w-0">
+                          {entry.value}
+                        </div>
+                        {entry.labelCn && entry.labelCn !== entry.value && (
+                          <span className="text-[11px] text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-full font-medium shrink-0">
+                            {entry.labelCn}
+                          </span>
+                        )}
+                      </div>
+
+                      {entry.meaningCn && (
+                        <div className="text-[11px] text-slate-700 bg-purple-50/90 rounded-xl px-3 py-2 border border-purple-200/80 text-left w-full space-y-1">
+                          <span className="font-semibold text-purple-950 flex items-center gap-1">
+                            <Sparkles className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                            <span>Meaning CN / 体感定义:</span>
+                          </span>
+                          <p className="whitespace-pre-wrap break-words [overflow-wrap:break-word] text-slate-800 leading-relaxed font-sans">
+                            {entry.meaningCn}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Badges: Usage frequency and Garment Sources */}
+                      <div className="flex items-center gap-2 pt-1 flex-wrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-slate-100 text-slate-600 border border-slate-200/80 shrink-0">
+                          {entry.count > 0 ? `Used ${entry.count} ${entry.count === 1 ? 'time' : 'times'}` : 'Preset Option'}
+                        </span>
+
+                        {entry.sources && entry.sources.length > 0 && (
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-bold text-slate-600 flex items-center gap-1 shrink-0">
+                              <Shirt className="w-3.5 h-3.5 text-purple-600" />
+                              <span>来源衣物:</span>
+                            </span>
+                            {entry.sources.map((src, sIdx) => (
+                              <span
+                                key={sIdx}
+                                className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-semibold bg-purple-100/90 text-purple-900 border border-purple-300 shadow-2xs whitespace-normal break-words"
+                                title={`来自历史衣橱记录: ${src}`}
+                              >
+                                👕 {src}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    {isSelected ? (
-                      <span className="p-1 rounded-lg border border-slate-900 text-slate-900 shrink-0">
-                        <Check className="w-3.5 h-3.5" />
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-slate-400 font-medium">Select</span>
-                    )}
-                  </button>
+                    <div className="shrink-0 flex items-center gap-2 self-end sm:self-start pt-1 sm:pt-0">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelect(entry.value);
+                          onClose();
+                        }}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                          isSelected
+                            ? 'bg-purple-700 text-white ring-2 ring-purple-300'
+                            : 'bg-purple-600 hover:bg-purple-700 text-white active:scale-95'
+                        }`}
+                      >
+                        {isSelected ? '✓ 当前已选' : '选择此项 (Use)'}
+                      </button>
+                    </div>
+                  </div>
                 );
               })}
             </div>

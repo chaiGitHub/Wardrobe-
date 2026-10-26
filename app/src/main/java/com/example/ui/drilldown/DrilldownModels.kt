@@ -289,8 +289,15 @@ val DEFAULT_DRILL_PRESETS: List<DrillPreset> = listOf(
     DrillPreset(
         id = "preset-aircond-hot",
         name = "Aircond Suitable: Upper Body (not cold / hot)",
-        description = "Tier 1: when with aircond: hot feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-        groupTiers = listOf("when with aircond: hot feeling", "Clothes Type"),
+        description = "L1: Clothes Type, L2: wet, L3: aircond hot feeling, L4: aircond leg feeling, L5: beautiful, L6: beatiful reason",
+        groupTiers = listOf(
+            "Clothes Type",
+            "wet",
+            "when with aircond: hot feeling",
+            "when with aircond: leg feeling",
+            "beautiful",
+            "beatiful reason"
+        ),
         sortField = "Name",
         sortOrder = "asc",
         visibleFields = listOf(

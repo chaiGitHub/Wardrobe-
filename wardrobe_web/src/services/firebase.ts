@@ -1,11 +1,10 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDocFromServer } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+/**
+ * Local Application - Cloud services decoupled
+ */
 
-const app = initializeApp(firebaseConfig);
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-export const auth = getAuth(app);
+export const db = null;
+export const auth = null;
+export const storage = null;
 
 export enum OperationType {
   CREATE = 'create',
@@ -14,77 +13,20 @@ export enum OperationType {
   LIST = 'list',
   GET = 'get',
   WRITE = 'write',
-}
-
-export interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  };
+  STORAGE_UPLOAD = 'storage_upload',
+  STORAGE_DOWNLOAD = 'storage_download',
+  STORAGE_DELETE = 'storage_delete',
 }
 
 export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid || null,
-      email: auth.currentUser?.email || null,
-      emailVerified: auth.currentUser?.emailVerified || null,
-      isAnonymous: auth.currentUser?.isAnonymous || null,
-      tenantId: auth.currentUser?.tenantId || null,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  return errInfo;
+  console.warn('Local Operation Info:', operationType, path, error);
+  return { error: String(error), operationType, path, authInfo: {} };
 }
 
 export function sanitizeForFirestore<T = any>(obj: T): T {
-  if (obj === undefined) {
-    return null as any;
-  }
-  if (obj === null || typeof obj !== 'object') {
-    return obj;
-  }
-  if (Array.isArray(obj)) {
-    return obj.map(sanitizeForFirestore) as any;
-  }
-  const clean: Record<string, any> = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (value !== undefined) {
-      clean[key] = sanitizeForFirestore(value);
-    }
-  }
-  return clean as any;
+  return obj;
 }
 
 export async function testFirestoreConnection(): Promise<boolean> {
-  try {
-    // Check against an allowed path in firestore.rules
-    await getDocFromServer(doc(db, 'clothes', 'connection-check'));
-    return true;
-  } catch (error) {
-    if (error instanceof Error && (error.message.includes('offline') || error.message.includes('unavailable'))) {
-      console.warn('Firebase client is offline or unavailable, working in local-first mode.');
-      return false;
-    }
-    // Any other response like document not found means connection reached the server!
-    return true;
-  }
+  return true;
 }
-

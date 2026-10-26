@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { PictureAttachment } from '../types';
 import { resolveImageSource } from '../utils/imageUtils';
-import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Download, Move } from 'lucide-react';
+import { X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight, Download, Move, ImageOff, ArrowLeft } from 'lucide-react';
 
 interface ImageViewerModalProps {
   images: PictureAttachment[];
@@ -151,17 +151,25 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   return (
     <div
       id="fullscreen-image-viewer"
-      className="fixed inset-0 z-50 bg-black/95 text-white flex flex-col select-none animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 bg-black/95 text-white flex flex-col select-none animate-in fade-in duration-200 w-full max-w-full h-full overflow-hidden"
       onWheel={handleWheel}
       onMouseUp={handleMouseUp}
     >
       {/* Top Header Controls */}
-      <div className="flex items-center justify-between px-4 sm:px-6 py-3 bg-black/60 backdrop-blur-md border-b border-white/10 shrink-0 z-10">
-        <div className="flex items-center gap-3">
-          <span className="text-xs sm:text-sm font-bold font-mono tracking-wider text-slate-300">
+      <div className="flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3 bg-black/60 backdrop-blur-md border-b border-white/10 shrink-0 z-10 w-full max-w-full overflow-x-hidden">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 -ml-1 sm:ml-0 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
+            title="Back"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <span className="text-xs sm:text-sm font-bold font-mono tracking-wider text-slate-300 shrink-0">
             {currentIndex + 1} / {images.length}
           </span>
-          <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+          <span className="text-xs text-slate-400 font-mono hidden sm:inline truncate max-w-xs">
             {currentImage?.filename || currentImage?.name || 'Garment Picture'}
           </span>
         </div>
@@ -255,7 +263,13 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
             className="select-none rounded-lg shadow-2xl pointer-events-none"
           />
         ) : (
-          <div className="text-slate-400 text-sm">Image not available</div>
+          <div className="flex flex-col items-center justify-center p-6 text-center max-w-sm bg-white/5 border border-white/10 rounded-3xl backdrop-blur-md">
+            <ImageOff className="w-12 h-12 text-amber-400/80 mb-3" />
+            <h4 className="text-base font-bold text-white mb-1">Original Photo Unavailable</h4>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              The external access link for this image has expired. Please upload a fresh photo from your device to save it permanently to local storage.
+            </p>
+          </div>
         )}
 
         {/* Previous Image Arrow */}
@@ -320,7 +334,7 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
                   src={thumbUrl}
                   alt={img.filename || img.name || `thumb ${idx}`}
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain p-0.5"
                 />
               </button>
             );

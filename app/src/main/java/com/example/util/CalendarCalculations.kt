@@ -293,12 +293,23 @@ object CalendarCalculations {
         val internalSessions = gJunctions.map { j ->
             val rep = reportsById[j.wearingReportId]
             val wearDate = resolveJunctionWearDate(j, reportsById)
-            val washDate = normalizeDate(j.washDate.ifBlank { j.washedDate })
+            val rawWash = normalizeDate(j.washDate.ifBlank { j.washedDate })
             val isNeedWash = j.washStated.equals("need wash", ignoreCase = true)
+            var washDate = if (!isNeedWash) {
+                if (rawWash.isNotBlank()) rawWash
+                else if (garment != null && garment.lastWashed.isNotBlank()) normalizeDate(garment.lastWashed)
+                else ""
+            } else ""
+
+            // Safety check: a wash date cannot be before the wear date
+            if (washDate.isNotBlank() && wearDate.isNotBlank() && washDate < wearDate) {
+                washDate = ""
+            }
+
             InternalSession(
                 junction = j,
                 wearDate = wearDate,
-                washDate = if (!isNeedWash) washDate else "",
+                washDate = washDate,
                 isNeedWash = isNeedWash,
                 sessionObj = ContributingSession(
                     junctionId = j.id,

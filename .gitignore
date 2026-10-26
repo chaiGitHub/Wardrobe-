@@ -1,18 +1,46 @@
+# Built application files & packages
+*.apk
+*.aab
+*.dex
+*.class
+*.so
+public/*.apk
+
+# Build output directories
+build/
+app/build/
+.build-outputs/
+bin/
+gen/
+out/
+apk/
+dist/
+
+# Gradle & Kotlin caches
+.gradle/
+.kotlin/
 *.iml
-.gradle
-.kotlin
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+.idea/
+
+# Local configuration
 local.properties
+/local.properties
 .env
+.env.local
+.env.*.local
+
+# Keystores (preserving debug.keystore.base64)
 debug.keystore
+*.jks
+*.keystore
+!debug.keystore.base64
+
+# Platform & system files
+.DS_Store
+Thumbs.db
+captures/
+.externalNativeBuild/
+.cxx/
+.aistudio/
+tmp/
+node_modules/

@@ -64,6 +64,7 @@ import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate500
 import com.example.ui.theme.Slate600
 import com.example.ui.theme.Slate700
+import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 
 import androidx.compose.ui.graphics.Brush
@@ -76,7 +77,6 @@ import androidx.compose.material3.LinearProgressIndicator
 fun AppHeader(
     onLogWearClick: (() -> Unit)? = null,
     onAddItemClick: (() -> Unit)? = null,
-    onApkDownloadClick: (() -> Unit)? = null,
     onPullFromCloudClick: (() -> Unit)? = null,
     onPushToCloudClick: (() -> Unit)? = null,
     isCloudConnected: Boolean = true,
@@ -88,6 +88,9 @@ fun AppHeader(
     activeTab: AppTab = AppTab.CLOSET,
     onTabSelected: ((AppTab) -> Unit)? = null,
     dirtyCount: Int = 0,
+    onFontSizeClick: (() -> Unit)? = null,
+    onNotebookLmClick: (() -> Unit)? = null,
+    isAiPaused: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -177,6 +180,27 @@ fun AppHeader(
                                             fontWeight = FontWeight.Bold,
                                             color = if (isCloudConnected) Color(0xFF047857) else Color(0xFFB45309)
                                         )
+                                    }
+                                }
+
+                                if (isAiPaused) {
+                                    Surface(
+                                        shape = RoundedCornerShape(999.dp),
+                                        color = Color(0xFFFEF3C7),
+                                        border = BorderStroke(1.dp, Color(0xFFFDE68A)),
+                                        modifier = Modifier.clickable { onTabSelected?.invoke(AppTab.ADVISOR) }
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        ) {
+                                            Text(
+                                                text = "⏸️ Zero Token",
+                                                fontSize = 9.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF92400E)
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -392,32 +416,53 @@ fun AppHeader(
                             }
                         }
 
-                        // APK Download button
-                        if (onApkDownloadClick != null) {
+                        // Google NotebookLM Knowledge Base export button
+                        if (onNotebookLmClick != null) {
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
-                                color = Slate900,
+                                color = Color(0xFFEEF2FF),
+                                border = BorderStroke(1.dp, Color(0xFFC7D2FE)),
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onApkDownloadClick() }
-                                    .testTag("header_apk_download_btn")
+                                    .clickable { onNotebookLmClick() }
+                                    .testTag("header_notebooklm_btn")
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Download,
-                                        contentDescription = "APK",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(13.dp)
-                                    )
+                                    Text("📚", fontSize = 11.sp)
                                     Text(
-                                        text = "APK",
+                                        text = "NotebookLM",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = BrandIndigo
+                                    )
+                                }
+                            }
+                        }
+
+                        // Font Size Switcher button (Aa)
+                        if (onFontSizeClick != null) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFF1F5F9),
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onFontSizeClick() }
+                                    .testTag("header_font_size_btn")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "Aa",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        color = Slate800
                                     )
                                 }
                             }

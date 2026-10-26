@@ -241,6 +241,7 @@ fun SyncScreen(
     onResetToSeed: (() -> Unit)? = null,
     onEmptyDatabase: ((Boolean) -> Unit)? = null,
     onUpdateGarmentPhoto: ((GarmentEntity, String) -> Unit)? = null,
+    onOpenNotebookLmModal: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -459,8 +460,7 @@ fun SyncScreen(
                                 val tabs = listOf(
                                     Triple("sheets", "Google Sheets (3 Tabs)", BrandEmerald),
                                     Triple("drive_zip", "Drive ZIP Backup", BrandBlue),
-                                    Triple("local", "Local Export", Slate900),
-                                    Triple("apk", "📦 APK & Build", BrandPurple)
+                                    Triple("local", "Local Export", Slate900)
                                 )
                                 tabs.forEach { (id, label, activeTint) ->
                                     val isSel = cloudTab == id
@@ -976,8 +976,70 @@ fun SyncScreen(
                         }
 
                         // TAB 3: LOCAL EXPORT
-                        "local" -> {
+                        else -> {
                             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                // Google NotebookLM Knowledge Base Export Card (Matching commit b2c0289)
+                                Surface(
+                                    shape = RoundedCornerShape(14.dp),
+                                    color = Color(0xFFEEF2FF),
+                                    border = BorderStroke(1.dp, Color(0xFFC7D2FE)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(12.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(32.dp)
+                                                    .clip(RoundedCornerShape(8.dp))
+                                                    .background(BrandIndigo),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Description,
+                                                    contentDescription = null,
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            }
+                                            Column {
+                                                Text(
+                                                    text = "Google NotebookLM 知识库导出",
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.ExtraBold,
+                                                    color = Slate900
+                                                )
+                                                Text(
+                                                    text = "纯客观事实 Markdown · 零预设观点 · 适合生成播客与深度推理",
+                                                    fontSize = 11.sp,
+                                                    color = BrandIndigo
+                                                )
+                                            }
+                                        }
+
+                                        Button(
+                                            onClick = { onOpenNotebookLmModal?.invoke() },
+                                            colors = ButtonDefaults.buttonColors(containerColor = BrandIndigo),
+                                            shape = RoundedCornerShape(10.dp),
+                                            modifier = Modifier.fillMaxWidth().height(40.dp).testTag("export_notebooklm_button")
+                                        ) {
+                                            Icon(Icons.Default.Description, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = "📚 打开 NotebookLM 知识库预览与导出",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+
                                 Button(
                                     onClick = { createZipLauncher.launch("wardrobe-full-backup-$timeStamp.zip") },
                                     colors = ButtonDefaults.buttonColors(containerColor = BrandEmerald),
@@ -1056,164 +1118,6 @@ fun SyncScreen(
                                             softWrap = false,
                                             modifier = Modifier.buttonMarquee()
                                         )
-                                    }
-                                }
-                            }
-                        }
-
-                        // TAB 4: APK PACKAGE & DOWNLOAD
-                        else -> {
-                            Surface(
-                                shape = RoundedCornerShape(16.dp),
-                                color = Color(0xFFFAF5FF),
-                                border = BorderStroke(1.dp, Color(0xFFDDD6FE)),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(
-                                    modifier = Modifier.padding(14.dp),
-                                    verticalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(34.dp)
-                                                .clip(RoundedCornerShape(8.dp))
-                                                .background(BrandPurple),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Android,
-                                                contentDescription = null,
-                                                tint = Color.White,
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                        }
-                                        Column {
-                                            Text(
-                                                text = "Android APK Package (安装包导出与下载)",
-                                                fontSize = 13.sp,
-                                                fontWeight = FontWeight.ExtraBold,
-                                                color = Slate900
-                                            )
-                                            Text(
-                                                text = "Version 1.0.0 (Debug Signed) · Ready for Installation",
-                                                fontSize = 11.sp,
-                                                color = BrandPurple,
-                                                fontWeight = FontWeight.SemiBold
-                                            )
-                                        }
-                                    }
-
-                                    Text(
-                                        text = "随时直接提取或分享当前应用的安装包，无需每次由 AI 自动重新编译：",
-                                        fontSize = 11.sp,
-                                        color = Slate600,
-                                        lineHeight = 15.sp
-                                    )
-
-                                    // APK details card
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = Color.White,
-                                        border = BorderStroke(1.dp, Color(0xFFE9D5FF))
-                                    ) {
-                                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                                Text("文件名 (File):", fontSize = 11.sp, color = Slate500)
-                                                Text("myward2.apk", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800, fontFamily = FontFamily.Monospace)
-                                            }
-                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                                Text("包名 (Package):", fontSize = 11.sp, color = Slate500)
-                                                Text(context.packageName, fontSize = 11.sp, color = Slate700, fontFamily = FontFamily.Monospace)
-                                            }
-                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                                Text("大小 (Size):", fontSize = 11.sp, color = Slate500)
-                                                Text("~44 MB", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = BrandEmerald)
-                                            }
-                                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                                Text("位置 (Location):", fontSize = 11.sp, color = Slate500)
-                                                Text("apk/myward2.apk", fontSize = 11.sp, color = Slate700, fontFamily = FontFamily.Monospace)
-                                            }
-                                        }
-                                    }
-
-                                    // Action Buttons
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        Button(
-                                            onClick = {
-                                                try {
-                                                    val srcApk = File(context.applicationInfo.sourceDir)
-                                                    val dest = File(context.cacheDir, "myward2.apk")
-                                                    srcApk.copyTo(dest, overwrite = true)
-                                                    val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", dest)
-                                                    val intent = Intent(Intent.ACTION_SEND).apply {
-                                                        type = "application/vnd.android.package-archive"
-                                                        putExtra(Intent.EXTRA_STREAM, uri)
-                                                        putExtra(Intent.EXTRA_SUBJECT, "Smart Wardrobe App APK (myward2.apk)")
-                                                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                                    }
-                                                    context.startActivity(Intent.createChooser(intent, "分享 / 保存 APK 安装包"))
-                                                } catch (e: Exception) {
-                                                    cloudBannerMsg = "提取 APK 失败: ${e.message}"
-                                                }
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
-                                            shape = RoundedCornerShape(10.dp),
-                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                                            modifier = Modifier.weight(1f)
-                                        ) {
-                                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "导出/分享 APK",
-                                                fontSize = 11.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                maxLines = 1,
-                                                softWrap = false,
-                                                modifier = Modifier.buttonMarquee()
-                                            )
-                                        }
-
-                                        OutlinedButton(
-                                            onClick = {
-                                                cloudBannerMsg = "已定位 APK！可在 Google AI Studio 左侧文件栏中直接右键 'apk/myward2.apk' 点击 Download 下载。"
-                                            },
-                                            shape = RoundedCornerShape(10.dp),
-                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
-                                            modifier = Modifier.weight(1f)
-                                        ) {
-                                            Icon(Icons.Default.Download, contentDescription = null, tint = Slate700, modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text(
-                                                text = "AI Studio 下载指引",
-                                                fontSize = 11.sp,
-                                                color = Slate800,
-                                                maxLines = 1,
-                                                softWrap = false,
-                                                modifier = Modifier.buttonMarquee()
-                                            )
-                                        }
-                                    }
-
-                                    // How to download instructions
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = Color.White,
-                                        border = BorderStroke(1.dp, Slate200)
-                                    ) {
-                                        Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                            Text("💡 如何在 Google AI Studio 中下载 APK：", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Slate800)
-                                            Text("1. 在左侧文件树直接进入 apk 目录找到 myward2.apk 文件", fontSize = 10.sp, color = Slate600)
-                                            Text("2. 鼠标右键点击该文件，选择「Download」下载到电脑或手机", fontSize = 10.sp, color = Slate600)
-                                            Text("3. 或者点击右上角设置/齿轮菜单 ->「Download APK」", fontSize = 10.sp, color = Slate600)
-                                            Text("4. 【免频繁自动打包】：后续只需调整功能时，不会每次自动重新编译 APK，仅在您需要时才生成！", fontSize = 10.sp, color = BrandPurple, fontWeight = FontWeight.SemiBold)
-                                        }
                                     }
                                 }
                             }

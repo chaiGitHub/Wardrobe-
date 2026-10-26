@@ -30,8 +30,9 @@ import com.example.ui.components.AppBottomNavigationBar
 import com.example.ui.components.AppHeader
 import com.example.ui.dialogs.AddGarmentDialog
 import com.example.ui.dialogs.AddReportDialog
-import com.example.ui.dialogs.ApkExportModal
 import com.example.ui.dialogs.FieldDictionaryModal
+import com.example.ui.dialogs.FontSizeModal
+import com.example.ui.dialogs.NotebookLmPreviewModal
 import com.example.ui.dialogs.GarmentDetailDialog
 import com.example.ui.dialogs.JunctionAIModal
 import com.example.ui.dialogs.SessionDetailModal
@@ -43,14 +44,33 @@ import com.example.ui.screens.JournalScreen
 import com.example.ui.screens.LaundryScreen
 import com.example.ui.screens.SyncScreen
 import com.example.ui.theme.MyApplicationTheme
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.example.util.ThemeUtils
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyApplicationTheme {
-                WardrobeMainApp()
+            val context = LocalContext.current
+            var fontScale by remember { mutableStateOf(ThemeUtils.getSavedFontScale(context)) }
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    density = LocalDensity.current.density,
+                    fontScale = fontScale
+                )
+            ) {
+                MyApplicationTheme {
+                    WardrobeMainApp(
+                        currentFontScale = fontScale,
+                        onFontScaleChange = { newScale ->
+                            fontScale = newScale
+                            ThemeUtils.saveFontScale(context, newScale)
+                        }
+                    )
+                }
             }
         }
     }
@@ -58,7 +78,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun WardrobeMainApp(
-    viewModel: WardrobeViewModel = viewModel()
+    viewModel: WardrobeViewModel = viewModel(),
+    currentFontScale: Float = 1.0f,
+    onFontScaleChange: (Float) -> Unit = {}
 ) {
     val context = LocalContext.current
     val clothes by viewModel.clothes.collectAsState()
@@ -73,21 +95,31 @@ fun WardrobeMainApp(
     val savedAiReports by viewModel.savedAiReports.collectAsState()
     val activeJunctionForAi by viewModel.activeJunctionForAi.collectAsState()
     val isExporting by viewModel.isExporting.collectAsState()
+    val isAiPaused by viewModel.isAiPaused.collectAsState()
 
     var isSyncing by remember { mutableStateOf(false) }
     var syncMessage by remember { mutableStateOf("") }
 
-    var showAddGarmentDialog by remember { mutableStateOf(false) }
-    var showAddReportDialog by remember { mutableStateOf(false) }
-    var editingReport by remember { mutableStateOf<ReportEntity?>(null) }
-    var selectedGarmentForDetail by remember { mutableStateOf<GarmentEntity?>(null) }
-    var selectedReportForDetail by remember { mutableStateOf<ReportEntity?>(null) }
-    var showApkExportModal by remember { mutableStateOf(false) }
+    val showAddGarmentDialog by viewModel.showAddGarmentDialog.collectAsState()
+    val showAddReportDialog by viewModel.showAddReportDialog.collectAsState()
+    val editingReport by viewModel.editingReport.collectAsState()
+    val selectedGarmentForDetail by viewModel.selectedGarmentForDetail.collectAsState()
+    val selectedReportForDetail by viewModel.selectedReportForDetail.collectAsState()
     var showFieldDictionaryModal by remember { mutableStateOf(false) }
+    var showNotebookLmModal by remember { mutableStateOf(false) }
+    var showFontSizeModal by remember { mutableStateOf(false) }
     var washTargetGarment by remember { mutableStateOf<GarmentEntity?>(null) }
 
-    val dirtyCount = remember(junctions) {
-        junctions.count { it.washStated.equals("need wash", ignoreCase = true) }
+    val dirtyCount = remember(clothes, junctions) {
+        val dirtyGarmentIds = junctions
+            .filter { it.washStated.equals("need wash", ignoreCase = true) }
+            .map { it.clothesId }
+            .toSet()
+        if (clothes.isNotEmpty()) {
+            clothes.count { it.id in dirtyGarmentIds }
+        } else {
+            dirtyGarmentIds.size
+        }
     }
 
     BackHandler(
@@ -97,22 +129,21 @@ fun WardrobeMainApp(
                 selectedReportForDetail != null ||
                 activeJunctionForAi != null ||
                 washTargetGarment != null ||
-                showApkExportModal ||
                 showFieldDictionaryModal ||
+                showNotebookLmModal ||
+                showFontSizeModal ||
                 activeTab != AppTab.CLOSET
     ) {
         when {
             washTargetGarment != null -> washTargetGarment = null
-            showAddGarmentDialog -> showAddGarmentDialog = false
-            showAddReportDialog -> {
-                showAddReportDialog = false
-                editingReport = null
-            }
-            selectedGarmentForDetail != null -> selectedGarmentForDetail = null
-            selectedReportForDetail != null -> selectedReportForDetail = null
+            showAddGarmentDialog -> viewModel.openAddGarment(false)
+            showAddReportDialog -> viewModel.closeAddReport()
+            selectedGarmentForDetail != null -> viewModel.openGarmentDetail(null)
+            selectedReportForDetail != null -> viewModel.openReportDetail(null)
             activeJunctionForAi != null -> viewModel.selectJunctionForAi(null)
-            showApkExportModal -> showApkExportModal = false
             showFieldDictionaryModal -> showFieldDictionaryModal = false
+            showNotebookLmModal -> showNotebookLmModal = false
+            showFontSizeModal -> showFontSizeModal = false
             activeTab != AppTab.CLOSET -> viewModel.setTab(AppTab.CLOSET)
         }
     }
@@ -121,14 +152,10 @@ fun WardrobeMainApp(
         topBar = {
             AppHeader(
                 onLogWearClick = {
-                    editingReport = null
-                    showAddReportDialog = true
+                    viewModel.openAddReport()
                 },
                 onAddItemClick = {
-                    showAddGarmentDialog = true
-                },
-                onApkDownloadClick = {
-                    showApkExportModal = true
+                    viewModel.openAddGarment(true)
                 },
                 onPullFromCloudClick = {
                     isSyncing = true
@@ -156,7 +183,10 @@ fun WardrobeMainApp(
                 reportsCount = reports.size,
                 activeTab = activeTab,
                 onTabSelected = { viewModel.setTab(it) },
-                dirtyCount = dirtyCount
+                dirtyCount = dirtyCount,
+                onFontSizeClick = { showFontSizeModal = true },
+                onNotebookLmClick = { showNotebookLmModal = true },
+                isAiPaused = isAiPaused
             )
         },
         bottomBar = {
@@ -183,8 +213,8 @@ fun WardrobeMainApp(
                     searchQuery = searchQuery,
                     onFilterSelected = { viewModel.setClosetFilter(it) },
                     onSearchChanged = { viewModel.setSearchQuery(it) },
-                    onGarmentClick = { selectedGarmentForDetail = it },
-                    onAddGarmentClick = { showAddGarmentDialog = true },
+                    onGarmentClick = { viewModel.openGarmentDetail(it) },
+                    onAddGarmentClick = { viewModel.openAddGarment(true) },
                     onUpdateGarmentPhoto = { garment, photoUri ->
                         val picturesList = try {
                             val arr = org.json.JSONArray(garment.pictures)
@@ -217,18 +247,17 @@ fun WardrobeMainApp(
                     onUndoLastWash = { callback ->
                         viewModel.undoLastWash(callback)
                     },
-                    onSelectGarment = { selectedGarmentForDetail = it }
+                    onSelectGarment = { viewModel.openGarmentDetail(it) }
                 )
                 AppTab.JOURNAL, AppTab.CALENDAR -> JournalScreen(
                     reports = reports,
                     junctions = junctions,
                     clothes = clothes,
                     onAddReportClick = {
-                        editingReport = null
-                        showAddReportDialog = true
+                        viewModel.openAddReport()
                     },
                     onDeleteReportClick = { viewModel.deleteReport(it) },
-                    onSelectGarment = { selectedGarmentForDetail = it },
+                    onSelectGarment = { viewModel.openGarmentDetail(it) },
                     onUpdateWashStatus = { jId, status ->
                         viewModel.markJunctionWashStatus(jId, status)
                     },
@@ -250,9 +279,10 @@ fun WardrobeMainApp(
                     clothes = clothes,
                     reports = reports,
                     junctions = junctions,
-                    onSelectGarment = { selectedGarmentForDetail = it },
-                    onSelectReport = { selectedReportForDetail = it },
-                    onDeleteGarment = { viewModel.deleteGarment(it) }
+                    onSelectGarment = { viewModel.openGarmentDetail(it) },
+                    onSelectReport = { viewModel.openReportDetail(it) },
+                    onDeleteGarment = { viewModel.deleteGarment(it) },
+                    viewModel = viewModel
                 )
                 AppTab.ADVISOR -> AdvisorScreen(
                     clothes = clothes,
@@ -262,14 +292,15 @@ fun WardrobeMainApp(
                     aiAdvice = aiAdviceText,
                     isGenerating = isGeneratingAdvice,
                     onSelectGarment = { viewModel.selectGarmentForAdvice(it) },
-                    onOpenGarmentDetail = { selectedGarmentForDetail = it },
-                    onSelectReport = { selectedReportForDetail = it },
+                    onOpenGarmentDetail = { viewModel.openGarmentDetail(it) },
+                    onSelectReport = { viewModel.openReportDetail(it) },
                     viewModel = viewModel,
                     savedReports = savedAiReports,
                     onSaveReport = { title, cat, content ->
                         viewModel.saveAiReport(title, cat, content)
                     },
-                    onDeleteSavedReport = { viewModel.deleteSavedAiReport(it) }
+                    onDeleteSavedReport = { viewModel.deleteSavedAiReport(it) },
+                    onOpenNotebookLmModal = { showNotebookLmModal = true }
                 )
                 AppTab.SYNC -> SyncScreen(
                     clothes = clothes,
@@ -317,7 +348,8 @@ fun WardrobeMainApp(
                             org.json.JSONArray(listOf(photoUri)).toString()
                         }
                         viewModel.addOrUpdateGarment(garment.copy(pictures = picturesList))
-                    }
+                    },
+                    onOpenNotebookLmModal = { showNotebookLmModal = true }
                 )
             }
         }
@@ -326,56 +358,64 @@ fun WardrobeMainApp(
     if (showAddGarmentDialog) {
         AddGarmentDialog(
             existingClothes = clothes,
-            onDismiss = { showAddGarmentDialog = false },
+            onDismiss = { viewModel.openAddGarment(false) },
             onSave = { newGarment ->
                 viewModel.addOrUpdateGarment(newGarment)
-                showAddGarmentDialog = false
+                viewModel.openAddGarment(false)
             }
         )
     }
 
     selectedGarmentForDetail?.let { garment ->
+        val currentGarment = clothes.find { it.id == garment.id } ?: garment
         GarmentDetailDialog(
-            garment = garment,
+            garment = currentGarment,
             existingClothes = clothes,
             junctions = junctions,
             reports = reports,
-            onDismiss = { selectedGarmentForDetail = null },
+            isAiPaused = isAiPaused,
+            onDismiss = { viewModel.openGarmentDetail(null) },
             onDelete = { id ->
                 viewModel.deleteGarment(id)
-                selectedGarmentForDetail = null
+                viewModel.openGarmentDetail(null)
             },
             onSaveGarment = { updated ->
                 viewModel.addOrUpdateGarment(updated)
-                selectedGarmentForDetail = null
+                viewModel.openGarmentDetail(updated)
             },
             onMarkWashNow = { g ->
                 washTargetGarment = g
             },
             onSelectReport = { report ->
-                selectedReportForDetail = report
+                viewModel.openReportDetail(report)
             }
         )
     }
 
     if (showAddReportDialog) {
+        val editJunctions = editingReport?.let { rep ->
+            junctions.filter { j ->
+                j.wearingReportId == rep.id ||
+                (rep.name.isNotBlank() && (j.wearingReportTitle.equals(rep.name, ignoreCase = true) || j.wearingReportId.equals(rep.name, ignoreCase = true))) ||
+                (rep.id.isNotBlank() && j.wearingReportTitle.equals(rep.id, ignoreCase = true))
+            }
+        } ?: emptyList()
         AddReportDialog(
             clothes = clothes,
             existingReports = reports,
             initialReport = editingReport,
+            initialJunctions = editJunctions,
+            allJunctions = junctions,
             onDismiss = {
-                showAddReportDialog = false
-                editingReport = null
+                viewModel.closeAddReport()
             },
             onSave = { report, gPairs ->
                 viewModel.addWearingReport(report, gPairs)
-                showAddReportDialog = false
-                editingReport = null
+                viewModel.closeAddReport()
             },
             onSaveWithWashMap = { report, gPairs, washMap ->
                 viewModel.addWearingReport(report, gPairs, washMap)
-                showAddReportDialog = false
-                editingReport = null
+                viewModel.closeAddReport()
             }
         )
     }
@@ -386,16 +426,15 @@ fun WardrobeMainApp(
             report = report,
             junctions = junctions,
             clothes = clothes,
-            onClose = { selectedReportForDetail = null },
-            onSelectGarment = { g -> selectedGarmentForDetail = g },
+            onClose = { viewModel.openReportDetail(null) },
+            onSelectGarment = { g -> viewModel.openGarmentDetail(g) },
             onUpdateWashStatus = { jId, status -> viewModel.markJunctionWashStatus(jId, status) },
             onDeleteReport = { rId ->
                 viewModel.deleteReport(rId)
-                selectedReportForDetail = null
+                viewModel.openReportDetail(null)
             },
             onEditReport = { r ->
-                editingReport = r
-                showAddReportDialog = true
+                viewModel.openAddReport(r)
             },
             onUpdateReport = { updated -> viewModel.updateReport(updated) },
             onDeleteJunction = { jId -> viewModel.deleteJunction(jId) },
@@ -428,15 +467,29 @@ fun WardrobeMainApp(
         )
     }
 
-    if (showApkExportModal) {
-        ApkExportModal(
-            onDismiss = { showApkExportModal = false }
-        )
-    }
-
     if (showFieldDictionaryModal) {
         FieldDictionaryModal(
             onDismiss = { showFieldDictionaryModal = false }
+        )
+    }
+
+    if (showNotebookLmModal) {
+        NotebookLmPreviewModal(
+            clothes = clothes,
+            reports = reports,
+            junctions = junctions,
+            onDismiss = { showNotebookLmModal = false }
+        )
+    }
+
+    if (showFontSizeModal) {
+        FontSizeModal(
+            currentScale = currentFontScale,
+            onScaleSelected = { scale ->
+                onFontScaleChange(scale)
+                showFontSizeModal = false
+            },
+            onDismiss = { showFontSizeModal = false }
         )
     }
 }

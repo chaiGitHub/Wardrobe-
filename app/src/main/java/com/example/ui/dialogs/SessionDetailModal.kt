@@ -134,8 +134,12 @@ fun SessionDetailModal(
     if (!isOpen || report == null) return
     val context = LocalContext.current
 
-    val sessionJunctions = remember(report.id, junctions) {
-        junctions.filter { it.wearingReportId == report.id }
+    val sessionJunctions = remember(report.id, report.name, junctions) {
+        junctions.filter { j ->
+            j.wearingReportId == report.id ||
+            (report.name.isNotBlank() && (j.wearingReportTitle.equals(report.name, ignoreCase = true) || j.wearingReportId.equals(report.name, ignoreCase = true))) ||
+            (report.id.isNotBlank() && j.wearingReportTitle.equals(report.id, ignoreCase = true))
+        }
     }
 
     // Format dates nicely (e.g. "Mon, Sep 21, 2026" and "Sep 21, 2026")
@@ -149,9 +153,9 @@ fun SessionDetailModal(
         formatReportDate(report.wearDate, "MMM d, yyyy")
     }
 
-    val totalDurationMin = remember(sessionJunctions) {
+    val totalDurationFormatted = remember(sessionJunctions) {
         val maxSec = sessionJunctions.maxOfOrNull { it.duration } ?: 0L
-        if (maxSec > 0) (maxSec / 60).toInt() else 20
+        formatHoursCompact(if (maxSec > 0) maxSec else 1200L)
     }
     val hasDirtyLaundry = remember(sessionJunctions) {
         sessionJunctions.any { it.washStated.contains("need wash", ignoreCase = true) || it.washStated.isBlank() }
@@ -196,16 +200,13 @@ fun SessionDetailModal(
 
     Dialog(
         onDismissRequest = onClose,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.95f)
+                .fillMaxSize()
                 .testTag("session_detail_modal"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            color = Color(0xFFF8FAFC)
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 // 1. TOP BAR (IMG_9720: <- | REPORT Mon, Sep 21 / Title | +AI | Edit | Delete | Close)
@@ -426,7 +427,7 @@ fun SessionDetailModal(
                                     // Duration Pill
                                     HeroPillBadge(
                                         icon = Icons.Default.Schedule,
-                                        text = "${totalDurationMin}m"
+                                        text = totalDurationFormatted
                                     )
                                     // Garment count Pill
                                     HeroPillBadge(
@@ -740,13 +741,15 @@ fun SessionDetailModal(
                                 } else {
                                     sessionJunctions.forEach { junction ->
                                         val garment = clothes.find { it.id == junction.clothesId }
+                                            ?: clothes.find { junction.clothesTitle.isNotBlank() && it.name.equals(junction.clothesTitle, ignoreCase = true) }
+                                            ?: clothes.find { junction.clothesId.isNotBlank() && it.name.equals(junction.clothesId, ignoreCase = true) }
                                         val photoModel = remember(garment?.pictures) {
                                             ImageUtils.resolveFirstValidPhoto(garment?.pictures, context)?.let {
                                                 ImageUtils.resolveImageModel(it, context)
                                             }
                                         }
                                         val isNeedWash = junction.washStated.contains("need wash", ignoreCase = true) || junction.washStated.isBlank()
-                                        val jMin = maxOf(1, (junction.duration / 60).toInt())
+                                        val jDurationStr = formatHoursCompact(junction.duration)
 
                                         Surface(
                                             shape = RoundedCornerShape(18.dp),
@@ -826,7 +829,7 @@ fun SessionDetailModal(
                                                                         modifier = Modifier.size(13.dp)
                                                                     )
                                                                     Text(
-                                                                        text = "${jMin}m",
+                                                                        text = jDurationStr,
                                                                         fontSize = 11.sp,
                                                                         fontFamily = FontFamily.Monospace,
                                                                         color = Slate600
@@ -1445,9 +1448,11 @@ fun SessionDetailModal(
 
                                                     sessionJunctions.forEachIndexed { idx, j ->
                                                         val g = clothes.find { it.id == j.clothesId }
+                                                            ?: clothes.find { j.clothesTitle.isNotBlank() && it.name.equals(j.clothesTitle, ignoreCase = true) }
+                                                            ?: clothes.find { j.clothesId.isNotBlank() && it.name.equals(j.clothesId, ignoreCase = true) }
                                                         val isDirty = j.washStated.contains("need wash", ignoreCase = true) || j.washStated.isBlank()
                                                         val rowNum = if (j.name > 0) j.name else (101 + idx)
-                                                        val durMin = maxOf(1, (j.duration / 60).toInt())
+                                                        val durFormatted = formatHoursCompact(j.duration)
 
                                                         Row(
                                                             modifier = Modifier.padding(vertical = 12.dp, horizontal = 12.dp),
@@ -1484,7 +1489,7 @@ fun SessionDetailModal(
                                                             // DURATION
                                                             Column(modifier = Modifier.width(90.dp)) {
                                                                 Text(
-                                                                    text = "${durMin}m",
+                                                                    text = durFormatted,
                                                                     fontSize = 12.sp,
                                                                     fontFamily = FontFamily.Monospace,
                                                                     color = Slate800
@@ -1749,6 +1754,8 @@ fun SessionDetailModal(
     // Junction AI Diagnosis Modal
     activeAiJunction?.let { junc ->
         val g = clothes.find { it.id == junc.clothesId }
+            ?: clothes.find { junc.clothesTitle.isNotBlank() && it.name.equals(junc.clothesTitle, ignoreCase = true) }
+            ?: clothes.find { junc.clothesId.isNotBlank() && it.name.equals(junc.clothesId, ignoreCase = true) }
         JunctionAIModal(
             junction = junc,
             garment = g,
@@ -1774,6 +1781,8 @@ fun SessionDetailModal(
     // Confirmation Dialog for unlinking / deleting Junction
     pendingDeleteJunction?.let { target ->
         val g = clothes.find { it.id == target.clothesId }
+            ?: clothes.find { target.clothesTitle.isNotBlank() && it.name.equals(target.clothesTitle, ignoreCase = true) }
+            ?: clothes.find { target.clothesId.isNotBlank() && it.name.equals(target.clothesId, ignoreCase = true) }
         val gName = g?.name ?: target.clothesTitle.ifBlank { "Garment" }
         AlertDialog(
             onDismissRequest = { pendingDeleteJunction = null },
@@ -1962,4 +1971,15 @@ fun formatReportDate(rawDate: String, pattern: String): String {
         } catch (_: Exception) {}
     }
     return rawDate
+}
+
+fun formatHoursCompact(seconds: Long): String {
+    if (seconds <= 0L) return "0h"
+    val hours = seconds / 3600.0
+    return if (hours == kotlin.math.floor(hours)) {
+        "${hours.toLong()}h"
+    } else {
+        val formatted = String.format(Locale.US, "%.1f", hours)
+        if (formatted.endsWith(".0")) "${formatted.substringBefore(".")}h" else "${formatted}h"
+    }
 }

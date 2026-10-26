@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,8 +17,6 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Divider
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -33,28 +30,19 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.example.data.model.GarmentEntity
 import com.example.data.model.JunctionEntity
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandEmerald
-import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.Slate100
-import com.example.ui.theme.Slate200
 import com.example.ui.theme.Slate400
 import com.example.ui.theme.Slate500
-import com.example.ui.theme.Slate600
 import com.example.ui.theme.Slate700
-import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import com.example.util.ImageUtils
-import org.json.JSONArray
-import java.io.File
-import java.util.Locale
 
 @Composable
 fun DrillRecordRow(
@@ -73,23 +61,25 @@ fun DrillRecordRow(
         ImageUtils.resolveImageModel(it, context)
     }
 
-    val totalWashedCount = garment.wearingFrequency + garment.trackedAppWashes
+    val otherFields = remember(preset.visibleFields) {
+        preset.visibleFields.filter { it != "Name" && it != "wash stated" }
+    }
 
-    Column(
+    Row(
         modifier = modifier
-            .fillMaxWidth()
             .testTag("drill_row_${garment.id}")
             .background(Color.White)
             .clickable { onSelect(garment) }
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        // Thumbnail + Clothes Full Name (No truncation)
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier.width(260.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            // Photo Thumbnail (40x40)
             Box(
                 modifier = Modifier
                     .size(42.dp)
@@ -113,41 +103,25 @@ fun DrillRecordRow(
                     )
                 }
             }
-
-            // Garment Title & Category / Material
-            Column(modifier = Modifier.weight(1f)) {
+            Column {
                 Text(
                     text = garment.name.ifBlank { "Unnamed Garment" },
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
                     color = Slate900,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    softWrap = false
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = garment.clothesType.ifBlank { "Garment" },
-                        fontSize = 11.sp,
-                        color = Slate500,
-                        fontWeight = FontWeight.Medium
-                    )
-                    if (garment.material.isNotBlank()) {
-                        Text(text = "·", fontSize = 11.sp, color = Slate400)
-                        Text(
-                            text = garment.material,
-                            fontSize = 11.sp,
-                            color = Slate500,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+                Text(
+                    text = garment.clothesType.ifBlank { "Garment" },
+                    fontSize = 10.sp,
+                    color = Slate500,
+                    fontWeight = FontWeight.Medium
+                )
             }
+        }
 
-            // Wash Status Pill
+        // Wash Status Pill
+        Box(modifier = Modifier.width(110.dp)) {
             Surface(
                 shape = RoundedCornerShape(6.dp),
                 color = if (stats.needWash) BrandAmber.copy(alpha = 0.15f) else BrandEmerald.copy(alpha = 0.15f),
@@ -158,42 +132,43 @@ fun DrillRecordRow(
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(3.dp),
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                 ) {
                     Icon(
                         imageVector = if (stats.needWash) Icons.Default.Warning else Icons.Default.CheckCircle,
                         contentDescription = null,
                         tint = if (stats.needWash) Color(0xFFB45309) else BrandEmerald,
-                        modifier = Modifier.size(10.dp)
+                        modifier = Modifier.size(11.dp)
                     )
                     Text(
                         text = if (stats.needWash) "Need Wash" else "Clean",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = if (stats.needWash) Color(0xFFB45309) else BrandEmerald
+                        color = if (stats.needWash) Color(0xFFB45309) else BrandEmerald,
+                        softWrap = false
                     )
                 }
             }
+        }
 
-            // Washes count
-            Text(
-                text = "${totalWashedCount}w",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Slate700
-            )
-
-            // Price / Cost
-            if (garment.price > 0) {
+        // Dynamic columns based on visibleFields (Show full text, no truncation)
+        otherFields.forEach { fieldKey ->
+            val value = DrilldownUtils.getFieldValue(garment, fieldKey, junctions)
+            val isUndefined = value.equals("undefined", ignoreCase = true)
+            Box(modifier = Modifier.width(130.dp)) {
                 Text(
-                    text = String.format(Locale.US, "$%.0f", garment.price),
+                    text = value,
                     fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandPurple
+                    fontStyle = if (isUndefined) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                    color = if (isUndefined) Slate400 else Slate700,
+                    softWrap = false
                 )
             }
+        }
 
+        // Action Arrow
+        Box(modifier = Modifier.width(36.dp), contentAlignment = Alignment.CenterEnd) {
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Details",
@@ -201,7 +176,5 @@ fun DrillRecordRow(
                 modifier = Modifier.size(16.dp)
             )
         }
-
-        HorizontalDivider(color = Slate100, thickness = 1.dp)
     }
 }

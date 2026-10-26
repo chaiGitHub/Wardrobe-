@@ -162,6 +162,7 @@ fun ErgonomicExplainField(
     dictionaryService: FieldDictionaryService? = null
 ) {
     val context = LocalContext.current
+    val isAiPaused = remember(context) { com.example.util.GeminiAiService.isAiPaused(context) }
     var heightMode by remember { mutableIntStateOf(140) } // dp: 140=中, 240=大, 380=特大, -1=撑满
     var isFullExpand by remember { mutableStateOf(false) }
 
@@ -661,42 +662,44 @@ fun ErgonomicExplainField(
                             color = if (value.isNotBlank()) Color(0xFF047857) else Slate500
                         )
 
-                        Surface(
-                            shape = RoundedCornerShape(8.dp),
-                            color = if (value.isNotBlank()) Color(0xFF7E22CE) else Slate100,
-                            modifier = Modifier.clickable(enabled = value.isNotBlank()) {
-                                try {
-                                    val service = dictionaryService ?: FieldDictionaryService(context)
-                                    val item = DictionaryFieldItem(
-                                        name = fieldKey,
-                                        category = "clothes",
-                                        labelCn = fieldLabel,
-                                        descriptionCn = value.trim()
-                                    )
-                                    service.saveDefinition(item)
-                                    Toast.makeText(context, "已将「$fieldLabel」说明同步至 AI 字典！", Toast.LENGTH_SHORT).show()
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "同步失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                        if (!isAiPaused) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (value.isNotBlank()) Color(0xFF7E22CE) else Slate100,
+                                modifier = Modifier.clickable(enabled = value.isNotBlank()) {
+                                    try {
+                                        val service = dictionaryService ?: FieldDictionaryService(context)
+                                        val item = DictionaryFieldItem(
+                                            name = fieldKey,
+                                            category = "clothes",
+                                            labelCn = fieldLabel,
+                                            descriptionCn = value.trim()
+                                        )
+                                        service.saveDefinition(item)
+                                        Toast.makeText(context, "已将「$fieldLabel」说明同步至 AI 字典！", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "同步失败: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
                                 }
-                            }
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.MenuBook,
-                                    contentDescription = null,
-                                    tint = if (value.isNotBlank()) Color.White else Slate400,
-                                    modifier = Modifier.size(12.dp)
-                                )
-                                Text(
-                                    text = "同步至 AI 字典定义",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (value.isNotBlank()) Color.White else Slate400
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.MenuBook,
+                                        contentDescription = null,
+                                        tint = if (value.isNotBlank()) Color.White else Slate400,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = "同步至 AI 字典定义",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (value.isNotBlank()) Color.White else Slate400
+                                    )
+                                }
                             }
                         }
                     }

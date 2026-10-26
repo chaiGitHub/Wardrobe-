@@ -136,4 +136,19 @@ object ThemeUtils {
             else -> BadgeStyle(Color(0xFFF1F5F9), Color(0xFF475569), Color(0xFFE2E8F0))
         }
     }
+
+    private const val FONT_PREFS_NAME = "wardrobe_font_prefs"
+    private const val KEY_FONT_SCALE = "user_font_scale"
+
+    fun getSavedFontScale(context: android.content.Context): Float {
+        return context.getSharedPreferences(FONT_PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .getFloat(KEY_FONT_SCALE, 1.0f)
+    }
+
+    fun saveFontScale(context: android.content.Context, scale: Float) {
+        context.getSharedPreferences(FONT_PREFS_NAME, android.content.Context.MODE_PRIVATE)
+            .edit()
+            .putFloat(KEY_FONT_SCALE, scale)
+            .apply()
+    }
 }

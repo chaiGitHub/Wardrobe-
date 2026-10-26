@@ -13,11 +13,11 @@ android {
   compileSdk { version = release(36) { minorApiLevel = 1 } }
 
   defaultConfig {
-    applicationId = "com.example"
+    applicationId = "com.aistudio.wardrobe.app"
     minSdk = 26
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 2
+    versionName = "1.0.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -133,19 +133,4 @@ dependencies {
   debugImplementation(libs.androidx.compose.ui.tooling)
   "ksp"(libs.androidx.room.compiler)
   "ksp"(libs.moshi.kotlin.codegen)
-}
-
-base {
-  archivesName.set("myward2")
-}
-
-tasks.register<Copy>("copyApkToTarget") {
-  from(layout.buildDirectory.dir("outputs/apk/debug"))
-  include("*.apk")
-  into(rootProject.file("apk"))
-  rename { "myward2.apk" }
-}
-
-tasks.matching { it.name == "assembleDebug" }.configureEach {
-  finalizedBy("copyApkToTarget")
 }

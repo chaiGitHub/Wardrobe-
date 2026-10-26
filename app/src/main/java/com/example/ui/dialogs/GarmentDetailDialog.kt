@@ -32,6 +32,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -131,6 +132,7 @@ fun GarmentDetailDialog(
     existingClothes: List<GarmentEntity> = emptyList(),
     junctions: List<JunctionEntity> = emptyList(),
     reports: List<ReportEntity> = emptyList(),
+    isAiPaused: Boolean = false,
     onDismiss: () -> Unit,
     onDelete: (String) -> Unit,
     onSaveGarment: ((GarmentEntity) -> Unit)? = null,
@@ -138,6 +140,7 @@ fun GarmentDetailDialog(
     onSelectReport: ((ReportEntity) -> Unit)? = null
 ) {
     val context = LocalContext.current
+    val effectiveAiPaused = isAiPaused || remember(context) { GeminiAiService.isAiPaused(context) }
     val coroutineScope = rememberCoroutineScope()
     var isEditing by remember { mutableStateOf(false) }
     var isFullScreen by remember { mutableStateOf(false) }
@@ -274,8 +277,11 @@ fun GarmentDetailDialog(
     val garmentStats = remember(garment.id, junctions) {
         DrilldownUtils.calculateGarmentStats(garment.id, junctions)
     }
-    val garmentJunctions = remember(garment.id, junctions) {
-        junctions.filter { it.clothesId == garment.id }
+    val garmentJunctions = remember(garment.id, garment.name, junctions) {
+        junctions.filter { j ->
+            j.clothesId == garment.id ||
+            (garment.name.isNotBlank() && (j.clothesTitle.equals(garment.name, ignoreCase = true) || j.clothesId.equals(garment.name, ignoreCase = true)))
+        }
     }
     val reportsById = remember(reports) { reports.associateBy { it.id } }
 
@@ -305,7 +311,9 @@ fun GarmentDetailDialog(
 
     // Helper to calculate previous values for a field from existing clothes
     fun getPreviousValuesForField(fieldKey: String): List<PreviousEntry> {
-        val map = mutableMapOf<String, Int>()
+        val countMap = mutableMapOf<String, Int>()
+        val sourcesMap = mutableMapOf<String, MutableSet<String>>()
+
         existingClothes.forEach { g ->
             val v = when (fieldKey) {
                 "Clothes Type" -> g.clothesType
@@ -331,35 +339,51 @@ fun GarmentDetailDialog(
                 else -> ""
             }.trim()
             if (v.isNotBlank() && v != "(Not specified)") {
-                map[v] = (map[v] ?: 0) + 1
+                countMap[v] = (countMap[v] ?: 0) + 1
+                val gName = g.name.ifBlank { "Garment" }.trim()
+                if (gName.isNotBlank()) {
+                    sourcesMap.getOrPut(v) { mutableSetOf() }.add(gName)
+                }
             }
         }
 
         // Default suggestions if map is empty
         when (fieldKey) {
-            "Clothes Type" -> if (map.isEmpty()) clothesTypeOptions.forEach { map[it] = 1 }
-            "material" -> if (map.isEmpty()) listOf("lace", "soft chiffon", "cotton", "silk", "wool", "linen", "polyester", "denim").forEach { map[it] = 1 }
-            "thick clothes" -> if (map.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { map[it] = 1 }
-            "Hot at noon", "when without aircond: hot feeling" -> if (map.isEmpty()) listOf("hot", "middle hot", "not hot", "very hot", "stuffy").forEach { map[it] = 1 }
-            "when without aircond: leg feeling" -> if (map.isEmpty()) listOf("middle hot", "hot", "not hot", "sticky", "breathable").forEach { map[it] = 1 }
-            "when with aircond: hot feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable cool", "very cold", "not cold").forEach { map[it] = 1 }
-            "when with aircond: leg feeling" -> if (map.isEmpty()) listOf("not so cold", "cold", "comfortable", "chilly knees").forEach { map[it] = 1 }
-            "when sleep under fan: hot feeling" -> if (map.isEmpty()) listOf("not hot", "middle cold", "comfortable", "cool", "sweaty back").forEach { map[it] = 1 }
-            "when sleep under fan: leg feeling" -> if (map.isEmpty()) listOf("middle cold", "cold", "not hot", "comfortable", "breezy").forEach { map[it] = 1 }
-            "diao dai" -> if (map.isEmpty()) listOf("not diao dai", "diao dai", "wide strap", "halter").forEach { map[it] = 1 }
-            "side breast ok", "side breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { map[it] = 1 }
-            "side breast ok: with side out bra" -> if (map.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { map[it] = 1 }
-            "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose", "no underwire pressure", "comfortable when seated").forEach { map[it] = 1 }
-            "sit breast ok: with side out bra" -> if (map.isEmpty()) listOf("sit breast shape ok", "full coverage relaxed", "no side bulge when seated", "tight underwire", "relaxed fit").forEach { map[it] = 1 }
-            "center chest" -> if (map.isEmpty()) listOf("center chest", "no center chest", "low cut", "modest").forEach { map[it] = 1 }
-            "beautiful" -> if (map.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { map[it] = 1 }
-            "wet" -> if (map.isEmpty()) listOf("dry", "wet", "quick-dry", "semi-dry").forEach { map[it] = 1 }
-            "long dress" -> if (map.isEmpty()) listOf("long dress", "short dress", "midi dress", "maxi dress").forEach { map[it] = 1 }
-            "may throw" -> if (map.isEmpty()) listOf("test", "keep", "may throw", "donate", "repair").forEach { map[it] = 1 }
-            "last comment or action" -> if (map.isEmpty()) listOf("test", "Needs gentle cycle", "hand wash only", "hang dry immediately").forEach { map[it] = 1 }
+            "Clothes Type" -> if (countMap.isEmpty()) clothesTypeOptions.forEach { countMap[it] = 1 }
+            "material" -> if (countMap.isEmpty()) listOf("lace", "soft chiffon", "cotton", "silk", "wool", "linen", "polyester", "denim").forEach { countMap[it] = 1 }
+            "thick clothes" -> if (countMap.isEmpty()) listOf("01 not thick clothes", "02 medium", "03 thick clothes", "ultra-thin").forEach { countMap[it] = 1 }
+            "Hot at noon", "when without aircond: hot feeling" -> if (countMap.isEmpty()) listOf("hot", "middle hot", "not hot", "very hot", "stuffy").forEach { countMap[it] = 1 }
+            "when without aircond: leg feeling" -> if (countMap.isEmpty()) listOf("middle hot", "hot", "not hot", "sticky", "breathable").forEach { countMap[it] = 1 }
+            "when with aircond: hot feeling" -> if (countMap.isEmpty()) listOf("not so cold", "cold", "comfortable cool", "very cold", "not cold").forEach { countMap[it] = 1 }
+            "when with aircond: leg feeling" -> if (countMap.isEmpty()) listOf("not so cold", "cold", "comfortable", "chilly knees").forEach { countMap[it] = 1 }
+            "when sleep under fan: hot feeling" -> if (countMap.isEmpty()) listOf("not hot", "middle cold", "comfortable", "cool", "sweaty back").forEach { countMap[it] = 1 }
+            "when sleep under fan: leg feeling" -> if (countMap.isEmpty()) listOf("middle cold", "cold", "not hot", "comfortable", "breezy").forEach { countMap[it] = 1 }
+            "diao dai" -> if (countMap.isEmpty()) listOf("not diao dai", "diao dai", "wide strap", "halter").forEach { countMap[it] = 1 }
+            "side breast ok", "side breast ok: with 聚拢 bra" -> if (countMap.isEmpty()) listOf("side breast shape ok", "no friction", "well gathered, no overflow", "mild bulge", "friction at armpit").forEach { countMap[it] = 1 }
+            "side breast ok: with side out bra" -> if (countMap.isEmpty()) listOf("side breast shape ok", "full coverage no overflow", "no friction", "slight side exposure", "wide band comfortable").forEach { countMap[it] = 1 }
+            "sit breast ok", "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> if (countMap.isEmpty()) listOf("sit breast shape ok", "tight when seated", "very loose", "no underwire pressure", "comfortable when seated").forEach { countMap[it] = 1 }
+            "sit breast ok: with side out bra" -> if (countMap.isEmpty()) listOf("sit breast shape ok", "full coverage relaxed", "no side bulge when seated", "tight underwire", "relaxed fit").forEach { countMap[it] = 1 }
+            "center chest" -> if (countMap.isEmpty()) listOf("center chest", "no center chest", "low cut", "modest").forEach { countMap[it] = 1 }
+            "beautiful" -> if (countMap.isEmpty()) listOf("Beautiful", "not so beautiful", "Standard", "Casual").forEach { countMap[it] = 1 }
+            "wet" -> if (countMap.isEmpty()) listOf("dry", "wet", "quick-dry", "semi-dry").forEach { countMap[it] = 1 }
+            "long dress" -> if (countMap.isEmpty()) listOf("long dress", "short dress", "midi dress", "maxi dress").forEach { countMap[it] = 1 }
+            "may throw" -> if (countMap.isEmpty()) listOf("test", "keep", "may throw", "donate", "repair").forEach { countMap[it] = 1 }
+            "last comment or action" -> if (countMap.isEmpty()) listOf("test", "Needs gentle cycle", "hand wash only", "hang dry immediately").forEach { countMap[it] = 1 }
         }
 
-        return map.entries.map { PreviousEntry(it.key, it.value) }.sortedByDescending { it.count }
+        val dictFields = try { dictionaryService.getFields() } catch (_: Exception) { emptyList() }
+        val dictValues = dictFields.find { it.name.equals(fieldKey, ignoreCase = true) }?.typicalValues ?: emptyList()
+
+        return countMap.entries.map { e ->
+            val typical = dictValues.find { it.valueEn.equals(e.key, ignoreCase = true) }
+            PreviousEntry(
+                value = e.key,
+                count = e.value,
+                labelCn = typical?.valueCn?.ifBlank { null }?.takeIf { it != e.key },
+                meaningCn = typical?.meaningCn?.ifBlank { null },
+                sources = sourcesMap[e.key]?.toList() ?: emptyList()
+            )
+        }.sortedByDescending { it.count }
     }
 
     // Function to commit changes
@@ -499,16 +523,13 @@ fun GarmentDetailDialog(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Card(
+        Surface(
             modifier = Modifier
-                .fillMaxWidth(if (isFullScreen) 0.99f else 0.96f)
-                .fillMaxHeight(if (isFullScreen) 0.99f else 0.95f)
+                .fillMaxSize()
                 .testTag("garment_detail_dialog"),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            color = Color.White
         ) {
             Column(modifier = Modifier.fillMaxSize()) {
 
@@ -525,12 +546,23 @@ fun GarmentDetailDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Left: Editing Garment Record
+                        // Left: Back button + Editing Garment Record
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.padding(vertical = 4.dp)
                         ) {
+                            IconButton(
+                                onClick = { handleCancelEditing() },
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Slate700,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                             Icon(
                                 imageVector = Icons.Default.Edit,
                                 contentDescription = null,
@@ -624,21 +656,37 @@ fun GarmentDetailDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color(0xFFF1F5F9),
-                            border = BorderStroke(1.dp, Slate200),
-                            modifier = Modifier.padding(vertical = 2.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(
-                                text = garment.clothesType.ifBlank { "Dress" },
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate700,
-                                maxLines = 1,
-                                softWrap = false,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                            )
+                            IconButton(
+                                onClick = onDismiss,
+                                modifier = Modifier.size(36.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Back",
+                                    tint = Slate700,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color(0xFFF1F5F9),
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            ) {
+                                Text(
+                                    text = garment.clothesType.ifBlank { "Dress" },
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate700,
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                                )
+                            }
                         }
 
                         Row(
@@ -1882,6 +1930,7 @@ fun GarmentDetailDialog(
                                                     onClick = {
                                                         val updated = customAttrsMap.toMutableMap().apply { remove(attrKey) }
                                                         customAttrsMap = updated
+                                                        editFieldExplanations.remove(attrKey.removeSuffix("_explain"))
                                                         val json = JSONObject(updated).toString()
                                                         onSaveGarment?.invoke(garment.copy(customFields = json))
                                                     },
@@ -1995,12 +2044,13 @@ fun GarmentDetailDialog(
                         val activeAiVersion = aiReportVersions.find { it.id == activeReportId } ?: aiReportVersions.firstOrNull()
                         var hasCopiedAiReport by remember(activeReportId) { mutableStateOf(false) }
 
-                        Surface(
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color(0xFFFAF5FF),
-                            border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
+                        if (!effectiveAiPaused) {
+                            Surface(
+                                shape = RoundedCornerShape(20.dp),
+                                color = Color(0xFFFAF5FF),
+                                border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
                             Column(
                                 modifier = Modifier.padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -2226,6 +2276,7 @@ fun GarmentDetailDialog(
                                 }
                             }
                         }
+                    }
 
                         // Wearing History (N sessions) Section matching IMG_9730.png & IMG_9731.png
                         var selectedReportForSessionModal by remember { mutableStateOf<ReportEntity?>(null) }
@@ -2267,6 +2318,16 @@ fun GarmentDetailDialog(
                             } else {
                                 garmentJunctions.forEach { j ->
                                     val rep = reportsById[j.wearingReportId]
+                                        ?: reports.find { r ->
+                                            (j.wearingReportTitle.isNotBlank() && r.name.equals(j.wearingReportTitle, ignoreCase = true)) ||
+                                            (j.wearingReportId.isNotBlank() && r.name.equals(j.wearingReportId, ignoreCase = true)) ||
+                                            (j.wearingReportTitle.isNotBlank() && r.id.equals(j.wearingReportTitle, ignoreCase = true))
+                                        }
+                                        ?: ReportEntity(
+                                            id = j.wearingReportId.ifBlank { "rep_${j.id}" },
+                                            name = j.wearingReportTitle.ifBlank { "Wearing Session" },
+                                            wearDate = j.wearDate
+                                        )
                                     val wDate = rep?.wearDate?.ifBlank { rep.created } ?: j.wearDate
                                     val normWearDate = if (wDate.length >= 10) wDate.substring(0, 10) else wDate
                                     val rTitle = rep?.name?.ifBlank { j.wearingReportTitle } ?: j.wearingReportTitle.ifBlank { "Wearing Session" }
@@ -2506,10 +2567,34 @@ fun GarmentDetailDialog(
     // Previous Entries Modal
     activePreviousPicker?.let { (fieldKey, onValueSelected) ->
         val entries = remember(fieldKey) { getPreviousValuesForField(fieldKey) }
+        val currentVal = when (fieldKey) {
+            "Clothes Type" -> editClothesType
+            "material" -> editMaterial
+            "thick clothes" -> editThickClothes
+            "Hot at noon" -> editHotAtNoon
+            "diao dai" -> editDiaoDai
+            "side breast ok: with 聚拢 bra" -> editSideBreastGatherBra
+            "side breast ok: with side out bra" -> editSideBreastSideOutBra
+            "when with aircond: hot feeling" -> editAircondHotFeeling
+            "when with aircond: leg feeling" -> editAircondLegFeeling
+            "when without aircond: hot feeling" -> editNoAircondHotFeeling
+            "when without aircond: leg feeling" -> editNoAircondLegFeeling
+            "when sleep under fan: hot feeling" -> editFanSleepHotFeeling
+            "when sleep under fan: leg feeling" -> editFanSleepLegFeeling
+            "sit breast ok: With 聚拢bra:", "sit breast ok: with 聚拢 bra" -> editSitBreastGatherBra
+            "sit breast ok: with side out bra" -> editSitBreastSideOutBra
+            "center chest" -> editCenterChest
+            "beautiful" -> editBeautiful
+            "wet" -> editWet
+            "may throw" -> editMayThrow
+            "Descriptions" -> editDescriptions
+            else -> ""
+        }
         PreviousEntriesModal(
             isOpen = true,
             fieldLabel = fieldKey,
             entries = entries,
+            currentValue = currentVal,
             onSelect = { selectedValue ->
                 onValueSelected(selectedValue)
                 activePreviousPicker = null
@@ -2664,28 +2749,24 @@ private fun ErgonomicRow(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 2.dp),
+            .padding(vertical = 3.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                color = Slate500
-            )
-            Text(
-                text = value,
-                fontSize = 12.sp,
-                fontWeight = if (boldValue) FontWeight.Bold else FontWeight.SemiBold,
-                fontStyle = if (isItalic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
-                color = if (isItalic) Slate400 else Slate800
-            )
-        }
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.SemiBold,
+            color = Slate500
+        )
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            fontWeight = if (boldValue) FontWeight.Bold else FontWeight.SemiBold,
+            fontStyle = if (isItalic) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+            color = if (isItalic) Slate400 else Slate900,
+            modifier = Modifier.fillMaxWidth()
+        )
         if (!explanation.isNullOrBlank()) {
             Surface(
                 shape = RoundedCornerShape(8.dp),

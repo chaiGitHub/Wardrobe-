@@ -192,14 +192,12 @@ fun DrillRecordCard(
                     .fillMaxWidth()
                     .padding(12.dp)
             ) {
-                // Garment Name
+                // Garment Name (Full text display)
                 Text(
                     text = garment.name.ifBlank { "Unnamed Garment" },
                     style = androidx.compose.material3.MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = Slate900,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    color = Slate900
                 )
 
                 // Material & Thickness Subtitle
@@ -211,9 +209,7 @@ fun DrillRecordCard(
                     Text(
                         text = garment.material.ifBlank { "Unspecified material" },
                         fontSize = 11.sp,
-                        color = Slate500,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        color = Slate500
                     )
                     if (garment.price > 0) {
                         Text(
@@ -293,9 +289,7 @@ fun DrillRecordCard(
                                         fontSize = 10.sp,
                                         fontStyle = if (isUndefined) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
                                         color = if (isUndefined) Slate400 else Slate600,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                                     )
                                 }
                             }

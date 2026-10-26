@@ -94,6 +94,7 @@ fun JunctionAIModal(
     var isAnalyzing by remember { mutableStateOf(false) }
     var generatedAdvice by remember { mutableStateOf<String?>(null) }
     var hasCopied by remember { mutableStateOf(false) }
+    val isAiPaused = remember(context) { GeminiAiService.isAiPaused(context) }
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -540,7 +541,7 @@ fun JunctionAIModal(
                         containerColor = BrandPurple,
                         contentColor = Color.White
                     ),
-                    enabled = !isAnalyzing
+                    enabled = !isAnalyzing && !isAiPaused
                 ) {
                     if (isAnalyzing) {
                         CircularProgressIndicator(
@@ -550,6 +551,8 @@ fun JunctionAIModal(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Running AI Sensory Diagnosis...")
+                    } else if (isAiPaused) {
+                        Text("⏸️ AI 诊断已暂停 (Zero Token Mode)")
                     } else {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,

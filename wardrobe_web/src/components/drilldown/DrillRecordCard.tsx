@@ -1,6 +1,6 @@
 import React from 'react';
 import { ClothesItem, ReportPreset } from '../../types';
-import { resolveImageSource } from '../../utils/imageUtils';
+import { resolveImageSource, useResolvedImageUrl } from '../../utils/imageUtils';
 import { reportPresetService, AVAILABLE_REPORT_FIELDS } from '../../services/reportPresetService';
 import { dataService, formatDuration } from '../../services/dataService';
 import { Shirt, Sparkles, Droplets, Clock, DollarSign, Tag, CheckCircle2, AlertCircle } from 'lucide-react';
@@ -14,7 +14,7 @@ interface DrillRecordCardProps {
 export const DrillRecordCard: React.FC<DrillRecordCardProps> = ({ garment, preset, onSelect }) => {
   const pictures = garment['Pictures'] || [];
   const pic = pictures.length > 0 ? pictures[0] : null;
-  const imageUrl = resolveImageSource(pic);
+  const imageUrl = useResolvedImageUrl(pic);
 
   const stats = dataService.getGarmentStats(garment.id);
   const clothesType = garment['Clothes Type'] || garment.clothesType || 'Garment';
@@ -39,7 +39,7 @@ export const DrillRecordCard: React.FC<DrillRecordCardProps> = ({ garment, prese
             alt={name}
             loading="lazy"
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 bg-slate-50 gap-1.5">
@@ -76,7 +76,7 @@ export const DrillRecordCard: React.FC<DrillRecordCardProps> = ({ garment, prese
         <div>
           {/* Garment Title */}
           <div className="flex items-start justify-between gap-1.5 mb-1.5">
-            <h4 className="font-bold text-slate-900 text-sm leading-snug line-clamp-1 group-hover:text-indigo-600 transition-colors">
+            <h4 className="font-bold text-slate-900 text-sm leading-snug break-words line-clamp-3 group-hover:text-indigo-600 transition-colors">
               {name}
             </h4>
             {price !== undefined && price > 0 && (

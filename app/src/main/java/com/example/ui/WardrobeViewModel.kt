@@ -94,6 +94,64 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
     private val _selectedPreset = MutableStateFlow(drillPresets[0])
     val selectedPreset: StateFlow<DrillPreset> = _selectedPreset.asStateFlow()
 
+    // Drilldown navigation path (survives screen rotation and tab switching)
+    private val _drillPath = MutableStateFlow<List<com.example.ui.drilldown.DrilldownBreadcrumb>>(emptyList())
+    val drillPath: StateFlow<List<com.example.ui.drilldown.DrilldownBreadcrumb>> = _drillPath.asStateFlow()
+
+    fun setDrillPath(path: List<com.example.ui.drilldown.DrilldownBreadcrumb>) {
+        _drillPath.value = path
+    }
+
+    fun addDrillStep(step: com.example.ui.drilldown.DrilldownBreadcrumb) {
+        _drillPath.value = _drillPath.value + step
+    }
+
+    fun popDrillTo(index: Int) {
+        _drillPath.value = _drillPath.value.take(index + 1)
+    }
+
+    fun resetDrillPath() {
+        _drillPath.value = emptyList()
+    }
+
+    // Dialog & Detail screen states (survive rotation)
+    private val _selectedGarmentForDetail = MutableStateFlow<GarmentEntity?>(null)
+    val selectedGarmentForDetail: StateFlow<GarmentEntity?> = _selectedGarmentForDetail.asStateFlow()
+
+    private val _selectedReportForDetail = MutableStateFlow<ReportEntity?>(null)
+    val selectedReportForDetail: StateFlow<ReportEntity?> = _selectedReportForDetail.asStateFlow()
+
+    private val _showAddGarmentDialog = MutableStateFlow(false)
+    val showAddGarmentDialog: StateFlow<Boolean> = _showAddGarmentDialog.asStateFlow()
+
+    private val _showAddReportDialog = MutableStateFlow(false)
+    val showAddReportDialog: StateFlow<Boolean> = _showAddReportDialog.asStateFlow()
+
+    private val _editingReport = MutableStateFlow<ReportEntity?>(null)
+    val editingReport: StateFlow<ReportEntity?> = _editingReport.asStateFlow()
+
+    fun openGarmentDetail(garment: GarmentEntity?) {
+        _selectedGarmentForDetail.value = garment
+    }
+
+    fun openReportDetail(report: ReportEntity?) {
+        _selectedReportForDetail.value = report
+    }
+
+    fun openAddGarment(open: Boolean) {
+        _showAddGarmentDialog.value = open
+    }
+
+    fun openAddReport(reportToEdit: ReportEntity? = null) {
+        _editingReport.value = reportToEdit
+        _showAddReportDialog.value = true
+    }
+
+    fun closeAddReport() {
+        _showAddReportDialog.value = false
+        _editingReport.value = null
+    }
+
     // AI Advisor State
     private val _selectedGarmentForAdvice = MutableStateFlow<GarmentEntity?>(null)
     val selectedGarmentForAdvice: StateFlow<GarmentEntity?> = _selectedGarmentForAdvice.asStateFlow()
@@ -103,6 +161,18 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
 
     private val _isGeneratingAdvice = MutableStateFlow(false)
     val isGeneratingAdvice: StateFlow<Boolean> = _isGeneratingAdvice.asStateFlow()
+
+    private val _isAiPaused = MutableStateFlow(com.example.util.GeminiAiService.isAiPaused(application))
+    val isAiPaused: StateFlow<Boolean> = _isAiPaused.asStateFlow()
+
+    fun setAiPaused(paused: Boolean) {
+        _isAiPaused.value = paused
+        com.example.util.GeminiAiService.setAiPaused(getApplication(), paused)
+    }
+
+    fun toggleAiPaused() {
+        setAiPaused(!_isAiPaused.value)
+    }
 
     // Saved AI Reports archive
     private val _savedAiReports = MutableStateFlow<List<SavedAiReportItem>>(

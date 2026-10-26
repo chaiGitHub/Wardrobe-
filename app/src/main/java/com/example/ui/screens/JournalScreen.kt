@@ -78,6 +78,7 @@ import com.example.data.model.GarmentEntity
 import com.example.data.model.JunctionEntity
 import com.example.data.model.ReportEntity
 import com.example.ui.dialogs.AddReportDialog
+import com.example.ui.dialogs.formatHoursCompact
 import com.example.ui.dialogs.SessionDetailModal
 import com.example.ui.dialogs.formatReportDate
 import com.example.ui.theme.BrandIndigo
@@ -471,6 +472,7 @@ fun JournalScreen(
             existingReports = reports,
             initialReport = rep,
             initialJunctions = repJunctions,
+            allJunctions = junctions,
             onDismiss = { editingReport = null },
             onSave = { updatedRep, links ->
                 onSaveOrUpdateReport?.invoke(updatedRep, links, emptyMap())
@@ -822,7 +824,7 @@ private fun ReportCard(
     val totalHrs = remember(junctions) {
         val maxSec = junctions.maxOfOrNull { it.duration } ?: 0L
         val sec = if (maxSec > 0) maxSec else 1200L
-        String.format(Locale.US, "%.1f hrs", sec / 3600.0)
+        formatHoursCompact(sec)
     }
 
     Card(

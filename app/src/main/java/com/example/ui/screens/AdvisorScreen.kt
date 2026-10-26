@@ -87,6 +87,7 @@ import com.example.ui.dialogs.UniversalAiReportItem
 import com.example.ui.drilldown.DrilldownUtils
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandEmerald
+import com.example.ui.theme.BrandIndigo
 import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.BrandPurpleLight
 import com.example.ui.theme.Slate100
@@ -119,6 +120,7 @@ fun AdvisorScreen(
     savedReports: List<SavedAiReportItem> = emptyList(),
     onSaveReport: ((title: String, category: String, content: String) -> Unit)? = null,
     onDeleteSavedReport: ((String) -> Unit)? = null,
+    onOpenNotebookLmModal: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -339,6 +341,160 @@ fun AdvisorScreen(
                                 fontWeight = FontWeight.Bold,
                                 color = if (hasApiKey) Color(0xFF047857) else Color(0xFFB45309)
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // AI GENERATION PAUSED NOTICE BANNER & MASTER SWITCH
+        val isAiPaused = viewModel?.isAiPaused?.collectAsState()?.value ?: GeminiAiService.isAiPaused(context)
+
+        if (isAiPaused) {
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("ai_paused_banner"),
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBEB)),
+                border = BorderStroke(1.5.dp, Color(0xFFFCD34D))
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(38.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFF59E0B)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("⏸️", fontSize = 18.sp)
+                            }
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Text(
+                                        text = "SYSTEM CONTROL STATE",
+                                        fontSize = 9.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        fontFamily = FontFamily.Monospace,
+                                        color = Color(0xFF92400E)
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFFFDE68A)
+                                    ) {
+                                        Text(
+                                            text = "Zero Token Mode",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF78350F),
+                                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "AI 智能生成当前处于暂停状态",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF78350F)
+                                )
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel?.setAiPaused(false) ?: GeminiAiService.setAiPaused(context, false)
+                                Toast.makeText(context, "已恢复 AI 智能生成！", Toast.LENGTH_SHORT).show()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+                            shape = RoundedCornerShape(10.dp),
+                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 6.dp),
+                            modifier = Modifier.height(34.dp)
+                        ) {
+                            Text("▶️ 一键恢复", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        }
+                    }
+
+                    Text(
+                        text = "为节省处理时间与 API Token 消耗，单品诊断、穿戴日记评估及穿搭顾问调用已全局暂停。所有算法代码及历史保存报告完好无损。您可在「Local Storage」中导出排除 AI 预生成报告的 100% 纯客观事实知识库，直接交由 Google NotebookLM 进行深度推理与播客生成！",
+                        fontSize = 11.sp,
+                        color = Color(0xFF92400E),
+                        lineHeight = 15.sp
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { onOpenNotebookLmModal?.invoke() },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = BrandIndigo),
+                            border = BorderStroke(1.dp, Color(0xFFC7D2FE)),
+                            modifier = Modifier.weight(1f).height(36.dp)
+                        ) {
+                            Text("📚 查看/导出 NotebookLM 知识库", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth().testTag("ai_active_card"),
+                shape = RoundedCornerShape(14.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0FDF4)),
+                border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text("🟢", fontSize = 12.sp)
+                        Text(
+                            text = "AI 智能生成：运行中 (实时调用 Gemini)",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF166534)
+                        )
+                    }
+
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        TextButton(
+                            onClick = { onOpenNotebookLmModal?.invoke() },
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier.height(28.dp)
+                        ) {
+                            Text("NotebookLM 知识库", fontSize = 11.sp, color = BrandIndigo, fontWeight = FontWeight.Bold)
+                        }
+                        Button(
+                            onClick = {
+                                viewModel?.setAiPaused(true) ?: GeminiAiService.setAiPaused(context, true)
+                                Toast.makeText(context, "已开启 Zero Token 暂停模式！", Toast.LENGTH_SHORT).show()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFEF3C7)),
+                            shape = RoundedCornerShape(8.dp),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 2.dp),
+                            modifier = Modifier.height(28.dp)
+                        ) {
+                            Text("⏸️ 暂停 AI", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color(0xFFB45309))
                         }
                     }
                 }
@@ -824,8 +980,8 @@ fun AdvisorScreen(
                                 }
                             }
                         },
-                        enabled = !isGeneratingMacro,
-                        colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                        enabled = !isGeneratingMacro && !isAiPaused,
+                        colors = ButtonDefaults.buttonColors(containerColor = if (isAiPaused) Slate400 else BrandPurple),
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -840,6 +996,8 @@ fun AdvisorScreen(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("正在融合 Clothes + Report + Junction 生成宏观报告...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        } else if (isAiPaused) {
+                            Text("⏸️ AI 智能生成已暂停 (Zero Token Mode)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                         } else {
                             Icon(
                                 imageVector = Icons.Default.Refresh,
@@ -1363,8 +1521,8 @@ fun AdvisorScreen(
                                     }
                                 }
                             },
-                            enabled = !isGeneratingClothesAi,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                            enabled = !isGeneratingClothesAi && !isAiPaused,
+                            colors = ButtonDefaults.buttonColors(containerColor = if (isAiPaused) Slate400 else BrandPurple),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -1378,6 +1536,8 @@ fun AdvisorScreen(
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("正在仅基于 Clothes 字段生成单品报告...", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                            } else if (isAiPaused) {
+                                Text("⏸️ AI 智能生成已暂停 (Zero Token Mode)", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                             } else {
                                 Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(15.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
@@ -1612,15 +1772,15 @@ fun AdvisorScreen(
                                     }
                                 }
                             },
-                            enabled = !isGeneratingReportAi,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                            enabled = !isGeneratingReportAi && !isAiPaused,
+                            colors = ButtonDefaults.buttonColors(containerColor = if (isAiPaused) Slate400 else BrandPurple),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(42.dp)
                         ) {
                             Text(
-                                text = if (isGeneratingReportAi) "正在仅基于 WearingReport 字段生成分析..." else "生成穿搭报告字段 AI 分析 (仅用 WearingReport 数据)",
+                                text = if (isGeneratingReportAi) "正在仅基于 WearingReport 字段生成分析..." else if (isAiPaused) "⏸️ AI 智能生成已暂停 (Zero Token Mode)" else "生成穿搭报告字段 AI 分析 (仅用 WearingReport 数据)",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -1770,15 +1930,15 @@ fun AdvisorScreen(
                                     }
                                 }
                             },
-                            enabled = !isGeneratingJunctionAi,
-                            colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                            enabled = !isGeneratingJunctionAi && !isAiPaused,
+                            colors = ButtonDefaults.buttonColors(containerColor = if (isAiPaused) Slate400 else BrandPurple),
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(42.dp)
                         ) {
                             Text(
-                                text = if (isGeneratingJunctionAi) "正在生成 Junction 关联诊断..." else "生成关联记录 AI 诊断 (Junction 字典)",
+                                text = if (isGeneratingJunctionAi) "正在生成 Junction 关联诊断..." else if (isAiPaused) "⏸️ AI 智能生成已暂停 (Zero Token Mode)" else "生成关联记录 AI 诊断 (Junction 字典)",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold
                             )
