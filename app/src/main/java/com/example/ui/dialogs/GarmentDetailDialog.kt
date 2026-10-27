@@ -1679,15 +1679,17 @@ fun GarmentDetailDialog(
                                         color = Slate800
                                     )
                                     val descExplain = fieldExplanationsInView["Descriptions"]
-                                    if (!descExplain.isNullOrBlank()) {
-                                        Surface(
-                                            shape = RoundedCornerShape(8.dp),
-                                            color = Color(0xFFFAF5FF),
-                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
-                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFFAF5FF),
+                                        border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -1698,12 +1700,20 @@ fun GarmentDetailDialog(
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                                 Text(
-                                                    text = descExplain,
-                                                    fontSize = 11.sp,
-                                                    color = Color(0xFF6B21A8),
-                                                    lineHeight = 15.sp
+                                                    text = "Descriptions explain:",
+                                                    fontSize = 10.sp,
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF7E22CE)
                                                 )
                                             }
+                                            Text(
+                                                text = if (!descExplain.isNullOrBlank()) descExplain else "No explain added",
+                                                fontSize = 11.sp,
+                                                fontStyle = if (descExplain.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                                                color = if (descExplain.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
+                                                lineHeight = 15.sp
+                                            )
                                         }
                                     }
                                 }
@@ -1733,15 +1743,17 @@ fun GarmentDetailDialog(
                                         color = if (garment.descriptions2.isBlank()) Slate400 else Slate800
                                     )
                                     val desc2Explain = fieldExplanationsInView["Descriptions 2"]
-                                    if (!desc2Explain.isNullOrBlank()) {
-                                        Surface(
-                                            shape = RoundedCornerShape(8.dp),
-                                            color = Color(0xFFFAF5FF),
-                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
-                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFFAF5FF),
+                                        border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -1752,12 +1764,20 @@ fun GarmentDetailDialog(
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                                 Text(
-                                                    text = desc2Explain,
-                                                    fontSize = 11.sp,
-                                                    color = Color(0xFF6B21A8),
-                                                    lineHeight = 15.sp
+                                                    text = "Descriptions 2 explain:",
+                                                    fontSize = 10.sp,
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF7E22CE)
                                                 )
                                             }
+                                            Text(
+                                                text = if (!desc2Explain.isNullOrBlank()) desc2Explain else "No explain added",
+                                                fontSize = 11.sp,
+                                                fontStyle = if (desc2Explain.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                                                color = if (desc2Explain.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
+                                                lineHeight = 15.sp
+                                            )
                                         }
                                     }
                                 }
@@ -1787,15 +1807,17 @@ fun GarmentDetailDialog(
                                         color = Slate800
                                     )
                                     val lastCommentExplain = fieldExplanationsInView["last comment or action"]
-                                    if (!lastCommentExplain.isNullOrBlank()) {
-                                        Surface(
-                                            shape = RoundedCornerShape(8.dp),
-                                            color = Color(0xFFFAF5FF),
-                                            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
-                                            modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFFAF5FF),
+                                        border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+                                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                            verticalArrangement = Arrangement.spacedBy(2.dp)
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -1806,12 +1828,20 @@ fun GarmentDetailDialog(
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                                 Text(
-                                                    text = lastCommentExplain,
-                                                    fontSize = 11.sp,
-                                                    color = Color(0xFF6B21A8),
-                                                    lineHeight = 15.sp
+                                                    text = "last comment or action explain:",
+                                                    fontSize = 10.sp,
+                                                    fontFamily = FontFamily.Monospace,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF7E22CE)
                                                 )
                                             }
+                                            Text(
+                                                text = if (!lastCommentExplain.isNullOrBlank()) lastCommentExplain else "No explain added",
+                                                fontSize = 11.sp,
+                                                fontStyle = if (lastCommentExplain.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                                                color = if (lastCommentExplain.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
+                                                lineHeight = 15.sp
+                                            )
                                         }
                                     }
                                 }
@@ -1827,7 +1857,9 @@ fun GarmentDetailDialog(
                                     val keys = obj.keys()
                                     while (keys.hasNext()) {
                                         val k = keys.next()
-                                        map[k] = obj.optString(k, "")
+                                        if (!k.startsWith("_") && !k.endsWith("_explain") && k !in setOf("id", "fields", "createdTime", "customFields", "extraAttributes")) {
+                                            map[k] = obj.optString(k, "")
+                                        }
                                     }
                                 }
                             } catch (_: Exception) {}
@@ -2620,12 +2652,12 @@ private fun EditFieldWithPrevious(
     isMultiline: Boolean = false,
     fieldKey: String = label,
     allClothes: List<GarmentEntity> = emptyList(),
-    isExplainExpanded: Boolean = false,
+    isExplainExpanded: Boolean = true,
     onToggleExplainExpand: (() -> Unit)? = null,
     dictionaryService: FieldDictionaryService? = null,
     explainPlaceholder: String? = null
 ) {
-    var localExplainExpanded by remember { mutableStateOf(false) }
+    var localExplainExpanded by remember { mutableStateOf(true) }
     val effectiveExpanded = onToggleExplainExpand?.let { isExplainExpanded } ?: localExplainExpanded
     val effectiveToggle = onToggleExplainExpand ?: { localExplainExpanded = !localExplainExpanded }
 
@@ -2767,17 +2799,20 @@ private fun ErgonomicRow(
             color = if (isItalic) Slate400 else Slate900,
             modifier = Modifier.fillMaxWidth()
         )
-        if (!explanation.isNullOrBlank()) {
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = Color(0xFFFAF5FF),
-                border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 2.dp)
+        // Permanent explain field arranged beautifully below related field
+        Surface(
+            shape = RoundedCornerShape(8.dp),
+            color = Color(0xFFFAF5FF),
+            border = BorderStroke(1.dp, Color(0xFFF3E8FF)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 2.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
@@ -2788,12 +2823,20 @@ private fun ErgonomicRow(
                         modifier = Modifier.size(12.dp)
                     )
                     Text(
-                        text = explanation,
-                        fontSize = 11.sp,
-                        color = Color(0xFF6B21A8),
-                        lineHeight = 15.sp
+                        text = "${label.removeSuffix(":")} explain:",
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF7E22CE)
                     )
                 }
+                Text(
+                    text = if (!explanation.isNullOrBlank()) explanation else "No explain added",
+                    fontSize = 11.sp,
+                    fontStyle = if (explanation.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                    color = if (explanation.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
+                    lineHeight = 15.sp
+                )
             }
         }
     }

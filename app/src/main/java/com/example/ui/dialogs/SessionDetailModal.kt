@@ -179,8 +179,49 @@ fun SessionDetailModal(
         onUpdateReport?.invoke(report.copy(pictures = arr.toString()))
     }
 
-    // Custom Environmental Attributes
-    val customAttributes = remember { mutableStateMapOf<String, String>() }
+    // Explanations for ergonomic and sensory fields
+    val reportExplanations = remember(report.id, report.customFields) {
+        val map = mutableMapOf<String, String>()
+        try {
+            if (report.customFields.isNotBlank() && report.customFields != "{}") {
+                val obj = org.json.JSONObject(report.customFields)
+                val sub = obj.optJSONObject("_fieldExplanations")
+                if (sub != null) {
+                    sub.keys().forEach { k ->
+                        val v = sub.optString(k, "")
+                        if (v.isNotBlank()) map[k] = v
+                    }
+                }
+                obj.keys().forEach { k ->
+                    if (k.endsWith("_explain")) {
+                        val base = k.removeSuffix("_explain")
+                        val v = obj.optString(k, "")
+                        if (v.isNotBlank() && !map.containsKey(base)) {
+                            map[base] = v
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        map
+    }
+
+    // Custom Environmental Attributes (filtering out internal explain fields)
+    val customAttributes = remember(report.id, report.customFields) {
+        val map = mutableStateMapOf<String, String>()
+        try {
+            if (report.customFields.isNotBlank() && report.customFields != "{}") {
+                val obj = org.json.JSONObject(report.customFields)
+                obj.keys().forEach { k ->
+                    if (k != "_fieldExplanations" && !k.endsWith("_explain") && k != "id" && k != "name") {
+                        val v = obj.optString(k, "")
+                        if (v.isNotBlank()) map[k] = v
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        map
+    }
     var showAddAttributeDialog by remember { mutableStateOf(false) }
     var newAttrKey by remember { mutableStateOf("") }
     var newAttrVal by remember { mutableStateOf("") }
@@ -1100,6 +1141,7 @@ fun SessionDetailModal(
                                 HorizontalDivider(color = Slate100)
 
                                 // SHOULDER FEEL box
+                                val shoulderExplain = reportExplanations["SHOULDER FEEL"] ?: reportExplanations["shoulderFeel"] ?: ""
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
                                     color = Color(0xFFF8FAFC),
@@ -1124,6 +1166,32 @@ fun SessionDetailModal(
                                             color = Slate900,
                                             lineHeight = 20.sp
                                         )
+                                        if (shoulderExplain.isNotBlank()) {
+                                            Surface(
+                                                shape = RoundedCornerShape(10.dp),
+                                                color = Color(0xFFFBF7FF),
+                                                border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .padding(top = 4.dp)
+                                            ) {
+                                                Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                                                    Text(
+                                                        text = "shoulder feel explain:",
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = Color(0xFF6B21A8)
+                                                    )
+                                                    Text(
+                                                        text = shoulderExplain,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Medium,
+                                                        color = Color(0xFF3B0764),
+                                                        lineHeight = 16.sp
+                                                    )
+                                                }
+                                            }
+                                        }
                                     }
                                 }
 
@@ -1131,24 +1199,31 @@ fun SessionDetailModal(
                                 DayNightSensoryBox(
                                     title = "MID BREAST",
                                     dayValue = report.midBreast,
-                                    nightValue = report.nightMidBreast
+                                    nightValue = report.nightMidBreast,
+                                    dayExplain = reportExplanations["MID BREAST"] ?: reportExplanations["midBreast"] ?: "",
+                                    nightExplain = reportExplanations["NIGHT MID BREAST"] ?: reportExplanations["nightMidBreast"] ?: ""
                                 )
 
                                 // SWEAT & BREATHABILITY box (Day & Night)
                                 DayNightSensoryBox(
                                     title = "SWEAT & BREATHABILITY",
                                     dayValue = report.sweat,
-                                    nightValue = report.nightSweat
+                                    nightValue = report.nightSweat,
+                                    dayExplain = reportExplanations["SWEAT"] ?: reportExplanations["sweat"] ?: "",
+                                    nightExplain = reportExplanations["NIGHT SWEAT"] ?: reportExplanations["nightSweat"] ?: ""
                                 )
 
                                 // LEG COMFORT box (Day & Night)
                                 DayNightSensoryBox(
                                     title = "LEG COMFORT",
                                     dayValue = report.legFeel,
-                                    nightValue = report.nightLegFeel
+                                    nightValue = report.nightLegFeel,
+                                    dayExplain = reportExplanations["LEG FEEL"] ?: reportExplanations["legFeel"] ?: "",
+                                    nightExplain = reportExplanations["NIGHT LEG FEEL"] ?: reportExplanations["nightLegFeel"] ?: ""
                                 )
 
                                 if (report.reportDetail.isNotBlank()) {
+                                    val detailExplain = reportExplanations["REPORT DETAIL"] ?: reportExplanations["reportDetail"] ?: ""
                                     Surface(
                                         shape = RoundedCornerShape(16.dp),
                                         color = Color(0xFFF8FAFC),
@@ -1172,6 +1247,32 @@ fun SessionDetailModal(
                                                 color = Slate800,
                                                 lineHeight = 19.sp
                                             )
+                                            if (detailExplain.isNotBlank()) {
+                                                Surface(
+                                                    shape = RoundedCornerShape(10.dp),
+                                                    color = Color(0xFFFBF7FF),
+                                                    border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .padding(top = 4.dp)
+                                                ) {
+                                                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                                                        Text(
+                                                            text = "report detail explain:",
+                                                            fontSize = 11.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Color(0xFF6B21A8)
+                                                        )
+                                                        Text(
+                                                            text = detailExplain,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = FontWeight.Medium,
+                                                            color = Color(0xFF3B0764),
+                                                            lineHeight = 16.sp
+                                                        )
+                                                    }
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1270,23 +1371,48 @@ fun SessionDetailModal(
                                 } else {
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                         customAttributes.forEach { (k, v) ->
+                                            val attrExplain = reportExplanations[k] ?: reportExplanations["${k}_explain"] ?: ""
                                             Surface(
                                                 shape = RoundedCornerShape(12.dp),
                                                 color = Color(0xFFF8FAFC),
                                                 border = BorderStroke(1.dp, Slate200),
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
-                                                Row(
-                                                    modifier = Modifier.padding(12.dp),
-                                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Column {
-                                                        Text(k.uppercase(), fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
-                                                        Text(v, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Slate900)
+                                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        Column {
+                                                            Text(k.uppercase(), fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
+                                                            Text(v, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Slate900)
+                                                        }
+                                                        IconButton(onClick = { customAttributes.remove(k) }, modifier = Modifier.size(28.dp)) {
+                                                            Icon(Icons.Default.DeleteOutline, contentDescription = "Remove", tint = Slate400, modifier = Modifier.size(16.dp))
+                                                        }
                                                     }
-                                                    IconButton(onClick = { customAttributes.remove(k) }, modifier = Modifier.size(28.dp)) {
-                                                        Icon(Icons.Default.DeleteOutline, contentDescription = "Remove", tint = Slate400, modifier = Modifier.size(16.dp))
+                                                    if (attrExplain.isNotBlank()) {
+                                                        Surface(
+                                                            shape = RoundedCornerShape(8.dp),
+                                                            color = Color(0xFFFBF7FF),
+                                                            border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                                                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
+                                                        ) {
+                                                            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                                                                Text(
+                                                                    text = "$k explain:",
+                                                                    fontSize = 10.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Color(0xFF6B21A8)
+                                                                )
+                                                                Text(
+                                                                    text = attrExplain,
+                                                                    fontSize = 12.sp,
+                                                                    color = Color(0xFF3B0764)
+                                                                )
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1851,7 +1977,9 @@ private fun HeroPillBadge(
 private fun DayNightSensoryBox(
     title: String,
     dayValue: String,
-    nightValue: String
+    nightValue: String,
+    dayExplain: String = "",
+    nightExplain: String = ""
 ) {
     Surface(
         shape = RoundedCornerShape(16.dp),
@@ -1891,6 +2019,34 @@ private fun DayNightSensoryBox(
                 )
             }
 
+            // Day explain card if present
+            if (dayExplain.isNotBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFFFBF7FF),
+                    border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, top = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                        Text(
+                            text = "${title.lowercase()} explain:",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF6B21A8)
+                        )
+                        Text(
+                            text = dayExplain,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF3B0764),
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
+            }
+
             // Night row
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -1908,6 +2064,34 @@ private fun DayNightSensoryBox(
                     fontStyle = if (nightValue.isBlank()) FontStyle.Italic else FontStyle.Normal,
                     color = if (nightValue.isBlank()) Slate400 else Slate700
                 )
+            }
+
+            // Night explain card if present
+            if (nightExplain.isNotBlank()) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color(0xFFFBF7FF),
+                    border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 24.dp, top = 2.dp)
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)) {
+                        Text(
+                            text = "night ${title.lowercase()} explain:",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF6B21A8)
+                        )
+                        Text(
+                            text = nightExplain,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF3B0764),
+                            lineHeight = 16.sp
+                        )
+                    }
+                }
             }
         }
     }

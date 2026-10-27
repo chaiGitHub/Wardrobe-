@@ -100,7 +100,10 @@ import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import com.example.util.ImageUtils
+import androidx.compose.runtime.mutableStateMapOf
+import com.example.ui.components.ErgonomicExplainField
 import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -161,6 +164,32 @@ fun AddReportDialog(
     }
     var reportDetail by remember {
         mutableStateOf(initialReport?.reportDetail ?: "")
+    }
+
+    val reportFieldExplanations = remember(initialReport?.id, initialReport?.customFields) {
+        val map = mutableStateMapOf<String, String>()
+        try {
+            if (!initialReport?.customFields.isNullOrBlank()) {
+                val obj = JSONObject(initialReport.customFields)
+                val sub = obj.optJSONObject("_fieldExplanations")
+                if (sub != null) {
+                    sub.keys().forEach { k ->
+                        val v = sub.optString(k, "")
+                        if (v.isNotBlank()) map[k] = v
+                    }
+                }
+                obj.keys().forEach { k ->
+                    if (k.endsWith("_explain")) {
+                        val base = k.removeSuffix("_explain")
+                        val v = obj.optString(k, "")
+                        if (v.isNotBlank() && !map.containsKey(base)) {
+                            map[base] = v
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+        map
     }
 
     // Selected garments in outfit
@@ -1051,10 +1080,15 @@ fun AddReportDialog(
                                 value = shoulderFeel,
                                 placeholder = "e.g. relaxed and comfortable",
                                 tag = "input_shoulder_feel",
+                                explainValue = reportFieldExplanations["SHOULDER FEEL"] ?: "",
                                 onValueChange = { shoulderFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "SHOULDER FEEL" to { shoulderFeel = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["SHOULDER FEEL"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1062,10 +1096,15 @@ fun AddReportDialog(
                                 value = midBreast,
                                 placeholder = "e.g. good support, no digging",
                                 tag = "input_mid_breast",
+                                explainValue = reportFieldExplanations["MID BREAST"] ?: "",
                                 onValueChange = { midBreast = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "MID BREAST" to { midBreast = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["MID BREAST"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1073,10 +1112,15 @@ fun AddReportDialog(
                                 value = nightMidBreast,
                                 placeholder = "e.g. comfortable for evening",
                                 tag = "input_night_mid_breast",
+                                explainValue = reportFieldExplanations["NIGHT MID BREAST"] ?: "",
                                 onValueChange = { nightMidBreast = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT MID BREAST" to { nightMidBreast = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["NIGHT MID BREAST"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1084,10 +1128,15 @@ fun AddReportDialog(
                                 value = sweat,
                                 placeholder = "e.g. low / dry",
                                 tag = "input_sweat",
+                                explainValue = reportFieldExplanations["SWEAT"] ?: "",
                                 onValueChange = { sweat = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "SWEAT" to { sweat = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["SWEAT"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1095,10 +1144,15 @@ fun AddReportDialog(
                                 value = nightSweat,
                                 placeholder = "e.g. dry and pleasant",
                                 tag = "input_night_sweat",
+                                explainValue = reportFieldExplanations["NIGHT SWEAT"] ?: "",
                                 onValueChange = { nightSweat = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT SWEAT" to { nightSweat = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["NIGHT SWEAT"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1106,10 +1160,15 @@ fun AddReportDialog(
                                 value = legFeel,
                                 placeholder = "e.g. free movement",
                                 tag = "input_leg_feel",
+                                explainValue = reportFieldExplanations["LEG FEEL"] ?: "",
                                 onValueChange = { legFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "LEG FEEL" to { legFeel = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["LEG FEEL"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1117,10 +1176,15 @@ fun AddReportDialog(
                                 value = nightLegFeel,
                                 placeholder = "e.g. airy and easy",
                                 tag = "input_night_leg_feel",
+                                explainValue = reportFieldExplanations["NIGHT LEG FEEL"] ?: "",
                                 onValueChange = { nightLegFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT LEG FEEL" to { nightLegFeel = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["NIGHT LEG FEEL"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
 
                             SensoryFieldWithPrevious(
@@ -1130,10 +1194,15 @@ fun AddReportDialog(
                                 tag = "input_report_detail",
                                 singleLine = false,
                                 minLines = 3,
+                                explainValue = reportFieldExplanations["REPORT DETAIL"] ?: "",
                                 onValueChange = { reportDetail = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "REPORT DETAIL" to { reportDetail = it }
-                                }
+                                },
+                                onExplainChange = { reportFieldExplanations["REPORT DETAIL"] = it },
+                                allClothes = clothes,
+                                allReports = existingReports,
+                                dictionaryService = dictionaryService
                             )
                         }
                     }
@@ -1278,6 +1347,19 @@ fun AddReportDialog(
                                     photoUrls.forEach { put(it) }
                                 }.toString()
 
+                                val customFieldsObj = try {
+                                    if (!initialReport?.customFields.isNullOrBlank()) JSONObject(initialReport.customFields) else JSONObject()
+                                } catch (_: Exception) { JSONObject() }
+
+                                val explainObj = JSONObject()
+                                reportFieldExplanations.forEach { (k, v) ->
+                                    if (v.isNotBlank()) {
+                                        explainObj.put(k, v)
+                                        customFieldsObj.put("${k}_explain", v)
+                                    }
+                                }
+                                customFieldsObj.put("_fieldExplanations", explainObj)
+
                                 val reportEntity = ReportEntity(
                                     id = initialReport?.id ?: "",
                                     name = finalTitle,
@@ -1292,7 +1374,8 @@ fun AddReportDialog(
                                     nightLegFeel = nightLegFeel,
                                     reportDetail = reportDetail,
                                     pictures = picsJson,
-                                    tags = initialReport?.tags ?: "[\"#journal\"]"
+                                    tags = initialReport?.tags ?: "[\"#journal\"]",
+                                    customFields = customFieldsObj.toString()
                                 )
 
                                 val links = chosenGarments.map { entry ->
@@ -1349,8 +1432,14 @@ private fun SensoryFieldWithPrevious(
     tag: String,
     singleLine: Boolean = true,
     minLines: Int = 1,
+    explainValue: String = "",
     onValueChange: (String) -> Unit,
-    onOpenPrevious: () -> Unit
+    onOpenPrevious: () -> Unit,
+    onExplainChange: ((String) -> Unit)? = null,
+    onOpenExplainPrevious: (() -> Unit)? = null,
+    allClothes: List<GarmentEntity> = emptyList(),
+    allReports: List<ReportEntity> = emptyList(),
+    dictionaryService: FieldDictionaryService? = null
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(
@@ -1411,5 +1500,22 @@ private fun SensoryFieldWithPrevious(
                 unfocusedContainerColor = Color.White
             )
         )
+
+        // Permanent Explain Field arranged beautifully below its related field (with its own Previous button!)
+        if (onExplainChange != null) {
+            ErgonomicExplainField(
+                fieldKey = label,
+                fieldLabel = label,
+                value = explainValue,
+                onValueChange = onExplainChange,
+                isExpanded = true,
+                onToggleExpand = {},
+                allClothes = allClothes,
+                allReports = allReports,
+                dictionaryService = dictionaryService,
+                onOpenPrevious = onOpenExplainPrevious,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
     }
 }

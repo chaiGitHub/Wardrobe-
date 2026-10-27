@@ -1,8 +1,0 @@
-{
-	"appId": "com.wardroberecords.app",
-	"appName": "Wardrobe Diary",
-	"webDir": "dist",
-	"server": {
-		"androidScheme": "https"
-	}
-}

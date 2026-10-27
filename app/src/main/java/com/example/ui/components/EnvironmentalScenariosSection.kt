@@ -458,31 +458,31 @@ private fun ScenarioViewRow(
                 color = Slate900
             )
         }
-        if (!explanation.isNullOrBlank()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color.White, RoundedCornerShape(6.dp))
-                    .border(BorderStroke(0.5.dp, Color(0xFFE2E8F0)), RoundedCornerShape(6.dp))
-                    .padding(horizontal = 8.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalAlignment = Alignment.Top
-            ) {
-                Text(
-                    text = "Note:",
-                    fontSize = 10.sp,
-                    fontFamily = FontFamily.Monospace,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandPurple
-                )
-                Text(
-                    text = explanation,
-                    fontSize = 11.sp,
-                    color = Slate700,
-                    lineHeight = 15.sp,
-                    modifier = Modifier.weight(1f)
-                )
-            }
+        // Permanent explain field arranged beautifully below related scenario item
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFFFAF5FF), RoundedCornerShape(6.dp))
+                .border(BorderStroke(0.5.dp, Color(0xFFF3E8FF)), RoundedCornerShape(6.dp))
+                .padding(horizontal = 8.dp, vertical = 5.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            Text(
+                text = "${label.removeSuffix(":")} explain:",
+                fontSize = 10.sp,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                color = BrandPurple
+            )
+            Text(
+                text = if (!explanation.isNullOrBlank()) explanation else "No explain added",
+                fontSize = 11.sp,
+                fontStyle = if (explanation.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
+                color = if (explanation.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
+                lineHeight = 15.sp,
+                modifier = Modifier.weight(1f)
+            )
         }
     }
 }

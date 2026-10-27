@@ -1107,7 +1107,7 @@ private fun FieldWithPreviousButton(
     fieldKey: String = label,
     explainValue: String = "",
     onExplainChange: ((String) -> Unit)? = null,
-    isExplainExpanded: Boolean = false,
+    isExplainExpanded: Boolean = true,
     onToggleExplainExpand: (() -> Unit)? = null,
     allClothes: List<GarmentEntity> = emptyList(),
     dictionaryService: FieldDictionaryService? = null,

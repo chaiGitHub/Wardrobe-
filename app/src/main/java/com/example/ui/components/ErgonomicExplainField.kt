@@ -53,8 +53,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.model.GarmentEntity
+import com.example.data.model.ReportEntity
 import com.example.ui.dialogs.DictionaryFieldItem
 import com.example.ui.dialogs.FieldDictionaryService
+import com.example.ui.dialogs.PreviousEntriesModal
+import com.example.ui.dialogs.PreviousEntry
 import com.example.ui.dialogs.TypicalValueItem
 import com.example.ui.theme.BrandPurple
 import com.example.ui.theme.Slate100
@@ -78,7 +81,8 @@ data class FieldHistoryEntry(
  */
 fun getHistoricalExplanations(
     fieldKey: String,
-    clothes: List<GarmentEntity>
+    clothes: List<GarmentEntity> = emptyList(),
+    reports: List<ReportEntity> = emptyList()
 ): List<FieldHistoryEntry> {
     val cleanKey = fieldKey.trim()
     val candidateKeys = setOf(
@@ -132,10 +136,51 @@ fun getHistoricalExplanations(
         }
     }
 
+    reports.forEach { r ->
+        var note = ""
+        try {
+            if (r.customFields.isNotBlank() && r.customFields != "{}") {
+                val obj = JSONObject(r.customFields)
+                val sub = obj.optJSONObject("_fieldExplanations")
+                if (sub != null) {
+                    for (k in candidateKeys) {
+                        val candidate = sub.optString(k, "").trim()
+                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
+                            note = candidate
+                            break
+                        }
+                    }
+                }
+                if (note.isBlank()) {
+                    for (k in candidateKeys) {
+                        val candidate = obj.optString("${k}_explain", "").trim()
+                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
+                            note = candidate
+                            break
+                        }
+                    }
+                }
+            }
+        } catch (_: Exception) {}
+
+        if (note.isNotBlank() && note != "No data" && note != "N/A") {
+            val rName = r.name.ifBlank { r.wearDate.ifBlank { "Wearing Report" } }
+            val existing = map[note]
+            if (existing != null) {
+                if (!existing.second.contains(rName)) {
+                    existing.second.add(rName)
+                }
+                map[note] = Pair(existing.first + 1, existing.second)
+            } else {
+                map[note] = Pair(1, mutableListOf(rName))
+            }
+        }
+    }
+
     return map.entries.map { (text, info) ->
         FieldHistoryEntry(
             text = text,
-            garmentName = info.second.firstOrNull() ?: "Garment",
+            garmentName = info.second.firstOrNull() ?: "Source",
             count = info.first,
             sources = info.second
         )
@@ -154,20 +199,23 @@ fun ErgonomicExplainField(
     fieldLabel: String,
     value: String,
     onValueChange: (String) -> Unit,
-    isExpanded: Boolean,
-    onToggleExpand: () -> Unit,
+    isExpanded: Boolean = true,
+    onToggleExpand: () -> Unit = {},
     modifier: Modifier = Modifier,
     allClothes: List<GarmentEntity> = emptyList(),
+    allReports: List<ReportEntity> = emptyList(),
     customPlaceholder: String? = null,
-    dictionaryService: FieldDictionaryService? = null
+    dictionaryService: FieldDictionaryService? = null,
+    onOpenPrevious: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val isAiPaused = remember(context) { com.example.util.GeminiAiService.isAiPaused(context) }
     var heightMode by remember { mutableIntStateOf(140) } // dp: 140=中, 240=大, 380=特大, -1=撑满
     var isFullExpand by remember { mutableStateOf(false) }
+    var showPreviousModal by remember { mutableStateOf(false) }
 
-    val history = remember(fieldKey, allClothes) {
-        getHistoricalExplanations(fieldKey, allClothes)
+    val history = remember(fieldKey, allClothes, allReports) {
+        getHistoricalExplanations(fieldKey, allClothes, allReports)
     }
 
     Box(modifier = modifier.animateContentSize()) {
@@ -201,7 +249,7 @@ fun ErgonomicExplainField(
                         )
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = "$fieldLabel 体感说明:",
+                                text = "${fieldLabel.removeSuffix(":")} explain:",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF6B21A8)
@@ -277,7 +325,7 @@ fun ErgonomicExplainField(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(5.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
                             modifier = Modifier.weight(1f, fill = false)
                         ) {
                             Icon(
@@ -287,11 +335,44 @@ fun ErgonomicExplainField(
                                 modifier = Modifier.size(15.dp)
                             )
                             Text(
-                                text = "$fieldLabel 体感说明",
+                                text = "${fieldLabel.removeSuffix(":")} 体感说明",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF581C87)
                             )
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFEDE9FE),
+                                border = BorderStroke(1.dp, Color(0xFFC4B5FD)),
+                                modifier = Modifier
+                                    .clickable {
+                                        if (onOpenPrevious != null) {
+                                            onOpenPrevious()
+                                        } else {
+                                            showPreviousModal = true
+                                        }
+                                    }
+                                    .testTag("explain_previous_btn_${fieldKey}")
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.History,
+                                        contentDescription = "Previous explanations",
+                                        tint = Color(0xFF7C3AED),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = "Previous",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF6D28D9)
+                                    )
+                                }
+                            }
                         }
 
                         Row(
@@ -706,5 +787,28 @@ fun ErgonomicExplainField(
                 }
             }
         }
+    }
+
+    if (showPreviousModal) {
+        val previousEntries = remember(history) {
+            history.map {
+                PreviousEntry(
+                    value = it.text,
+                    count = it.count,
+                    sources = it.sources
+                )
+            }
+        }
+        PreviousEntriesModal(
+            isOpen = true,
+            fieldLabel = "$fieldLabel explain",
+            entries = previousEntries,
+            currentValue = value,
+            onSelect = { chosenVal ->
+                onValueChange(chosenVal)
+                showPreviousModal = false
+            },
+            onClose = { showPreviousModal = false }
+        )
     }
 }
