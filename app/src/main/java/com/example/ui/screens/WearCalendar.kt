@@ -625,8 +625,13 @@ fun WearCalendar(
                                                     tint = Color(0xFFB45309),
                                                     modifier = Modifier.size(12.dp)
                                                 )
+                                                val waitingLabel = if (garmentLifecycle.waitingDays > 0) {
+                                                    "${garmentLifecycle.waitingDays}d waiting"
+                                                } else {
+                                                    "${garmentLifecycle.currentDirtySessions}d"
+                                                }
                                                 Text(
-                                                    text = "Unwashed (${garmentLifecycle.currentDirtySessions}d · ${garmentLifecycle.currentDirtyHours}h)",
+                                                    text = "Unwashed ($waitingLabel · ${garmentLifecycle.currentDirtyHours}h)",
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = Color(0xFF92400E)
@@ -843,6 +848,7 @@ private fun CalendarCellItem(
                 LifecycleDayStatus.WORN_DIRTY -> Color(0xFFF1F5F9)
                 LifecycleDayStatus.WORN_AND_WASHED -> Color(0xFFF5F3FF)
                 LifecycleDayStatus.WASHED_CLEAN -> Color(0xFFECFDF5).copy(alpha = 0.8f)
+                LifecycleDayStatus.UNWASHED_WAITING -> Color(0xFFFFFBEB).copy(alpha = 0.5f)
             }
         }
         else -> Color.White
@@ -939,6 +945,7 @@ private fun CalendarCellItem(
                                 LifecycleDayStatus.WORN_DIRTY -> Slate900
                                 LifecycleDayStatus.WORN_AND_WASHED -> BrandPurple
                                 LifecycleDayStatus.WASHED_CLEAN -> BrandEmerald
+                                LifecycleDayStatus.UNWASHED_WAITING -> BrandAmber
                             }
                             Box(
                                 modifier = Modifier
@@ -1055,7 +1062,7 @@ private fun CalendarCellItem(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 3.dp, vertical = 2.dp),
+                                        modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
@@ -1066,13 +1073,38 @@ private fun CalendarCellItem(
                                             modifier = Modifier.size(8.dp)
                                         )
                                         Spacer(modifier = Modifier.width(2.dp))
+                                        val cleanHours = if (lifecycleEntry.wearHoursOnDay % 1.0 == 0.0) {
+                                            "${lifecycleEntry.wearHoursOnDay.toInt()}h"
+                                        } else {
+                                            "${lifecycleEntry.wearHoursOnDay}h"
+                                        }
                                         Text(
-                                            text = "${lifecycleEntry.wearHoursOnDay}h",
-                                            fontSize = 8.sp,
+                                            text = "Worn $cleanHours",
+                                            fontSize = 7.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White
+                                            color = Color.White,
+                                            maxLines = 1
                                         )
                                     }
+                                }
+                            }
+                            LifecycleDayStatus.UNWASHED_WAITING -> {
+                                Surface(
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = Color(0xFFFEF3C7),
+                                    border = BorderStroke(0.5.dp, Color(0xFFFDE68A)),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text(
+                                        text = "Day ${lifecycleEntry.dayInCycle} unw...",
+                                        fontSize = 7.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        color = Color(0xFF92400E),
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(horizontal = 1.dp, vertical = 1.5.dp)
+                                    )
                                 }
                             }
                             LifecycleDayStatus.WORN_AND_WASHED -> {
@@ -1099,12 +1131,12 @@ private fun CalendarCellItem(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Row(
-                                        modifier = Modifier.padding(horizontal = 3.dp, vertical = 2.dp),
+                                        modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp),
                                         horizontalArrangement = Arrangement.Center,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Icon(
-                                            Icons.Default.LocalLaundryService,
+                                            Icons.Default.WaterDrop,
                                             contentDescription = null,
                                             tint = Color.White,
                                             modifier = Modifier.size(8.dp)
@@ -1112,9 +1144,10 @@ private fun CalendarCellItem(
                                         Spacer(modifier = Modifier.width(2.dp))
                                         Text(
                                             text = "Washed",
-                                            fontSize = 8.sp,
+                                            fontSize = 7.5.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color.White
+                                            color = Color.White,
+                                            maxLines = 1
                                         )
                                     }
                                 }
@@ -1632,6 +1665,25 @@ private fun SelectedDateInspectorPanel(
                                                 text = "Garment was washed on this date, resetting all unwashed accumulation back to clean.",
                                                 fontSize = 12.sp,
                                                 color = Slate600
+                                            )
+                                        }
+                                        LifecycleDayStatus.UNWASHED_WAITING -> {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Icon(Icons.Default.WaterDrop, contentDescription = null, tint = Color(0xFFB45309), modifier = Modifier.size(16.dp))
+                                                Text(
+                                                    text = "Unwashed Waiting Span (Day ${dayLifecycle.dayInCycle})",
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF92400E)
+                                                )
+                                            }
+                                            Text(
+                                                text = "The garment was worn previously and was waiting to be washed on this day. Total accumulated unwashed wear time: ${dayLifecycle.cumulativeDirtyHours}h across ${dayLifecycle.sessions.size} session(s).",
+                                                fontSize = 12.sp,
+                                                color = Slate700
                                             )
                                         }
                                     }

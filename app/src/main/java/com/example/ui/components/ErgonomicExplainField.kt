@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import java.util.Locale
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -27,15 +30,19 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -74,6 +81,8 @@ data class FieldHistoryEntry(
     val garmentName: String,
     val count: Int,
     val sources: List<String>,
+    val clothesSources: List<String> = emptyList(),
+    val reportSources: List<String> = emptyList(),
     val clothesSource: String = "",
     val reportSource: String = ""
 )
@@ -89,14 +98,7 @@ fun getHistoricalExplanations(
     allJunctions: List<com.example.data.model.JunctionEntity> = emptyList()
 ): List<FieldHistoryEntry> {
     val cleanKey = fieldKey.trim()
-    val candidateKeys = setOf(
-        cleanKey,
-        cleanKey.lowercase(),
-        cleanKey.replace(" ", ""),
-        cleanKey.replace(" ", "_"),
-        cleanKey.replace("-", ""),
-        cleanKey.replace(":", "")
-    )
+    val targetNorm = cleanKey.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
 
     // Build report -> garments lookup from junctions
     val reportToGarmentsMap = mutableMapOf<String, MutableList<String>>()
@@ -123,8 +125,8 @@ fun getHistoricalExplanations(
     data class AggregateInfo(
         var count: Int,
         val sources: MutableList<String>,
-        var clothesSource: String,
-        var reportSource: String
+        val clothesSources: MutableList<String> = mutableListOf(),
+        val reportSources: MutableList<String> = mutableListOf()
     )
     val map = mutableMapOf<String, AggregateInfo>()
 
@@ -135,25 +137,49 @@ fun getHistoricalExplanations(
                 val obj = JSONObject(g.customFields)
                 val sub = obj.optJSONObject("_fieldExplanations")
                 if (sub != null) {
-                    for (k in candidateKeys) {
-                        val candidate = sub.optString(k, "").trim()
-                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
-                            note = candidate
-                            break
+                    val subKeys = sub.keys()
+                    while (subKeys.hasNext()) {
+                        val k = subKeys.next()
+                        val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
+                        if (normK == targetNorm || normK == "${targetNorm}explain") {
+                            val candidate = sub.optString(k, "").trim()
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
+                                note = candidate
+                                break
+                            }
                         }
                     }
                 }
                 if (note.isBlank()) {
-                    for (k in candidateKeys) {
-                        val candidate = obj.optString("${k}_explain", "").trim()
-                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
-                            note = candidate
-                            break
+                    val objKeys = obj.keys()
+                    while (objKeys.hasNext()) {
+                        val k = objKeys.next()
+                        val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
+                        if (normK == "${targetNorm}explain" || normK == "${targetNorm}explanation" || normK == "explain$targetNorm" || (targetNorm.isNotEmpty() && normK == targetNorm)) {
+                            val candidate = obj.optString(k, "").trim()
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{")) {
+                                note = candidate
+                                break
+                            }
                         }
                     }
                 }
             }
         } catch (_: Exception) {}
+
+        // Check dedicated entity explain fields if key matches
+        if (note.isBlank()) {
+            when (targetNorm) {
+                "whenwithaircondhotfeeling", "aircondhotfeeling" -> note = g.aircondHotExplain.trim()
+                "whenwithaircondlegfeeling", "aircondlegfeeling" -> note = g.aircondLegExplain.trim()
+                "whenwithoutaircondhotfeeling", "noaircondhotfeeling", "hotatnoon" -> note = g.noAircondHotExplain.trim()
+                "whenwithoutaircondlegfeeling", "noaircondlegfeeling" -> note = g.noAircondLegExplain.trim()
+                "whensleepunderfanhotfeeling", "fansleephotfeeling" -> note = g.fanSleepHotExplain.trim()
+                "whensleepunderfanlegfeeling", "fansleeplegfeeling" -> note = g.fanSleepLegExplain.trim()
+                "beautiful", "beatifulreason" -> note = g.beautifulReason.trim()
+                "wet", "wetreason" -> note = g.wetReason.trim()
+            }
+        }
 
         if (note.isNotBlank() && note != "No data" && note != "N/A") {
             val gName = "${g.name}${if (g.clothesType.isNotBlank()) " (${g.clothesType})" else ""}".ifBlank { "Garment" }
@@ -163,16 +189,16 @@ fun getHistoricalExplanations(
                 if (!existing.sources.contains(src)) {
                     existing.sources.add(src)
                 }
-                if (existing.clothesSource.isBlank()) {
-                    existing.clothesSource = gName
+                if (!existing.clothesSources.contains(gName)) {
+                    existing.clothesSources.add(gName)
                 }
                 existing.count++
             } else {
                 map[note] = AggregateInfo(
                     count = 1,
                     sources = mutableListOf(src),
-                    clothesSource = gName,
-                    reportSource = ""
+                    clothesSources = mutableListOf(gName),
+                    reportSources = mutableListOf()
                 )
             }
         }
@@ -185,20 +211,30 @@ fun getHistoricalExplanations(
                 val obj = JSONObject(r.customFields)
                 val sub = obj.optJSONObject("_fieldExplanations")
                 if (sub != null) {
-                    for (k in candidateKeys) {
-                        val candidate = sub.optString(k, "").trim()
-                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
-                            note = candidate
-                            break
+                    val subKeys = sub.keys()
+                    while (subKeys.hasNext()) {
+                        val k = subKeys.next()
+                        val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
+                        if (normK == targetNorm || normK == "${targetNorm}explain") {
+                            val candidate = sub.optString(k, "").trim()
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
+                                note = candidate
+                                break
+                            }
                         }
                     }
                 }
                 if (note.isBlank()) {
-                    for (k in candidateKeys) {
-                        val candidate = obj.optString("${k}_explain", "").trim()
-                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
-                            note = candidate
-                            break
+                    val objKeys = obj.keys()
+                    while (objKeys.hasNext()) {
+                        val k = objKeys.next()
+                        val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
+                        if (normK == "${targetNorm}explain" || normK == "${targetNorm}explanation" || normK == "explain$targetNorm" || (targetNorm.isNotEmpty() && normK == targetNorm)) {
+                            val candidate = obj.optString(k, "").trim()
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{")) {
+                                note = candidate
+                                break
+                            }
                         }
                     }
                 }
@@ -225,32 +261,40 @@ fun getHistoricalExplanations(
                 if (!existing.sources.contains(src)) {
                     existing.sources.add(src)
                 }
-                if (existing.clothesSource.isBlank() && clothesLabel.isNotBlank()) {
-                    existing.clothesSource = clothesLabel
+                garmentsForReport.forEach { gDesc ->
+                    if (!existing.clothesSources.contains(gDesc)) {
+                        existing.clothesSources.add(gDesc)
+                    }
                 }
-                if (existing.reportSource.isBlank()) {
-                    existing.reportSource = rName
+                if (rName.isNotBlank() && !existing.reportSources.contains(rName)) {
+                    existing.reportSources.add(rName)
                 }
                 existing.count++
             } else {
                 map[note] = AggregateInfo(
                     count = 1,
                     sources = mutableListOf(src),
-                    clothesSource = clothesLabel,
-                    reportSource = rName
+                    clothesSources = garmentsForReport.toMutableList(),
+                    reportSources = if (rName.isNotBlank()) mutableListOf(rName) else mutableListOf()
                 )
             }
         }
     }
 
     return map.entries.map { (text, info) ->
+        val distinctClothes = info.clothesSources.distinct()
+        val distinctReports = info.reportSources.distinct()
+        val clothesLabel = distinctClothes.joinToString(", ")
+        val reportLabel = distinctReports.joinToString(", ")
         FieldHistoryEntry(
             text = text,
-            garmentName = if (info.clothesSource.isNotBlank()) info.clothesSource else info.reportSource.ifBlank { "Source" },
+            garmentName = if (clothesLabel.isNotBlank()) clothesLabel else reportLabel.ifBlank { "Source" },
             count = info.count,
             sources = info.sources,
-            clothesSource = info.clothesSource,
-            reportSource = info.reportSource
+            clothesSources = distinctClothes,
+            reportSources = distinctReports,
+            clothesSource = clothesLabel,
+            reportSource = reportLabel
         )
     }.sortedByDescending { it.count }
 }
@@ -261,13 +305,14 @@ fun getHistoricalExplanations(
  * - Expanded: Full explanation textarea, size presets (中/大/特大/撑满),
  *   historical notes with "+ 追加说明" / "直接填入", and "同步至 AI 字典定义".
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ErgonomicExplainField(
     fieldKey: String,
     fieldLabel: String,
     value: String,
     onValueChange: (String) -> Unit,
-    isExpanded: Boolean = true,
+    isExpanded: Boolean = false,
     onToggleExpand: () -> Unit = {},
     modifier: Modifier = Modifier,
     allClothes: List<GarmentEntity> = emptyList(),
@@ -282,7 +327,7 @@ fun ErgonomicExplainField(
     var heightMode by remember { mutableIntStateOf(140) } // dp: 140=中, 240=大, 380=特大, -1=撑满
     var isFullExpand by remember { mutableStateOf(false) }
     var showPreviousModal by remember { mutableStateOf(false) }
-    var internalExpanded by remember { mutableStateOf(isExpanded || value.isNotBlank()) }
+    var internalExpanded by remember(isExpanded) { mutableStateOf(isExpanded) }
     var historySearchQuery by remember { mutableStateOf("") }
     androidx.compose.runtime.LaunchedEffect(isExpanded) {
         internalExpanded = isExpanded
@@ -783,8 +828,35 @@ fun ErgonomicExplainField(
                                                         verticalArrangement = Arrangement.spacedBy(2.dp),
                                                         modifier = Modifier.weight(1f, fill = false)
                                                     ) {
-                                                        // Explicit Clothes Source Pill (fixes report title bug!)
-                                                        if (item.clothesSource.isNotBlank()) {
+                                                        // Explicit Clothes Source Pills (show all clothes sources, not just one!)
+                                                        if (item.clothesSources.isNotEmpty()) {
+                                                            item.clothesSources.forEach { cSrc ->
+                                                                Surface(
+                                                                    shape = RoundedCornerShape(4.dp),
+                                                                    color = Color(0xFFF3E8FF),
+                                                                    border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                                                                ) {
+                                                                    Row(
+                                                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                                                        verticalAlignment = Alignment.CenterVertically,
+                                                                        horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                                                    ) {
+                                                                        Icon(
+                                                                            imageVector = Icons.Default.Checkroom,
+                                                                            contentDescription = null,
+                                                                            tint = Color(0xFF7E22CE),
+                                                                            modifier = Modifier.size(11.dp)
+                                                                        )
+                                                                        Text(
+                                                                            text = "衣服: $cSrc",
+                                                                            fontSize = 10.sp,
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = Color(0xFF581C87)
+                                                                        )
+                                                                    }
+                                                                }
+                                                            }
+                                                        } else if (item.clothesSource.isNotBlank()) {
                                                             Surface(
                                                                 shape = RoundedCornerShape(4.dp),
                                                                 color = Color(0xFFF3E8FF),
@@ -824,8 +896,22 @@ fun ErgonomicExplainField(
                                                             }
                                                         }
 
-                                                        // Report Source Pill
-                                                        if (item.reportSource.isNotBlank()) {
+                                                        // Report Source Pills (show all report sources!)
+                                                        if (item.reportSources.isNotEmpty()) {
+                                                            item.reportSources.forEach { rSrc ->
+                                                                Surface(
+                                                                    shape = RoundedCornerShape(4.dp),
+                                                                    color = Slate100
+                                                                ) {
+                                                                    Text(
+                                                                        text = "📅 $rSrc",
+                                                                        fontSize = 9.sp,
+                                                                        color = Slate600,
+                                                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                                    )
+                                                                }
+                                                            }
+                                                        } else if (item.reportSource.isNotBlank()) {
                                                             Surface(
                                                                 shape = RoundedCornerShape(4.dp),
                                                                 color = Slate100

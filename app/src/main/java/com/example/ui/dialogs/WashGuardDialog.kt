@@ -19,8 +19,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -79,8 +82,34 @@ fun WashGuardDialog(
     onConfirm: (washDate: String) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val context = LocalContext.current
     var selectedWashDate by remember(initialWashDate) {
         mutableStateOf(initialWashDate.ifBlank { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) })
+    }
+
+    val openDatePicker = {
+        try {
+            val clean = com.example.util.CalendarCalculations.normalizeDate(selectedWashDate)
+            val cal = java.util.Calendar.getInstance()
+            if (clean.length >= 10) {
+                val parts = clean.substring(0, 10).split("-")
+                if (parts.size == 3) {
+                    val y = parts[0].toIntOrNull() ?: cal.get(java.util.Calendar.YEAR)
+                    val m = (parts[1].toIntOrNull() ?: (cal.get(java.util.Calendar.MONTH) + 1)) - 1
+                    val d = parts[2].toIntOrNull() ?: cal.get(java.util.Calendar.DAY_OF_MONTH)
+                    cal.set(y, m, d)
+                }
+            }
+            android.app.DatePickerDialog(
+                context,
+                { _, y, m, d ->
+                    selectedWashDate = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d)
+                },
+                cal.get(java.util.Calendar.YEAR),
+                cal.get(java.util.Calendar.MONTH),
+                cal.get(java.util.Calendar.DAY_OF_MONTH)
+            ).show()
+        } catch (_: Exception) {}
     }
 
     Dialog(
@@ -264,32 +293,46 @@ fun WashGuardDialog(
                             shape = RoundedCornerShape(12.dp),
                             color = Color(0xFFEFF6FF),
                             border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { openDatePicker() }
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 14.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.WaterDrop,
+                                        contentDescription = null,
+                                        tint = Color(0xFF2563EB),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Text(
+                                        text = "Wash date: ",
+                                        fontSize = 14.sp,
+                                        color = Slate700
+                                    )
+                                    Text(
+                                        text = selectedWashDate,
+                                        fontSize = 14.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF1E3A8A)
+                                    )
+                                }
                                 Icon(
-                                    imageVector = Icons.Default.WaterDrop,
-                                    contentDescription = null,
+                                    imageVector = Icons.Default.CalendarToday,
+                                    contentDescription = "Pick Date",
                                     tint = Color(0xFF2563EB),
-                                    modifier = Modifier.size(18.dp)
-                                )
-                                Text(
-                                    text = "Wash date: ",
-                                    fontSize = 14.sp,
-                                    color = Slate700
-                                )
-                                Text(
-                                    text = selectedWashDate,
-                                    fontSize = 14.sp,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF1E3A8A)
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }

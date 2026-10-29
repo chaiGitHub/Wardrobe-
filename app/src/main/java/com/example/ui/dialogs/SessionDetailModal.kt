@@ -206,21 +206,87 @@ fun SessionDetailModal(
         map
     }
 
-    // Custom Environmental Attributes (filtering out internal explain fields)
+    // Custom Environmental Attributes (strictly filtering out internal schema & explain fields & AI reports)
     val customAttributes = remember(report.id, report.customFields) {
         val map = mutableStateMapOf<String, String>()
+        val reservedKeys = setOf(
+            "id", "name", "report_name", "report_title", "title",
+            "created", "createdtime", "created_time", "createdat",
+            "weardate", "wear_date", "date",
+            "tags", "tag", "categories", "category",
+            "aireports", "ai_reports", "aireport", "ai_report",
+            "aiwearinganalysis", "ai_wearing_analysis",
+            "shoulderfeel", "shoulder_feel",
+            "midbreast", "mid_breast",
+            "nightmidbreast", "night_mid_breast",
+            "sweat",
+            "nightsweat", "night_sweat",
+            "legfeel", "leg_feel",
+            "nightlegfeel", "night_leg_feel",
+            "reportdetail", "report_detail",
+            "pictures", "picture",
+            "_fieldexplanations", "_field_explanations"
+        )
         try {
             if (report.customFields.isNotBlank() && report.customFields != "{}") {
                 val obj = org.json.JSONObject(report.customFields)
                 obj.keys().forEach { k ->
-                    if (k != "_fieldExplanations" && !k.endsWith("_explain") && k != "id" && k != "name") {
-                        val v = obj.optString(k, "")
-                        if (v.isNotBlank()) map[k] = v
+                    val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
+                    val isReserved = norm in reservedKeys ||
+                            norm.endsWith("_explain") ||
+                            norm.endsWith("explain") ||
+                            norm.startsWith("_")
+                    val v = obj.optString(k, "").trim()
+                    val isAiJson = v.startsWith("[{") || v.startsWith("{\n") ||
+                            (v.contains("\"model\"") && v.contains("\"gemini\"")) ||
+                            norm.contains("aireport")
+                    if (!isReserved && !isAiJson && v.isNotBlank()) {
+                        map[k] = v
                     }
                 }
             }
         } catch (_: Exception) {}
         map
+    }
+
+    val persistCustomAttributes: () -> Unit = {
+        try {
+            val reservedKeys = setOf(
+                "id", "name", "report_name", "report_title", "title",
+                "created", "createdtime", "created_time", "createdat",
+                "weardate", "wear_date", "date",
+                "tags", "tag", "categories", "category",
+                "aireports", "ai_reports", "aireport", "ai_report",
+                "aiwearinganalysis", "ai_wearing_analysis",
+                "shoulderfeel", "shoulder_feel",
+                "midbreast", "mid_breast",
+                "nightmidbreast", "night_mid_breast",
+                "sweat",
+                "nightsweat", "night_sweat",
+                "legfeel", "leg_feel",
+                "nightlegfeel", "night_leg_feel",
+                "reportdetail", "report_detail",
+                "pictures", "picture",
+                "_fieldexplanations", "_field_explanations"
+            )
+            val obj = if (report.customFields.isNotBlank() && report.customFields != "{}") {
+                org.json.JSONObject(report.customFields)
+            } else {
+                org.json.JSONObject()
+            }
+            val toRemove = mutableListOf<String>()
+            obj.keys().forEach { k ->
+                val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
+                if (norm !in reservedKeys && !norm.endsWith("_explain") && !norm.startsWith("_")) {
+                    toRemove.add(k)
+                }
+            }
+            toRemove.forEach { obj.remove(it) }
+            customAttributes.forEach { (k, v) ->
+                obj.put(k, v)
+            }
+            onUpdateReport?.invoke(report.copy(customFields = obj.toString()))
+        } catch (_: Exception) {}
     }
     var showAddAttributeDialog by remember { mutableStateOf(false) }
     var newAttrKey by remember { mutableStateOf("") }
@@ -1388,7 +1454,13 @@ fun SessionDetailModal(
                                                             Text(k.uppercase(), fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
                                                             Text(v, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Slate900)
                                                         }
-                                                        IconButton(onClick = { customAttributes.remove(k) }, modifier = Modifier.size(28.dp)) {
+                                                        IconButton(
+                                                            onClick = {
+                                                                customAttributes.remove(k)
+                                                                persistCustomAttributes()
+                                                            },
+                                                            modifier = Modifier.size(28.dp)
+                                                        ) {
                                                             Icon(Icons.Default.DeleteOutline, contentDescription = "Remove", tint = Slate400, modifier = Modifier.size(16.dp))
                                                         }
                                                     }
@@ -1859,6 +1931,7 @@ fun SessionDetailModal(
                     onClick = {
                         if (newAttrKey.isNotBlank() && newAttrVal.isNotBlank()) {
                             customAttributes[newAttrKey.trim()] = newAttrVal.trim()
+                            persistCustomAttributes()
                             newAttrKey = ""
                             newAttrVal = ""
                             showAddAttributeDialog = false

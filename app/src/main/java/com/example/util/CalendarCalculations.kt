@@ -77,7 +77,8 @@ data class WashHistoryDayEntry(
 enum class LifecycleDayStatus {
     WORN_DIRTY,
     WORN_AND_WASHED,
-    WASHED_CLEAN
+    WASHED_CLEAN,
+    UNWASHED_WAITING
 }
 
 data class GarmentDayLifecycle(
@@ -86,7 +87,8 @@ data class GarmentDayLifecycle(
     val wearHoursOnDay: Double,
     val cumulativeDirtyHours: Double,
     val sessions: List<ContributingSession>,
-    val washEvent: Boolean
+    val washEvent: Boolean,
+    val dayInCycle: Int = 1
 )
 
 data class GarmentLifecycleSummary(
@@ -95,7 +97,9 @@ data class GarmentLifecycleSummary(
     val totalWears: Int,
     val totalWashes: Int,
     val currentDirtyHours: Double,
-    val currentDirtySessions: Int
+    val currentDirtySessions: Int,
+    val waitingDays: Long = 0L,
+    val isCurrentlyUnwashed: Boolean = false
 )
 
 object CalendarCalculations {
@@ -322,57 +326,140 @@ object CalendarCalculations {
             )
         }.sortedBy { it.wearDate }
 
-        // Collect all relevant dates (wear dates + wash dates)
-        val allDatesSet = sortedSetOf<String>()
-        internalSessions.forEach {
-            if (it.wearDate.isNotBlank()) allDatesSet.add(it.wearDate)
-            if (it.washDate.isNotBlank()) allDatesSet.add(it.washDate)
+        // Build wash cycles
+        val dayStatusMap = mutableMapOf<String, GarmentDayLifecycle>()
+
+        // 1. Group sessions into washed cycles and current unwashed cycle
+        val washedSessionsByWashDate = mutableMapOf<String, MutableList<InternalSession>>()
+        val unwashedSessions = mutableListOf<InternalSession>()
+
+        for (s in internalSessions) {
+            if (!s.isNeedWash && s.washDate.isNotBlank()) {
+                washedSessionsByWashDate.getOrPut(s.washDate) { mutableListOf() }.add(s)
+            } else {
+                unwashedSessions.add(s)
+            }
         }
+
+        // Helper to populate a contiguous date range for a cycle
+        fun populateCycleDays(
+            sessionsInCycle: List<InternalSession>,
+            washDate: String?
+        ) {
+            if (sessionsInCycle.isEmpty() && washDate.isNullOrBlank()) return
+
+            val wearDates = sessionsInCycle.map { it.wearDate }.filter { it.isNotBlank() }
+            val firstWearDate = wearDates.minOrNull()
+            if (firstWearDate == null && !washDate.isNullOrBlank()) {
+                // Standalone wash event without logged wear sessions
+                val washedObj = sessionsInCycle.map { it.sessionObj }
+                dayStatusMap[washDate] = GarmentDayLifecycle(
+                    dateKey = washDate,
+                    status = LifecycleDayStatus.WASHED_CLEAN,
+                    wearHoursOnDay = 0.0,
+                    cumulativeDirtyHours = 0.0,
+                    sessions = washedObj,
+                    washEvent = true,
+                    dayInCycle = 1
+                )
+                return
+            }
+
+            if (firstWearDate == null) return
+
+            val startLd = try { LocalDate.parse(firstWearDate) } catch (_: Exception) { return }
+            val endLd = if (!washDate.isNullOrBlank()) {
+                try { LocalDate.parse(washDate) } catch (_: Exception) { startLd }
+            } else {
+                val latestWearLd = try { LocalDate.parse(wearDates.maxOrNull() ?: firstWearDate) } catch (_: Exception) { startLd }
+                val today = LocalDate.now()
+                if (latestWearLd.isAfter(today)) latestWearLd else today
+            }
+
+            var currLd = startLd
+            var runningDirtyHours = 0.0
+
+            while (!currLd.isAfter(endLd)) {
+                val dKey = currLd.format(ISO_DATE_FORMATTER)
+                val dayInCycle = (ChronoUnit.DAYS.between(startLd, currLd) + 1).toInt()
+
+                val wornToday = sessionsInCycle.filter { it.wearDate == dKey }
+                val wearHoursToday = round1Decimal(wornToday.sumOf { it.junction.duration } / 3600.0)
+                runningDirtyHours = round1Decimal(runningDirtyHours + wearHoursToday)
+
+                val isWashDay = washDate != null && washDate == dKey
+                val status = when {
+                    wornToday.isNotEmpty() && isWashDay -> LifecycleDayStatus.WORN_AND_WASHED
+                    isWashDay -> LifecycleDayStatus.WASHED_CLEAN
+                    wornToday.isNotEmpty() -> LifecycleDayStatus.WORN_DIRTY
+                    else -> LifecycleDayStatus.UNWASHED_WAITING
+                }
+
+                // Cumulative sessions active in this cycle up to this day
+                val activeSessions = sessionsInCycle
+                    .filter { it.wearDate.isNotBlank() && it.wearDate <= dKey }
+                    .map { it.sessionObj }
+                    .distinctBy { it.junctionId }
+
+                dayStatusMap[dKey] = GarmentDayLifecycle(
+                    dateKey = dKey,
+                    status = status,
+                    wearHoursOnDay = wearHoursToday,
+                    cumulativeDirtyHours = runningDirtyHours,
+                    sessions = activeSessions,
+                    washEvent = isWashDay,
+                    dayInCycle = dayInCycle
+                )
+
+                if (isWashDay) {
+                    runningDirtyHours = 0.0
+                }
+
+                currLd = currLd.plusDays(1)
+            }
+        }
+
+        // Populate completed washed cycles
+        for ((wDate, wSessions) in washedSessionsByWashDate) {
+            populateCycleDays(wSessions, wDate)
+        }
+
+        // Also check if garment has lastWashed that wasn't in washedSessionsByWashDate
         garment?.lastWashed?.let { lw ->
             val normLw = normalizeDate(lw)
-            if (normLw.isNotBlank()) allDatesSet.add(normLw)
+            if (normLw.isNotBlank() && !dayStatusMap.containsKey(normLw)) {
+                dayStatusMap[normLw] = GarmentDayLifecycle(
+                    dateKey = normLw,
+                    status = LifecycleDayStatus.WASHED_CLEAN,
+                    wearHoursOnDay = 0.0,
+                    cumulativeDirtyHours = 0.0,
+                    sessions = emptyList(),
+                    washEvent = true,
+                    dayInCycle = 1
+                )
+            }
         }
 
-        val dayStatusMap = mutableMapOf<String, GarmentDayLifecycle>()
-        var runningDirtyHours = 0.0
-
-        for (dateKey in allDatesSet) {
-            val wornToday = internalSessions.filter { it.wearDate == dateKey }
-            val washedToday = internalSessions.filter { it.washDate == dateKey }
-            val isLastWashedDate = garment != null && normalizeDate(garment.lastWashed) == dateKey
-
-            val wearHoursToday = round1Decimal(wornToday.sumOf { it.junction.duration } / 3600.0)
-            runningDirtyHours = round1Decimal(runningDirtyHours + wearHoursToday)
-
-            val hadWashEvent = washedToday.isNotEmpty() || isLastWashedDate
-            val status = when {
-                wornToday.isNotEmpty() && hadWashEvent -> LifecycleDayStatus.WORN_AND_WASHED
-                hadWashEvent -> LifecycleDayStatus.WASHED_CLEAN
-                else -> LifecycleDayStatus.WORN_DIRTY
-            }
-
-            val daySessions = (wornToday.map { it.sessionObj } + washedToday.map { it.sessionObj })
-                .distinctBy { it.junctionId }
-
-            dayStatusMap[dateKey] = GarmentDayLifecycle(
-                dateKey = dateKey,
-                status = status,
-                wearHoursOnDay = wearHoursToday,
-                cumulativeDirtyHours = runningDirtyHours,
-                sessions = daySessions,
-                washEvent = hadWashEvent
-            )
-
-            if (hadWashEvent) {
-                runningDirtyHours = 0.0
-            }
+        // Populate current open unwashed cycle
+        if (unwashedSessions.isNotEmpty()) {
+            populateCycleDays(unwashedSessions, null)
         }
 
         val dirtyJunctions = gJunctions.filter { it.washStated.equals("need wash", ignoreCase = true) }
         val currentDirtyHours = round1Decimal(dirtyJunctions.sumOf { it.duration } / 3600.0)
         val currentDirtySessions = dirtyJunctions.size
 
-        val distinctWashDates = internalSessions.mapNotNull { it.washDate.takeIf { d -> d.isNotBlank() } }.distinct().size
+        val earliestUnwashedWear = unwashedSessions.map { it.wearDate }.filter { it.isNotBlank() }.minOrNull()
+        val waitingDays = if (!earliestUnwashedWear.isNullOrBlank()) {
+            try {
+                val startLd = LocalDate.parse(earliestUnwashedWear)
+                maxOf(1L, ChronoUnit.DAYS.between(startLd, LocalDate.now()) + 1)
+            } catch (_: Exception) {
+                unwashedSessions.size.toLong()
+            }
+        } else 0L
+
+        val distinctWashDates = (washedSessionsByWashDate.keys + listOfNotNull(garment?.lastWashed?.let { normalizeDate(it).takeIf { d -> d.isNotBlank() } })).distinct().size
         val totalWashes = if (garment != null) {
             maxOf(garment.wearingFrequency + garment.trackedAppWashes, distinctWashDates)
         } else {
@@ -385,7 +472,9 @@ object CalendarCalculations {
             totalWears = gJunctions.size,
             totalWashes = totalWashes,
             currentDirtyHours = currentDirtyHours,
-            currentDirtySessions = currentDirtySessions
+            currentDirtySessions = currentDirtySessions,
+            waitingDays = waitingDays,
+            isCurrentlyUnwashed = dirtyJunctions.isNotEmpty()
         )
     }
 

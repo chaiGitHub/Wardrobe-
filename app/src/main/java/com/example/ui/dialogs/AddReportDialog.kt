@@ -35,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Checkroom
@@ -130,10 +131,25 @@ fun AddReportDialog(
     val context = LocalContext.current
     val dictionaryService = remember { FieldDictionaryService(context) }
     val todayIso = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date()) }
-    val todayDisplay = remember { SimpleDateFormat("dd MMM yyyy", Locale.US).format(Date()) }
+    val todayDisplay = remember { SimpleDateFormat("dd/MM/yyyy", Locale.US).format(Date()) }
 
     var wearDate by remember {
-        mutableStateOf(initialReport?.wearDate?.ifBlank { todayIso } ?: todayIso)
+        val raw = initialReport?.wearDate?.ifBlank { todayIso } ?: todayIso
+        mutableStateOf(com.example.util.CalendarCalculations.normalizeDate(raw).ifBlank { todayIso })
+    }
+
+    val formatDisplayDate: (String) -> String = { iso ->
+        val clean = com.example.util.CalendarCalculations.normalizeDate(iso)
+        try {
+            if (clean.length >= 10) {
+                val parts = clean.substring(0, 10).split("-")
+                if (parts.size == 3) {
+                    "${parts[2]}/${parts[1]}/${parts[0]}"
+                } else clean
+            } else clean
+        } catch (_: Exception) {
+            clean
+        }
     }
     var isAutoNameMode by remember {
         mutableStateOf(initialReport == null)
@@ -685,6 +701,7 @@ fun AddReportDialog(
                             },
                             allClothes = clothes,
                             allReports = existingReports,
+                            allJunctions = (allJunctions + initialJunctions),
                             dictionaryService = dictionaryService,
                             onOpenPrevious = {
                                 activePreviousPicker = "REPORT TITLE explain" to { picked ->
@@ -729,27 +746,71 @@ fun AddReportDialog(
                                 )
                             }
                         }
-                        OutlinedTextField(
-                            value = wearDate,
-                            onValueChange = {
-                                wearDate = it
-                                if (isAutoNameMode) {
-                                    title = buildAutoTitle(it, chosenGarments)
+                        val openWearDatePicker = {
+                            try {
+                                val clean = com.example.util.CalendarCalculations.normalizeDate(wearDate)
+                                val cal = java.util.Calendar.getInstance()
+                                if (clean.length >= 10) {
+                                    val parts = clean.substring(0, 10).split("-")
+                                    if (parts.size == 3) {
+                                        val y = parts[0].toIntOrNull() ?: cal.get(java.util.Calendar.YEAR)
+                                        val m = (parts[1].toIntOrNull() ?: (cal.get(java.util.Calendar.MONTH) + 1)) - 1
+                                        val d = parts[2].toIntOrNull() ?: cal.get(java.util.Calendar.DAY_OF_MONTH)
+                                        cal.set(y, m, d)
+                                    }
                                 }
-                            },
-                            placeholder = { Text(todayDisplay, color = Slate400, fontSize = 13.sp) },
-                            singleLine = true,
+                                android.app.DatePickerDialog(
+                                    context,
+                                    { _, y, m, d ->
+                                        val pickedIso = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d)
+                                        wearDate = pickedIso
+                                        if (isAutoNameMode) {
+                                            title = buildAutoTitle(pickedIso, chosenGarments)
+                                        }
+                                    },
+                                    cal.get(java.util.Calendar.YEAR),
+                                    cal.get(java.util.Calendar.MONTH),
+                                    cal.get(java.util.Calendar.DAY_OF_MONTH)
+                                ).show()
+                            } catch (_: Exception) {}
+                        }
+
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("input_wear_date"),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF9333EA),
-                                unfocusedBorderColor = Slate200,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { openWearDatePicker() }
+                        ) {
+                            OutlinedTextField(
+                                value = formatDisplayDate(wearDate),
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = false,
+                                placeholder = { Text(todayDisplay, color = Slate400, fontSize = 13.sp) },
+                                trailingIcon = {
+                                    IconButton(onClick = openWearDatePicker) {
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarToday,
+                                            contentDescription = "Pick Wear Date",
+                                            tint = Slate700,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                },
+                                singleLine = true,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("input_wear_date"),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    disabledTextColor = Slate900,
+                                    disabledBorderColor = Slate200,
+                                    disabledContainerColor = Color.White,
+                                    disabledTrailingIconColor = Slate700,
+                                    disabledPlaceholderColor = Slate400
+                                )
                             )
-                        )
+                        }
 
                         // Permanent Explain Field below WEAR DATE
                         val dateExplain = getFieldExplain("WEAR DATE")
@@ -767,6 +828,7 @@ fun AddReportDialog(
                             },
                             allClothes = clothes,
                             allReports = existingReports,
+                            allJunctions = (allJunctions + initialJunctions),
                             dictionaryService = dictionaryService,
                             onOpenPrevious = {
                                 activePreviousPicker = "WEAR DATE explain" to { picked ->
@@ -1287,6 +1349,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1311,6 +1374,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1335,6 +1399,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1359,6 +1424,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1383,6 +1449,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1407,6 +1474,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1431,6 +1499,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
 
@@ -1455,6 +1524,7 @@ fun AddReportDialog(
                                 },
                                 allClothes = clothes,
                                 allReports = existingReports,
+                                allJunctions = (allJunctions + initialJunctions),
                                 dictionaryService = dictionaryService
                             )
                         }
@@ -1695,6 +1765,7 @@ private fun SensoryFieldWithPrevious(
     onOpenExplainPrevious: (() -> Unit)? = null,
     allClothes: List<GarmentEntity> = emptyList(),
     allReports: List<ReportEntity> = emptyList(),
+    allJunctions: List<JunctionEntity> = emptyList(),
     dictionaryService: FieldDictionaryService? = null
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -1777,6 +1848,7 @@ private fun SensoryFieldWithPrevious(
                 onToggleExpand = onToggleExplainExpand,
                 allClothes = allClothes,
                 allReports = allReports,
+                allJunctions = allJunctions,
                 dictionaryService = dictionaryService,
                 onOpenPrevious = onOpenExplainPrevious,
                 modifier = Modifier.padding(top = 2.dp)

@@ -226,6 +226,9 @@ fun GarmentDetailDialog(
     val fieldExplanationsInView = remember(garment.customFields) {
         editFieldExplanations.toMap()
     }
+    val fullClothesList = remember(existingClothes, garment) {
+        (existingClothes + garment).distinctBy { it.id }
+    }
     val expandedExplainFields = remember { mutableStateMapOf<String, Boolean>() }
     val dictionaryService = remember { FieldDictionaryService(context) }
 
@@ -822,7 +825,9 @@ fun GarmentDetailDialog(
                                         onValueChange = { editFieldExplanations["Name"] = it },
                                         isExpanded = expandedExplainFields["Name"] == true,
                                         onToggleExpand = { expandedExplainFields["Name"] = !(expandedExplainFields["Name"] ?: false) },
-                                        allClothes = existingClothes,
+                                        allClothes = fullClothesList,
+                                        allReports = reports,
+                                        allJunctions = junctions,
                                         customPlaceholder = "补充命名原因或此单品特别备注...",
                                         dictionaryService = dictionaryService
                                     )
@@ -929,7 +934,9 @@ fun GarmentDetailDialog(
                                         onValueChange = { editFieldExplanations["Clothes Type"] = it },
                                         isExpanded = expandedExplainFields["Clothes Type"] == true,
                                         onToggleExpand = { expandedExplainFields["Clothes Type"] = !(expandedExplainFields["Clothes Type"] ?: false) },
-                                        allClothes = existingClothes,
+                                        allClothes = fullClothesList,
+                                        allReports = reports,
+                                        allJunctions = junctions,
                                         customPlaceholder = "例如: dress normally more feminine. Got better waist and breast cutting...",
                                         dictionaryService = dictionaryService
                                     )
@@ -947,7 +954,9 @@ fun GarmentDetailDialog(
                                     fieldKey = "material",
                                     explainValue = editFieldExplanations["material"] ?: "",
                                     onExplainChange = { editFieldExplanations["material"] = it },
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
                                     isExplainExpanded = expandedExplainFields["material"] == true,
                                     onToggleExplainExpand = { expandedExplainFields["material"] = !(expandedExplainFields["material"] ?: false) },
                                     dictionaryService = dictionaryService
@@ -984,7 +993,9 @@ fun GarmentDetailDialog(
                                         onValueChange = { editFieldExplanations["price"] = it },
                                         isExpanded = expandedExplainFields["price"] == true,
                                         onToggleExpand = { expandedExplainFields["price"] = !(expandedExplainFields["price"] ?: false) },
-                                        allClothes = existingClothes,
+                                        allClothes = fullClothesList,
+                                        allReports = reports,
+                                        allJunctions = junctions,
                                         customPlaceholder = "价格、购入渠道或性价比体感备注...",
                                         dictionaryService = dictionaryService
                                     )
@@ -1021,7 +1032,13 @@ fun GarmentDetailDialog(
                                         activePreviousPicker = "thick clothes" to { editThickClothes = it }
                                     },
                                     explainValue = editFieldExplanations["thick clothes"] ?: "",
-                                    onExplainChange = { editFieldExplanations["thick clothes"] = it }
+                                    onExplainChange = { editFieldExplanations["thick clothes"] = it },
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
+                                    isExplainExpanded = expandedExplainFields["thick clothes"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["thick clothes"] = !(expandedExplainFields["thick clothes"] ?: false) },
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // 3 Environmental Scenarios Expandable Cards
@@ -1077,7 +1094,7 @@ fun GarmentDetailDialog(
                                     fanSleepLegExplain = editFanSleepLegExplain,
                                     onFanSleepLegExplainChange = { editFanSleepLegExplain = it },
 
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
                                     dictionaryService = dictionaryService
                                 )
 
@@ -1091,7 +1108,13 @@ fun GarmentDetailDialog(
                                         activePreviousPicker = "diao dai" to { editDiaoDai = it }
                                     },
                                     explainValue = editFieldExplanations["diao dai"] ?: "",
-                                    onExplainChange = { editFieldExplanations["diao dai"] = it }
+                                    onExplainChange = { editFieldExplanations["diao dai"] = it },
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
+                                    isExplainExpanded = expandedExplainFields["diao dai"] == true,
+                                    onToggleExplainExpand = { expandedExplainFields["diao dai"] = !(expandedExplainFields["diao dai"] ?: false) },
+                                    dictionaryService = dictionaryService
                                 )
 
                                 // side breast ok: with 聚拢 bra
@@ -1106,7 +1129,9 @@ fun GarmentDetailDialog(
                                     fieldKey = "side breast ok: with 聚拢 bra",
                                     explainValue = editFieldExplanations["side breast ok: with 聚拢 bra"] ?: "",
                                     onExplainChange = { editFieldExplanations["side breast ok: with 聚拢 bra"] = it },
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
                                     isExplainExpanded = expandedExplainFields["side breast ok: with 聚拢 bra"] == true,
                                     onToggleExplainExpand = { expandedExplainFields["side breast ok: with 聚拢 bra"] = !(expandedExplainFields["side breast ok: with 聚拢 bra"] ?: false) },
                                     dictionaryService = dictionaryService
@@ -1124,7 +1149,9 @@ fun GarmentDetailDialog(
                                     fieldKey = "side breast ok: with side out bra",
                                     explainValue = editFieldExplanations["side breast ok: with side out bra"] ?: "",
                                     onExplainChange = { editFieldExplanations["side breast ok: with side out bra"] = it },
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
                                     isExplainExpanded = expandedExplainFields["side breast ok: with side out bra"] == true,
                                     onToggleExplainExpand = { expandedExplainFields["side breast ok: with side out bra"] = !(expandedExplainFields["side breast ok: with side out bra"] ?: false) },
                                     dictionaryService = dictionaryService
@@ -1151,7 +1178,9 @@ fun GarmentDetailDialog(
                                         editFieldExplanations["sit breast ok: With 聚拢bra:"] = it
                                         editFieldExplanations["sit breast ok"] = it
                                     },
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
                                     isExplainExpanded = expandedExplainFields["sit breast ok: With 聚拢bra:"] == true,
                                     onToggleExplainExpand = { expandedExplainFields["sit breast ok: With 聚拢bra:"] = !(expandedExplainFields["sit breast ok: With 聚拢bra:"] ?: false) },
                                     dictionaryService = dictionaryService
@@ -1169,7 +1198,9 @@ fun GarmentDetailDialog(
                                     fieldKey = "sit breast ok: with side out bra",
                                     explainValue = editFieldExplanations["sit breast ok: with side out bra"] ?: "",
                                     onExplainChange = { editFieldExplanations["sit breast ok: with side out bra"] = it },
-                                    allClothes = existingClothes,
+                                    allClothes = fullClothesList,
+                                    allReports = reports,
+                                    allJunctions = junctions,
                                     isExplainExpanded = expandedExplainFields["sit breast ok: with side out bra"] == true,
                                     onToggleExplainExpand = { expandedExplainFields["sit breast ok: with side out bra"] = !(expandedExplainFields["sit breast ok: with side out bra"] ?: false) },
                                     dictionaryService = dictionaryService
@@ -2652,12 +2683,14 @@ private fun EditFieldWithPrevious(
     isMultiline: Boolean = false,
     fieldKey: String = label,
     allClothes: List<GarmentEntity> = emptyList(),
-    isExplainExpanded: Boolean = true,
+    allReports: List<ReportEntity> = emptyList(),
+    allJunctions: List<JunctionEntity> = emptyList(),
+    isExplainExpanded: Boolean = false,
     onToggleExplainExpand: (() -> Unit)? = null,
     dictionaryService: FieldDictionaryService? = null,
     explainPlaceholder: String? = null
 ) {
-    var localExplainExpanded by remember { mutableStateOf(true) }
+    var localExplainExpanded by remember { mutableStateOf(false) }
     val effectiveExpanded = onToggleExplainExpand?.let { isExplainExpanded } ?: localExplainExpanded
     val effectiveToggle = onToggleExplainExpand ?: { localExplainExpanded = !localExplainExpanded }
 
@@ -2719,7 +2752,7 @@ private fun EditFieldWithPrevious(
             )
         )
 
-        // Directly below input: Ergonomic Explain Field matching web app xd
+        // Directly below input: Ergonomic Explain Field matching web app xd (defaults to collapsed)
         if (onExplainChange != null) {
             ErgonomicExplainField(
                 fieldKey = fieldKey,
@@ -2729,6 +2762,8 @@ private fun EditFieldWithPrevious(
                 isExpanded = effectiveExpanded,
                 onToggleExpand = effectiveToggle,
                 allClothes = allClothes,
+                allReports = allReports,
+                allJunctions = allJunctions,
                 customPlaceholder = explainPlaceholder,
                 dictionaryService = dictionaryService
             )

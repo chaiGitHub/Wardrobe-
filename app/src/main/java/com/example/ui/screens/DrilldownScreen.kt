@@ -538,7 +538,7 @@ fun DrilldownScreen(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.WbSunny,
+                                                imageVector = Icons.Default.Thermostat,
                                                 contentDescription = null,
                                                 tint = Color(0xFFD97706),
                                                 modifier = Modifier.size(16.dp)
