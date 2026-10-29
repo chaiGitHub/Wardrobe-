@@ -169,6 +169,17 @@ fun DrilldownScreen(
     val presetService = remember { ReportPresetService(context) }
     var presets by remember { mutableStateOf(presetService.getPresets()) }
     var activePresetId by rememberSaveable { mutableStateOf(presetService.getActivePresetId()) }
+
+    // Synchronize presets with repository / restore updates
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        val latest = presetService.getPresets()
+        presets = latest
+    }
+    androidx.compose.runtime.LaunchedEffect(clothes.size, reports.size) {
+        val latest = presetService.getPresets()
+        presets = latest
+    }
+
     val currentPreset = remember(presets, activePresetId) {
         presets.find { it.id == activePresetId } ?: presets.firstOrNull() ?: DEFAULT_DRILL_PRESETS.first()
     }
@@ -515,6 +526,222 @@ fun DrilldownScreen(
                                             updateDrillPath(emptyList())
                                             presetDropdownExpanded = false
                                         }
+                                    )
+                                }
+
+                                HorizontalDivider(color = Slate200)
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.WbSunny,
+                                                contentDescription = null,
+                                                tint = Color(0xFFD97706),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Column {
+                                                Text(
+                                                    text = "☀️ 恢复并切换: 无空调上身体感 (Hot feeling)",
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFFB45309)
+                                                )
+                                                Text(
+                                                    text = "L1: when without aircond: hot feeling > L2: Clothes Type",
+                                                    fontSize = 10.sp,
+                                                    color = Slate500
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        val restored = presetService.restoreNoAircondHotPreset()
+                                        presets = restored
+                                        activePresetId = "preset-without-aircond-hot"
+                                        presetService.setActivePresetId("preset-without-aircond-hot")
+                                        updateDrillPath(emptyList())
+                                        presetDropdownExpanded = false
+                                        android.widget.Toast.makeText(context, "已恢复并切换至: 无空调上身体感预设", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.RestartAlt,
+                                                contentDescription = null,
+                                                tint = Color(0xFF7C3AED),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Column {
+                                                Text(
+                                                    text = "🔄 恢复/重置全部标准预设",
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF6D28D9)
+                                                )
+                                                Text(
+                                                    text = "含无空调体感、空调体感、睡眠等完整13预设",
+                                                    fontSize = 10.sp,
+                                                    color = Slate500
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        val restored = presetService.resetToDefaults()
+                                        presets = restored
+                                        val target = restored.find { it.id == "preset-without-aircond-hot" } ?: restored.first()
+                                        activePresetId = target.id
+                                        presetService.setActivePresetId(target.id)
+                                        updateDrillPath(emptyList())
+                                        presetDropdownExpanded = false
+                                        android.widget.Toast.makeText(context, "已恢复全部13个标准预设（已切换至无空调体感预设）", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+                            }
+                        }
+
+                        // Quick Preset Selection & 1-Tap Restoration Bar (Always accessible, never lost)
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
+                        ) {
+                            // 1. 无空调: 上身体感 (Hot feeling)
+                            val isNoAircondHot = currentPreset.id == "preset-without-aircond-hot"
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isNoAircondHot) Color(0xFFFEF3C7) else Color.White,
+                                border = BorderStroke(1.dp, if (isNoAircondHot) Color(0xFFD97706) else Slate200),
+                                modifier = Modifier.clickable {
+                                    val restored = presetService.restoreNoAircondHotPreset()
+                                    presets = restored
+                                    activePresetId = "preset-without-aircond-hot"
+                                    presetService.setActivePresetId("preset-without-aircond-hot")
+                                    updateDrillPath(emptyList())
+                                    android.widget.Toast.makeText(context, "已切换至: 无空调上身体感 (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    Text(
+                                        text = "☀️ 无空调: 上身体感",
+                                        fontSize = 11.sp,
+                                        fontWeight = if (isNoAircondHot) FontWeight.Bold else FontWeight.Medium,
+                                        color = if (isNoAircondHot) Color(0xFFB45309) else Slate700
+                                    )
+                                }
+                            }
+
+                            // 2. 无空调: 腿部体感 (Leg feeling)
+                            val isNoAircondLeg = currentPreset.id == "preset-without-aircond-leg"
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isNoAircondLeg) Color(0xFFFEF3C7) else Color.White,
+                                border = BorderStroke(1.dp, if (isNoAircondLeg) Color(0xFFD97706) else Slate200),
+                                modifier = Modifier.clickable {
+                                    val target = presets.find { it.id == "preset-without-aircond-leg" }
+                                    if (target != null) {
+                                        activePresetId = target.id
+                                        presetService.setActivePresetId(target.id)
+                                        updateDrillPath(emptyList())
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = "☀️ 无空调: 腿部体感",
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isNoAircondLeg) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isNoAircondLeg) Color(0xFFB45309) else Slate700,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                )
+                            }
+
+                            // 3. 空调: 上身
+                            val isAircondHot = currentPreset.id == "preset-aircond-hot"
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isAircondHot) Color(0xFFE0F2FE) else Color.White,
+                                border = BorderStroke(1.dp, if (isAircondHot) Color(0xFF0284C7) else Slate200),
+                                modifier = Modifier.clickable {
+                                    val target = presets.find { it.id == "preset-aircond-hot" }
+                                    if (target != null) {
+                                        activePresetId = target.id
+                                        presetService.setActivePresetId(target.id)
+                                        updateDrillPath(emptyList())
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = "❄️ 空调: 上身",
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isAircondHot) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isAircondHot) Color(0xFF0369A1) else Slate700,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                )
+                            }
+
+                            // 4. 空调: 腿部
+                            val isAircondLeg = currentPreset.id == "preset-aircond-leg"
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isAircondLeg) Color(0xFFE0F2FE) else Color.White,
+                                border = BorderStroke(1.dp, if (isAircondLeg) Color(0xFF0284C7) else Slate200),
+                                modifier = Modifier.clickable {
+                                    val target = presets.find { it.id == "preset-aircond-leg" }
+                                    if (target != null) {
+                                        activePresetId = target.id
+                                        presetService.setActivePresetId(target.id)
+                                        updateDrillPath(emptyList())
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = "❄️ 空调: 腿部",
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isAircondLeg) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isAircondLeg) Color(0xFF0369A1) else Slate700,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                )
+                            }
+
+                            // 5. 一键恢复全部预设 (Restore All)
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFF3E8FF),
+                                border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
+                                modifier = Modifier.clickable {
+                                    val restored = presetService.resetToDefaults()
+                                    presets = restored
+                                    activePresetId = "preset-without-aircond-hot"
+                                    presetService.setActivePresetId("preset-without-aircond-hot")
+                                    updateDrillPath(emptyList())
+                                    android.widget.Toast.makeText(context, "已恢复全部13个默认预设并激活无空调(Hot feeling)预设", android.widget.Toast.LENGTH_SHORT).show()
+                                }
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                ) {
+                                    Icon(Icons.Default.RestartAlt, contentDescription = null, tint = Color(0xFF7C3AED), modifier = Modifier.size(12.dp))
+                                    Text(
+                                        text = "🔄 恢复默认预设",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF6D28D9)
                                     )
                                 }
                             }

@@ -73,16 +73,20 @@ data class FieldHistoryEntry(
     val text: String,
     val garmentName: String,
     val count: Int,
-    val sources: List<String>
+    val sources: List<String>,
+    val clothesSource: String = "",
+    val reportSource: String = ""
 )
 
 /**
- * Extracts all past ergonomic explanations across clothes for a specific field key.
+ * Extracts all past ergonomic explanations across clothes and reports for a specific field key,
+ * linking each wearing report to the actual clothes worn via junctions.
  */
 fun getHistoricalExplanations(
     fieldKey: String,
     clothes: List<GarmentEntity> = emptyList(),
-    reports: List<ReportEntity> = emptyList()
+    reports: List<ReportEntity> = emptyList(),
+    allJunctions: List<com.example.data.model.JunctionEntity> = emptyList()
 ): List<FieldHistoryEntry> {
     val cleanKey = fieldKey.trim()
     val candidateKeys = setOf(
@@ -90,10 +94,39 @@ fun getHistoricalExplanations(
         cleanKey.lowercase(),
         cleanKey.replace(" ", ""),
         cleanKey.replace(" ", "_"),
-        cleanKey.replace("-", "")
+        cleanKey.replace("-", ""),
+        cleanKey.replace(":", "")
     )
 
-    val map = mutableMapOf<String, Pair<Int, MutableList<String>>>()
+    // Build report -> garments lookup from junctions
+    val reportToGarmentsMap = mutableMapOf<String, MutableList<String>>()
+    val clothesById = clothes.associateBy { it.id }
+    allJunctions.forEach { j ->
+        val g = clothesById[j.clothesId]
+        val desc = if (g != null) {
+            "${g.name}${if (g.clothesType.isNotBlank()) " (${g.clothesType})" else ""}"
+        } else {
+            j.clothesTitle.trim()
+        }
+        if (desc.isNotBlank()) {
+            if (j.wearingReportId.isNotBlank()) {
+                val list = reportToGarmentsMap.getOrPut(j.wearingReportId) { mutableListOf() }
+                if (!list.contains(desc)) list.add(desc)
+            }
+            if (j.wearingReportTitle.isNotBlank()) {
+                val list = reportToGarmentsMap.getOrPut(j.wearingReportTitle.trim().lowercase()) { mutableListOf() }
+                if (!list.contains(desc)) list.add(desc)
+            }
+        }
+    }
+
+    data class AggregateInfo(
+        var count: Int,
+        val sources: MutableList<String>,
+        var clothesSource: String,
+        var reportSource: String
+    )
+    val map = mutableMapOf<String, AggregateInfo>()
 
     clothes.forEach { g ->
         var note = ""
@@ -123,15 +156,24 @@ fun getHistoricalExplanations(
         } catch (_: Exception) {}
 
         if (note.isNotBlank() && note != "No data" && note != "N/A") {
-            val gName = g.name.ifBlank { "Garment" }
+            val gName = "${g.name}${if (g.clothesType.isNotBlank()) " (${g.clothesType})" else ""}".ifBlank { "Garment" }
             val existing = map[note]
+            val src = "👕 衣服: $gName"
             if (existing != null) {
-                if (!existing.second.contains(gName)) {
-                    existing.second.add(gName)
+                if (!existing.sources.contains(src)) {
+                    existing.sources.add(src)
                 }
-                map[note] = Pair(existing.first + 1, existing.second)
+                if (existing.clothesSource.isBlank()) {
+                    existing.clothesSource = gName
+                }
+                existing.count++
             } else {
-                map[note] = Pair(1, mutableListOf(gName))
+                map[note] = AggregateInfo(
+                    count = 1,
+                    sources = mutableListOf(src),
+                    clothesSource = gName,
+                    reportSource = ""
+                )
             }
         }
     }
@@ -165,14 +207,38 @@ fun getHistoricalExplanations(
 
         if (note.isNotBlank() && note != "No data" && note != "N/A") {
             val rName = r.name.ifBlank { r.wearDate.ifBlank { "Wearing Report" } }
+            val garmentsForReport = (reportToGarmentsMap[r.id]
+                ?: reportToGarmentsMap[r.name.trim().lowercase()]
+                ?: emptyList()).distinct()
+            val clothesLabel = if (garmentsForReport.isNotEmpty()) {
+                garmentsForReport.joinToString(" + ")
+            } else {
+                ""
+            }
+            val src = if (clothesLabel.isNotBlank()) {
+                "👕 衣服: $clothesLabel · 📅 报告: $rName"
+            } else {
+                "📅 报告: $rName"
+            }
             val existing = map[note]
             if (existing != null) {
-                if (!existing.second.contains(rName)) {
-                    existing.second.add(rName)
+                if (!existing.sources.contains(src)) {
+                    existing.sources.add(src)
                 }
-                map[note] = Pair(existing.first + 1, existing.second)
+                if (existing.clothesSource.isBlank() && clothesLabel.isNotBlank()) {
+                    existing.clothesSource = clothesLabel
+                }
+                if (existing.reportSource.isBlank()) {
+                    existing.reportSource = rName
+                }
+                existing.count++
             } else {
-                map[note] = Pair(1, mutableListOf(rName))
+                map[note] = AggregateInfo(
+                    count = 1,
+                    sources = mutableListOf(src),
+                    clothesSource = clothesLabel,
+                    reportSource = rName
+                )
             }
         }
     }
@@ -180,9 +246,11 @@ fun getHistoricalExplanations(
     return map.entries.map { (text, info) ->
         FieldHistoryEntry(
             text = text,
-            garmentName = info.second.firstOrNull() ?: "Source",
-            count = info.first,
-            sources = info.second
+            garmentName = if (info.clothesSource.isNotBlank()) info.clothesSource else info.reportSource.ifBlank { "Source" },
+            count = info.count,
+            sources = info.sources,
+            clothesSource = info.clothesSource,
+            reportSource = info.reportSource
         )
     }.sortedByDescending { it.count }
 }
@@ -204,6 +272,7 @@ fun ErgonomicExplainField(
     modifier: Modifier = Modifier,
     allClothes: List<GarmentEntity> = emptyList(),
     allReports: List<ReportEntity> = emptyList(),
+    allJunctions: List<com.example.data.model.JunctionEntity> = emptyList(),
     customPlaceholder: String? = null,
     dictionaryService: FieldDictionaryService? = null,
     onOpenPrevious: (() -> Unit)? = null
@@ -213,29 +282,51 @@ fun ErgonomicExplainField(
     var heightMode by remember { mutableIntStateOf(140) } // dp: 140=中, 240=大, 380=特大, -1=撑满
     var isFullExpand by remember { mutableStateOf(false) }
     var showPreviousModal by remember { mutableStateOf(false) }
+    var internalExpanded by remember { mutableStateOf(isExpanded || value.isNotBlank()) }
+    var historySearchQuery by remember { mutableStateOf("") }
+    androidx.compose.runtime.LaunchedEffect(isExpanded) {
+        internalExpanded = isExpanded
+    }
+    val effectiveExpanded = internalExpanded
 
-    val history = remember(fieldKey, allClothes, allReports) {
-        getHistoricalExplanations(fieldKey, allClothes, allReports)
+    val history = remember(fieldKey, allClothes, allReports, allJunctions) {
+        getHistoricalExplanations(fieldKey, allClothes, allReports, allJunctions)
     }
 
-    Box(modifier = modifier.animateContentSize()) {
-        if (!isExpanded) {
+    val filteredHistory = remember(history, historySearchQuery) {
+        if (historySearchQuery.isBlank()) history
+        else {
+            val q = historySearchQuery.trim().lowercase(java.util.Locale.ROOT)
+            history.filter { item ->
+                item.text.lowercase(java.util.Locale.ROOT).contains(q) ||
+                item.clothesSource.lowercase(java.util.Locale.ROOT).contains(q) ||
+                item.reportSource.lowercase(java.util.Locale.ROOT).contains(q) ||
+                item.garmentName.lowercase(java.util.Locale.ROOT).contains(q) ||
+                item.sources.any { s -> s.lowercase(java.util.Locale.ROOT).contains(q) }
+            }
+        }
+    }
+
+    Box(modifier = modifier.fillMaxWidth()) {
+        if (!effectiveExpanded) {
             // Collapsed view
             if (value.isNotBlank()) {
                 // Purple preview banner when explanation text is present
                 Surface(
+                    onClick = {
+                        internalExpanded = true
+                        onToggleExpand()
+                    },
                     shape = RoundedCornerShape(12.dp),
                     color = Color(0xFFFBF7FF),
                     border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .clickable { onToggleExpand() }
                         .testTag("explain_preview_${fieldKey}")
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.Top,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
@@ -244,7 +335,7 @@ fun ErgonomicExplainField(
                             contentDescription = null,
                             tint = BrandPurple,
                             modifier = Modifier
-                                .size(15.dp)
+                                .size(16.dp)
                                 .padding(top = 2.dp)
                         )
                         Column(modifier = Modifier.weight(1f)) {
@@ -260,43 +351,45 @@ fun ErgonomicExplainField(
                                 fontWeight = FontWeight.Medium,
                                 color = Color(0xFF3B0764),
                                 lineHeight = 16.sp,
-                                maxLines = 3
+                                maxLines = 4
                             )
                         }
                         Icon(
                             imageVector = Icons.Default.ExpandMore,
                             contentDescription = "Expand",
                             tint = Color(0xFF9333EA),
-                            modifier = Modifier.size(16.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
             } else {
                 // Clean prominent button "+ 说明 (Explain)" when blank
                 Surface(
+                    onClick = {
+                        internalExpanded = true
+                        onToggleExpand()
+                    },
                     shape = RoundedCornerShape(10.dp),
                     color = Color(0xFFFAF5FF),
-                    border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                    border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
                     modifier = Modifier
                         .padding(top = 4.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .clickable { onToggleExpand() }
                         .testTag("explain_toggle_btn_${fieldKey}")
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Lightbulb,
                             contentDescription = null,
                             tint = BrandPurple,
-                            modifier = Modifier.size(13.dp)
+                            modifier = Modifier.size(15.dp)
                         )
                         Text(
                             text = "+ 说明 (Explain)",
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = BrandPurple
                         )
@@ -317,7 +410,7 @@ fun ErgonomicExplainField(
                     modifier = Modifier.padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Top header: Label + Sizing pills + Collapse button
+                    // Row 1: Title + Prominent Previous button + Collapse button (Always clear & never clipped!)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -332,7 +425,7 @@ fun ErgonomicExplainField(
                                 imageVector = Icons.Default.Lightbulb,
                                 contentDescription = null,
                                 tint = BrandPurple,
-                                modifier = Modifier.size(15.dp)
+                                modifier = Modifier.size(16.dp)
                             )
                             Text(
                                 text = "${fieldLabel.removeSuffix(":")} 体感说明",
@@ -340,6 +433,13 @@ fun ErgonomicExplainField(
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF581C87)
                             )
+                        }
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // PROMINENT PREVIOUS BUTTON (Always accessible, never squeezed)
                             Surface(
                                 shape = RoundedCornerShape(12.dp),
                                 color = Color(0xFFEDE9FE),
@@ -355,26 +455,63 @@ fun ErgonomicExplainField(
                                     .testTag("explain_previous_btn_${fieldKey}")
                             ) {
                                 Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.History,
                                         contentDescription = "Previous explanations",
                                         tint = Color(0xFF7C3AED),
-                                        modifier = Modifier.size(12.dp)
+                                        modifier = Modifier.size(13.dp)
                                     )
                                     Text(
                                         text = "Previous",
-                                        fontSize = 10.sp,
+                                        fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF6D28D9)
                                     )
                                 }
                             }
-                        }
 
+                            // Collapse button
+                            Surface(
+                                onClick = {
+                                    internalExpanded = false
+                                    onToggleExpand()
+                                },
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color.White,
+                                border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                ) {
+                                    Text(
+                                        text = "收起",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate700
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.ExpandLess,
+                                        contentDescription = null,
+                                        tint = Slate700,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Row 2: Sizing toolbar directly above input
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
@@ -423,34 +560,14 @@ fun ErgonomicExplainField(
                                     )
                                 }
                             }
-
-                            // Collapse button
-                            Surface(
-                                shape = RoundedCornerShape(6.dp),
-                                color = Color.White,
-                                border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
-                                modifier = Modifier.clickable { onToggleExpand() }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                ) {
-                                    Text(
-                                        text = "收起",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate700
-                                    )
-                                    Icon(
-                                        imageVector = Icons.Default.ExpandLess,
-                                        contentDescription = null,
-                                        tint = Slate700,
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                }
-                            }
                         }
+
+                        Text(
+                            text = if (isFullExpand) "撑满全文中" else "${heightMode}dp",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF7E22CE)
+                        )
                     }
 
                     // Multiline Outlined Text Field
@@ -582,143 +699,238 @@ fun ErgonomicExplainField(
                                     )
                                 }
                                 Text(
-                                    text = "共 ${history.size} 条",
+                                    text = if (historySearchQuery.isBlank()) "共 ${history.size} 条" else "筛选 ${filteredHistory.size}/${history.size} 条",
                                     fontSize = 10.sp,
                                     color = Slate500,
                                     fontFamily = FontFamily.Monospace
                                 )
                             }
 
-                            Column(
+                            // Real-time search filter for historical explanations
+                            OutlinedTextField(
+                                value = historySearchQuery,
+                                onValueChange = { historySearchQuery = it },
+                                placeholder = {
+                                    Text(
+                                        text = "🔍 搜索历史说明、衣服名称 (如 dress, bra) 或报告...",
+                                        fontSize = 11.sp,
+                                        color = Slate400
+                                    )
+                                },
+                                singleLine = true,
+                                textStyle = TextStyle(fontSize = 11.sp, color = Slate800),
+                                trailingIcon = {
+                                    if (historySearchQuery.isNotEmpty()) {
+                                        IconButton(
+                                            onClick = { historySearchQuery = "" },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = "Clear search",
+                                                tint = Slate400,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                        }
+                                    }
+                                },
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .heightIn(max = 200.dp)
-                                    .verticalScroll(rememberScrollState()),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                history.forEach { item ->
-                                    val isIncluded = value.contains(item.text)
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = if (isIncluded) Color(0xFFF3E8FF) else Color.White,
-                                        border = BorderStroke(1.dp, if (isIncluded) Color(0xFFC084FC) else Color(0xFFE9D5FF)),
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Column(
-                                            modifier = Modifier.padding(8.dp),
-                                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    .height(44.dp),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedContainerColor = Color.White,
+                                    unfocusedContainerColor = Color.White,
+                                    focusedBorderColor = Color(0xFF9333EA),
+                                    unfocusedBorderColor = Color(0xFFE9D5FF)
+                                )
+                            )
+
+                            if (filteredHistory.isEmpty()) {
+                                Text(
+                                    text = "未找到包含「$historySearchQuery」的历史体感说明",
+                                    fontSize = 11.sp,
+                                    color = Slate500,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                            } else {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 240.dp)
+                                        .verticalScroll(rememberScrollState()),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    filteredHistory.forEach { item ->
+                                        val isIncluded = value.contains(item.text)
+                                        Surface(
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = if (isIncluded) Color(0xFFF3E8FF) else Color.White,
+                                            border = BorderStroke(1.dp, if (isIncluded) Color(0xFFC084FC) else Color(0xFFE9D5FF)),
+                                            modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
+                                            Column(
+                                                modifier = Modifier.padding(8.dp),
+                                                verticalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
                                                 Row(
-                                                    verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
                                                 ) {
+                                                    FlowRow(
+                                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                                                        modifier = Modifier.weight(1f, fill = false)
+                                                    ) {
+                                                        // Explicit Clothes Source Pill (fixes report title bug!)
+                                                        if (item.clothesSource.isNotBlank()) {
+                                                            Surface(
+                                                                shape = RoundedCornerShape(4.dp),
+                                                                color = Color(0xFFF3E8FF),
+                                                                border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                                                            ) {
+                                                                Row(
+                                                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Default.Checkroom,
+                                                                        contentDescription = null,
+                                                                        tint = Color(0xFF7E22CE),
+                                                                        modifier = Modifier.size(11.dp)
+                                                                    )
+                                                                    Text(
+                                                                        text = "衣服: ${item.clothesSource}",
+                                                                        fontSize = 10.sp,
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        color = Color(0xFF581C87)
+                                                                    )
+                                                                }
+                                                            }
+                                                        } else {
+                                                            Surface(
+                                                                shape = RoundedCornerShape(4.dp),
+                                                                color = Color(0xFFEDE9FE)
+                                                            ) {
+                                                                Text(
+                                                                    text = "👕 ${item.garmentName}",
+                                                                    fontSize = 9.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Color(0xFF581C87),
+                                                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                                )
+                                                            }
+                                                        }
+
+                                                        // Report Source Pill
+                                                        if (item.reportSource.isNotBlank()) {
+                                                            Surface(
+                                                                shape = RoundedCornerShape(4.dp),
+                                                                color = Slate100
+                                                            ) {
+                                                                Text(
+                                                                    text = "📅 ${item.reportSource}",
+                                                                    fontSize = 9.sp,
+                                                                    color = Slate600,
+                                                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
+                                                                )
+                                                            }
+                                                        }
+
+                                                        if (item.count > 1) {
+                                                            Text(
+                                                                text = "曾使用 ${item.count} 次",
+                                                                fontSize = 9.sp,
+                                                                color = Slate500,
+                                                                fontFamily = FontFamily.Monospace,
+                                                                modifier = Modifier.align(Alignment.CenterVertically)
+                                                            )
+                                                        }
+                                                    }
+
+                                                    if (isIncluded) {
+                                                        Row(
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Check,
+                                                                contentDescription = null,
+                                                                tint = Color(0xFF047857),
+                                                                modifier = Modifier.size(11.dp)
+                                                            )
+                                                            Text(
+                                                                text = "已包含",
+                                                                fontSize = 9.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = Color(0xFF047857)
+                                                            )
+                                                        }
+                                                    }
+                                                }
+
+                                                Text(
+                                                    text = item.text,
+                                                    fontSize = 11.sp,
+                                                    color = Slate800,
+                                                    lineHeight = 15.sp
+                                                )
+
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.End,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    // Append button (+ 追加说明)
                                                     Surface(
-                                                        shape = RoundedCornerShape(4.dp),
-                                                        color = Color(0xFFEDE9FE)
+                                                        shape = RoundedCornerShape(6.dp),
+                                                        color = if (isIncluded) Slate100 else Color(0xFF7E22CE),
+                                                        modifier = Modifier.clickable(enabled = !isIncluded) {
+                                                            val next = if (value.isBlank()) item.text else "$value\n${item.text}"
+                                                            onValueChange(next)
+                                                        }
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Add,
+                                                                contentDescription = null,
+                                                                tint = if (isIncluded) Slate400 else Color.White,
+                                                                modifier = Modifier.size(10.dp)
+                                                            )
+                                                            Text(
+                                                                text = "追加说明",
+                                                                fontSize = 10.sp,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = if (isIncluded) Slate400 else Color.White
+                                                            )
+                                                        }
+                                                    }
+
+                                                    Spacer(modifier = Modifier.width(6.dp))
+
+                                                    // Replace button (直接填入)
+                                                    Surface(
+                                                        shape = RoundedCornerShape(6.dp),
+                                                        color = Color.White,
+                                                        border = BorderStroke(1.dp, Slate200),
+                                                        modifier = Modifier.clickable {
+                                                            onValueChange(item.text)
+                                                        }
                                                     ) {
                                                         Text(
-                                                            text = "👕 ${item.garmentName}",
-                                                            fontSize = 9.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = Color(0xFF581C87),
-                                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
-                                                        )
-                                                    }
-                                                    if (item.count > 1) {
-                                                        Text(
-                                                            text = "曾使用 ${item.count} 次",
-                                                            fontSize = 9.sp,
-                                                            color = Slate500,
-                                                            fontFamily = FontFamily.Monospace
-                                                        )
-                                                    }
-                                                }
-
-                                                if (isIncluded) {
-                                                    Row(
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Check,
-                                                            contentDescription = null,
-                                                            tint = Color(0xFF047857),
-                                                            modifier = Modifier.size(11.dp)
-                                                        )
-                                                        Text(
-                                                            text = "已包含",
-                                                            fontSize = 9.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = Color(0xFF047857)
-                                                        )
-                                                    }
-                                                }
-                                            }
-
-                                            Text(
-                                                text = item.text,
-                                                fontSize = 11.sp,
-                                                color = Slate800,
-                                                lineHeight = 15.sp
-                                            )
-
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.End,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                // Append button (+ 追加说明)
-                                                Surface(
-                                                    shape = RoundedCornerShape(6.dp),
-                                                    color = if (isIncluded) Slate100 else Color(0xFF7E22CE),
-                                                    modifier = Modifier.clickable(enabled = !isIncluded) {
-                                                        val next = if (value.isBlank()) item.text else "$value\n${item.text}"
-                                                        onValueChange(next)
-                                                    }
-                                                ) {
-                                                    Row(
-                                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp),
-                                                        verticalAlignment = Alignment.CenterVertically,
-                                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Add,
-                                                            contentDescription = null,
-                                                            tint = if (isIncluded) Slate400 else Color.White,
-                                                            modifier = Modifier.size(10.dp)
-                                                        )
-                                                        Text(
-                                                            text = "追加说明",
+                                                            text = "直接填入",
                                                             fontSize = 10.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = if (isIncluded) Slate400 else Color.White
+                                                            fontWeight = FontWeight.Medium,
+                                                            color = Slate700,
+                                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                                                         )
                                                     }
-                                                }
-
-                                                Spacer(modifier = Modifier.width(6.dp))
-
-                                                // Replace button (直接填入)
-                                                Surface(
-                                                    shape = RoundedCornerShape(6.dp),
-                                                    color = Color.White,
-                                                    border = BorderStroke(1.dp, Slate200),
-                                                    modifier = Modifier.clickable {
-                                                        onValueChange(item.text)
-                                                    }
-                                                ) {
-                                                    Text(
-                                                        text = "直接填入",
-                                                        fontSize = 10.sp,
-                                                        fontWeight = FontWeight.Medium,
-                                                        color = Slate700,
-                                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
-                                                    )
                                                 }
                                             }
                                         }

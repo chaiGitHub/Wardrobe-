@@ -192,6 +192,49 @@ fun AddReportDialog(
         map
     }
 
+    val expandedExplainKeys = remember { mutableStateMapOf<String, Boolean>() }
+
+    val getFieldExplain: (String) -> String = { key ->
+        val clean = key.trim()
+        val cUpper = clean.uppercase()
+        val cSnake = clean.replace(" ", "_").uppercase()
+        val cLower = clean.lowercase()
+        val cSnakeLower = clean.replace(" ", "_").lowercase()
+        val cNoSpaceLower = clean.replace(" ", "").lowercase()
+        reportFieldExplanations[clean]
+            ?: reportFieldExplanations[cUpper]
+            ?: reportFieldExplanations[cSnake]
+            ?: reportFieldExplanations[cLower]
+            ?: reportFieldExplanations[cSnakeLower]
+            ?: reportFieldExplanations[cNoSpaceLower]
+            ?: ""
+    }
+
+    val setFieldExplain: (String, String) -> Unit = { key, newVal ->
+        val clean = key.trim()
+        val cUpper = clean.uppercase()
+        val cSnake = clean.replace(" ", "_").uppercase()
+        reportFieldExplanations[clean] = newVal
+        reportFieldExplanations[cUpper] = newVal
+        reportFieldExplanations[cSnake] = newVal
+        reportFieldExplanations[clean.lowercase()] = newVal
+    }
+
+    val isFieldExplainExpanded: (String) -> Boolean = { key ->
+        val clean = key.trim()
+        val cUpper = clean.uppercase()
+        expandedExplainKeys[clean]
+            ?: expandedExplainKeys[cUpper]
+            ?: (getFieldExplain(clean).isNotBlank())
+    }
+
+    val toggleFieldExplainExpanded: (String) -> Unit = { key ->
+        val clean = key.trim()
+        val cur = isFieldExplainExpanded(clean)
+        expandedExplainKeys[clean] = !cur
+        expandedExplainKeys[clean.uppercase()] = !cur
+    }
+
     // Selected garments in outfit
     val chosenGarments = remember(initialReport?.id, initialJunctions) {
         val list = mutableStateListOf<OutfitGarmentEntry>()
@@ -255,83 +298,177 @@ fun AddReportDialog(
         // Build reportId -> garment names map from allJunctions and initialJunctions
         val reportGarmentsMap = mutableMapOf<String, MutableSet<String>>()
         val combinedJunctions = (allJunctions + initialJunctions).distinctBy { it.id.ifBlank { "${it.wearingReportId}_${it.clothesId}" } }
+        val clothesById = clothes.associateBy { it.id }
         combinedJunctions.forEach { j ->
-            val gName = j.clothesTitle.ifBlank {
-                clothes.find { it.id == j.clothesId }?.name ?: ""
-            }.trim()
-            if (gName.isNotBlank() && j.wearingReportId.isNotBlank()) {
-                reportGarmentsMap.getOrPut(j.wearingReportId) { mutableSetOf() }.add(gName)
+            val g = clothesById[j.clothesId]
+            val gName = if (g != null) "${g.name} (${g.clothesType})" else j.clothesTitle.trim()
+            if (gName.isNotBlank()) {
+                if (j.wearingReportId.isNotBlank()) {
+                    reportGarmentsMap.getOrPut(j.wearingReportId) { mutableSetOf() }.add(gName)
+                }
+                if (j.wearingReportTitle.isNotBlank()) {
+                    reportGarmentsMap.getOrPut(j.wearingReportTitle.trim().lowercase()) { mutableSetOf() }.add(gName)
+                }
             }
         }
 
+        val isExplainField = fieldKey.endsWith(" explain", ignoreCase = true) || fieldKey.contains("explain", ignoreCase = true)
+        val baseKey = if (isExplainField) {
+            fieldKey.substringBeforeLast(" explain", "").ifBlank { fieldKey.removeSuffix(" explain") }.trim()
+        } else {
+            fieldKey.trim()
+        }
+        val candidateKeys = listOf(
+            baseKey,
+            "${baseKey}_explain",
+            baseKey.lowercase(),
+            "${baseKey.lowercase()}_explain",
+            baseKey.replace(" ", "_"),
+            "${baseKey.replace(" ", "_")}_explain",
+            baseKey.replace(" ", "").lowercase(),
+            "${baseKey.replace(" ", "").lowercase()}_explain"
+        )
+
         existingReports.forEach { r ->
-            val v = when (fieldKey) {
-                "SHOULDER FEEL" -> r.shoulderFeel
-                "MID BREAST" -> r.midBreast
-                "NIGHT MID BREAST" -> r.nightMidBreast
-                "SWEAT" -> r.sweat
-                "NIGHT SWEAT" -> r.nightSweat
-                "LEG FEEL" -> r.legFeel
-                "NIGHT LEG FEEL" -> r.nightLegFeel
-                "REPORT DETAIL" -> r.reportDetail
+            val v = when {
+                fieldKey.equals("NAME", ignoreCase = true) || fieldKey.equals("REPORT TITLE", ignoreCase = true) -> r.name
+                fieldKey.equals("WEAR DATE", ignoreCase = true) -> r.wearDate
+                fieldKey == "SHOULDER FEEL" -> r.shoulderFeel
+                fieldKey == "MID BREAST" -> r.midBreast
+                fieldKey == "NIGHT MID BREAST" -> r.nightMidBreast
+                fieldKey == "SWEAT" -> r.sweat
+                fieldKey == "NIGHT SWEAT" -> r.nightSweat
+                fieldKey == "LEG FEEL" -> r.legFeel
+                fieldKey == "NIGHT LEG FEEL" -> r.nightLegFeel
+                fieldKey == "REPORT DETAIL" -> r.reportDetail
+                isExplainField -> {
+                    try {
+                        val obj = org.json.JSONObject(r.customFields)
+                        val sub = obj.optJSONObject("_fieldExplanations")
+                        var found = ""
+                        if (sub != null) {
+                            for (k in candidateKeys) {
+                                val s = sub.optString(k, "").trim()
+                                if (s.isNotBlank() && s != "No data" && s != "N/A") {
+                                    found = s
+                                    break
+                                }
+                            }
+                        }
+                        if (found.isBlank()) {
+                            for (k in candidateKeys) {
+                                val s = obj.optString(k, "").trim()
+                                if (s.isNotBlank() && s != "No data" && s != "N/A") {
+                                    found = s
+                                    break
+                                }
+                            }
+                        }
+                        found
+                    } catch (_: Exception) { "" }
+                }
                 else -> {
                     try {
                         org.json.JSONObject(r.customFields).optString(fieldKey, "")
                     } catch (_: Exception) { "" }
                 }
             }.trim()
-            if (v.isNotBlank()) {
+
+            if (v.isNotBlank() && v != "No data" && v != "N/A") {
                 countMap[v] = (countMap[v] ?: 0) + 1
-                val gNames = reportGarmentsMap[r.id] ?: emptySet()
+                val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase()] ?: emptySet()
                 if (gNames.isNotEmpty()) {
-                    sourcesMap.getOrPut(v) { mutableSetOf() }.addAll(gNames)
+                    sourcesMap.getOrPut(v) { mutableSetOf() }.add("👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})")
+                } else {
+                    sourcesMap.getOrPut(v) { mutableSetOf() }.add("📅 记录: ${r.name}")
+                }
+            }
+        }
+
+        // Also check garment explanations for explanation fields
+        if (isExplainField) {
+            clothes.forEach { g ->
+                var found = ""
+                try {
+                    val obj = org.json.JSONObject(g.customFields)
+                    val sub = obj.optJSONObject("_fieldExplanations")
+                    if (sub != null) {
+                        for (k in candidateKeys) {
+                            val s = sub.optString(k, "").trim()
+                            if (s.isNotBlank() && s != "No data" && s != "N/A") {
+                                found = s
+                                break
+                            }
+                        }
+                    }
+                    if (found.isBlank()) {
+                        for (k in candidateKeys) {
+                            val s = obj.optString(k, "").trim()
+                            if (s.isNotBlank() && s != "No data" && s != "N/A") {
+                                found = s
+                                break
+                            }
+                        }
+                    }
+                } catch (_: Exception) {}
+
+                if (found.isNotBlank() && found != "No data" && found != "N/A") {
+                    countMap[found] = (countMap[found] ?: 0) + 1
+                    sourcesMap.getOrPut(found) { mutableSetOf() }.add("👕 衣服: ${g.name} (${g.clothesType})")
                 }
             }
         }
 
         // Fallback suggestions if history is empty
-        when (fieldKey) {
-            "SHOULDER FEEL" -> if (countMap.isEmpty()) listOf(
+        when {
+            fieldKey.equals("NAME", ignoreCase = true) || fieldKey.equals("REPORT TITLE", ignoreCase = true) -> if (countMap.isEmpty()) listOf(
+                "2026 09 01 wearing report",
+                "Daily casual outfit",
+                "Work office wearing log",
+                "Weekend outdoor relaxation"
+            ).forEach { countMap[it] = 1 }
+            fieldKey.equals("WEAR DATE", ignoreCase = true) -> if (countMap.isEmpty()) listOf(
+                todayIso
+            ).forEach { countMap[it] = 1 }
+            fieldKey == "SHOULDER FEEL" -> if (countMap.isEmpty()) listOf(
                 "relaxed and comfortable",
-                "the not diao dai make the shoulder no so irrate and pain",
+                "the not diao dai make the shoulder no so irritate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.",
                 "strap digs slightly after 3 hours",
                 "no shoulder tension"
             ).forEach { countMap[it] = 1 }
-            "MID BREAST" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "MID BREAST" -> if (countMap.isEmpty()) listOf(
                 "good support, no digging",
-                "mid breast is ok sizd when pair with [[small bra]] when sit",
+                "mid breast is ok sizd when pair with [[small bra]] when sit, sleep will side out and small little bit.",
                 "comfortable when seated",
                 "slightly tight at chest"
             ).forEach { countMap[it] = 1 }
-            "NIGHT MID BREAST" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "NIGHT MID BREAST" -> if (countMap.isEmpty()) listOf(
                 "comfortable for evening",
                 "no pressure at night",
                 "relaxed fit"
             ).forEach { countMap[it] = 1 }
-            "SWEAT" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "SWEAT" -> if (countMap.isEmpty()) listOf(
                 "low / dry",
-                "thick clothes also more hot and swear",
+                "thick clothes also more hot and sweat",
                 "breathable and cool",
                 "slight sweat at noon"
             ).forEach { countMap[it] = 1 }
-            "NIGHT SWEAT" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "NIGHT SWEAT" -> if (countMap.isEmpty()) listOf(
                 "dry and pleasant",
                 "cool in aircon",
                 "warm at night"
             ).forEach { countMap[it] = 1 }
-            "LEG FEEL" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "LEG FEEL" -> if (countMap.isEmpty()) listOf(
                 "free movement",
                 "like dress not pant, skirt quite middle thick , no so cold leg",
                 "soft drape on legs"
             ).forEach { countMap[it] = 1 }
-            "NIGHT LEG FEEL" -> if (countMap.isEmpty()) listOf(
+            fieldKey == "NIGHT LEG FEEL" -> if (countMap.isEmpty()) listOf(
                 "airy and easy",
                 "warm enough for night"
             ).forEach { countMap[it] = 1 }
-            "REPORT DETAIL" -> if (countMap.isEmpty()) listOf(
-                "Comfortable indoor office and walk session",
-                "Worn during sunny afternoon commute",
-                "Relaxed home wear"
+            fieldKey == "REPORT DETAIL" -> if (countMap.isEmpty()) listOf(
+                "Comprehensive wearing notes, weather, activities..."
             ).forEach { countMap[it] = 1 }
         }
 
@@ -464,6 +601,7 @@ fun AddReportDialog(
                         "${dateStr.ifBlank { todayIso }} · $garmentPart"
                     }
 
+                    // 1. REPORT TITLE * (Arranged first with permanent explain field below)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -471,7 +609,101 @@ fun AddReportDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "WEAR DATE (穿着日期)",
+                                text = "REPORT TITLE *",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate700,
+                                letterSpacing = 0.5.sp
+                            )
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFFF3E8FF),
+                                border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
+                                modifier = Modifier
+                                    .clickable {
+                                        isAutoNameMode = true
+                                        title = buildAutoTitle(wearDate, chosenGarments)
+                                    }
+                                    .testTag("btn_auto_name_report")
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.AutoAwesome,
+                                        contentDescription = null,
+                                        tint = Color(0xFF7C3AED),
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = "✨ 自动生成名称",
+                                        fontSize = 10.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF7C3AED)
+                                    )
+                                }
+                            }
+                        }
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = {
+                                title = it
+                                isAutoNameMode = false
+                            },
+                            placeholder = { Text("e.g. $todayIso · 穿搭记录", color = Slate400, fontSize = 13.sp) },
+                            singleLine = false,
+                            minLines = 1,
+                            maxLines = 4,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("input_report_title"),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF9333EA),
+                                unfocusedBorderColor = Slate200,
+                                focusedContainerColor = Color.White,
+                                unfocusedContainerColor = Color.White
+                            )
+                        )
+
+                        // Permanent Explain Field below REPORT TITLE
+                        val titleExplain = getFieldExplain("REPORT TITLE")
+                        val isTitleExpanded = isFieldExplainExpanded("REPORT TITLE")
+                        ErgonomicExplainField(
+                            fieldKey = "REPORT TITLE",
+                            fieldLabel = "REPORT TITLE",
+                            value = titleExplain,
+                            onValueChange = {
+                                setFieldExplain("REPORT TITLE", it)
+                            },
+                            isExpanded = isTitleExpanded,
+                            onToggleExpand = {
+                                toggleFieldExplainExpanded("REPORT TITLE")
+                            },
+                            allClothes = clothes,
+                            allReports = existingReports,
+                            dictionaryService = dictionaryService,
+                            onOpenPrevious = {
+                                activePreviousPicker = "REPORT TITLE explain" to { picked ->
+                                    setFieldExplain("REPORT TITLE", picked)
+                                }
+                            },
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+
+                    // 2. WEAR DATE * (Arranged second with permanent explain field below)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "WEAR DATE *",
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
@@ -518,71 +750,30 @@ fun AddReportDialog(
                                 unfocusedContainerColor = Color.White
                             )
                         )
-                    }
 
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "NAME (REPORT TITLE · 自动命名)",
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate700,
-                                letterSpacing = 0.5.sp
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFF3E8FF),
-                                border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
-                                modifier = Modifier
-                                    .clickable {
-                                        isAutoNameMode = true
-                                        title = buildAutoTitle(wearDate, chosenGarments)
-                                    }
-                                    .testTag("btn_auto_name_report")
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.AutoAwesome,
-                                        contentDescription = null,
-                                        tint = Color(0xFF7C3AED),
-                                        modifier = Modifier.size(12.dp)
-                                    )
-                                    Text(
-                                        text = "✨ 自动生成名称",
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF7C3AED)
-                                    )
-                                }
-                            }
-                        }
-                        OutlinedTextField(
-                            value = title,
+                        // Permanent Explain Field below WEAR DATE
+                        val dateExplain = getFieldExplain("WEAR DATE")
+                        val isDateExpanded = isFieldExplainExpanded("WEAR DATE")
+                        ErgonomicExplainField(
+                            fieldKey = "WEAR DATE",
+                            fieldLabel = "WEAR DATE",
+                            value = dateExplain,
                             onValueChange = {
-                                title = it
-                                isAutoNameMode = false
+                                setFieldExplain("WEAR DATE", it)
                             },
-                            placeholder = { Text("e.g. $todayIso · 穿搭记录", color = Slate400, fontSize = 13.sp) },
-                            singleLine = true,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("input_report_title"),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF9333EA),
-                                unfocusedBorderColor = Slate200,
-                                focusedContainerColor = Color.White,
-                                unfocusedContainerColor = Color.White
-                            )
+                            isExpanded = isDateExpanded,
+                            onToggleExpand = {
+                                toggleFieldExplainExpanded("WEAR DATE")
+                            },
+                            allClothes = clothes,
+                            allReports = existingReports,
+                            dictionaryService = dictionaryService,
+                            onOpenPrevious = {
+                                activePreviousPicker = "WEAR DATE explain" to { picked ->
+                                    setFieldExplain("WEAR DATE", picked)
+                                }
+                            },
+                            modifier = Modifier.padding(top = 2.dp)
                         )
                     }
 
@@ -1080,12 +1271,20 @@ fun AddReportDialog(
                                 value = shoulderFeel,
                                 placeholder = "e.g. relaxed and comfortable",
                                 tag = "input_shoulder_feel",
-                                explainValue = reportFieldExplanations["SHOULDER FEEL"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("SHOULDER FEEL"),
+                                isExplainExpanded = isFieldExplainExpanded("SHOULDER FEEL"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("SHOULDER FEEL") },
                                 onValueChange = { shoulderFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "SHOULDER FEEL" to { shoulderFeel = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["SHOULDER FEEL"] = it },
+                                onExplainChange = { setFieldExplain("SHOULDER FEEL", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "SHOULDER FEEL explain" to { picked -> setFieldExplain("SHOULDER FEEL", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1096,12 +1295,20 @@ fun AddReportDialog(
                                 value = midBreast,
                                 placeholder = "e.g. good support, no digging",
                                 tag = "input_mid_breast",
-                                explainValue = reportFieldExplanations["MID BREAST"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("MID BREAST"),
+                                isExplainExpanded = isFieldExplainExpanded("MID BREAST"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("MID BREAST") },
                                 onValueChange = { midBreast = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "MID BREAST" to { midBreast = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["MID BREAST"] = it },
+                                onExplainChange = { setFieldExplain("MID BREAST", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "MID BREAST explain" to { picked -> setFieldExplain("MID BREAST", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1112,12 +1319,20 @@ fun AddReportDialog(
                                 value = nightMidBreast,
                                 placeholder = "e.g. comfortable for evening",
                                 tag = "input_night_mid_breast",
-                                explainValue = reportFieldExplanations["NIGHT MID BREAST"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("NIGHT MID BREAST"),
+                                isExplainExpanded = isFieldExplainExpanded("NIGHT MID BREAST"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("NIGHT MID BREAST") },
                                 onValueChange = { nightMidBreast = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT MID BREAST" to { nightMidBreast = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["NIGHT MID BREAST"] = it },
+                                onExplainChange = { setFieldExplain("NIGHT MID BREAST", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "NIGHT MID BREAST explain" to { picked -> setFieldExplain("NIGHT MID BREAST", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1128,12 +1343,20 @@ fun AddReportDialog(
                                 value = sweat,
                                 placeholder = "e.g. low / dry",
                                 tag = "input_sweat",
-                                explainValue = reportFieldExplanations["SWEAT"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("SWEAT"),
+                                isExplainExpanded = isFieldExplainExpanded("SWEAT"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("SWEAT") },
                                 onValueChange = { sweat = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "SWEAT" to { sweat = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["SWEAT"] = it },
+                                onExplainChange = { setFieldExplain("SWEAT", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "SWEAT explain" to { picked -> setFieldExplain("SWEAT", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1144,12 +1367,20 @@ fun AddReportDialog(
                                 value = nightSweat,
                                 placeholder = "e.g. dry and pleasant",
                                 tag = "input_night_sweat",
-                                explainValue = reportFieldExplanations["NIGHT SWEAT"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("NIGHT SWEAT"),
+                                isExplainExpanded = isFieldExplainExpanded("NIGHT SWEAT"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("NIGHT SWEAT") },
                                 onValueChange = { nightSweat = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT SWEAT" to { nightSweat = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["NIGHT SWEAT"] = it },
+                                onExplainChange = { setFieldExplain("NIGHT SWEAT", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "NIGHT SWEAT explain" to { picked -> setFieldExplain("NIGHT SWEAT", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1160,12 +1391,20 @@ fun AddReportDialog(
                                 value = legFeel,
                                 placeholder = "e.g. free movement",
                                 tag = "input_leg_feel",
-                                explainValue = reportFieldExplanations["LEG FEEL"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("LEG FEEL"),
+                                isExplainExpanded = isFieldExplainExpanded("LEG FEEL"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("LEG FEEL") },
                                 onValueChange = { legFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "LEG FEEL" to { legFeel = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["LEG FEEL"] = it },
+                                onExplainChange = { setFieldExplain("LEG FEEL", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "LEG FEEL explain" to { picked -> setFieldExplain("LEG FEEL", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1176,12 +1415,20 @@ fun AddReportDialog(
                                 value = nightLegFeel,
                                 placeholder = "e.g. airy and easy",
                                 tag = "input_night_leg_feel",
-                                explainValue = reportFieldExplanations["NIGHT LEG FEEL"] ?: "",
+                                singleLine = false,
+                                minLines = 2,
+                                maxLines = 10,
+                                explainValue = getFieldExplain("NIGHT LEG FEEL"),
+                                isExplainExpanded = isFieldExplainExpanded("NIGHT LEG FEEL"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("NIGHT LEG FEEL") },
                                 onValueChange = { nightLegFeel = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "NIGHT LEG FEEL" to { nightLegFeel = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["NIGHT LEG FEEL"] = it },
+                                onExplainChange = { setFieldExplain("NIGHT LEG FEEL", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "NIGHT LEG FEEL explain" to { picked -> setFieldExplain("NIGHT LEG FEEL", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1193,13 +1440,19 @@ fun AddReportDialog(
                                 placeholder = "Comprehensive wearing notes, weather, activities...",
                                 tag = "input_report_detail",
                                 singleLine = false,
-                                minLines = 3,
-                                explainValue = reportFieldExplanations["REPORT DETAIL"] ?: "",
+                                minLines = 4,
+                                maxLines = 16,
+                                explainValue = getFieldExplain("REPORT DETAIL"),
+                                isExplainExpanded = isFieldExplainExpanded("REPORT DETAIL"),
+                                onToggleExplainExpand = { toggleFieldExplainExpanded("REPORT DETAIL") },
                                 onValueChange = { reportDetail = it },
                                 onOpenPrevious = {
                                     activePreviousPicker = "REPORT DETAIL" to { reportDetail = it }
                                 },
-                                onExplainChange = { reportFieldExplanations["REPORT DETAIL"] = it },
+                                onExplainChange = { setFieldExplain("REPORT DETAIL", it) },
+                                onOpenExplainPrevious = {
+                                    activePreviousPicker = "REPORT DETAIL explain" to { picked -> setFieldExplain("REPORT DETAIL", picked) }
+                                },
                                 allClothes = clothes,
                                 allReports = existingReports,
                                 dictionaryService = dictionaryService
@@ -1430,9 +1683,12 @@ private fun SensoryFieldWithPrevious(
     value: String,
     placeholder: String,
     tag: String,
-    singleLine: Boolean = true,
-    minLines: Int = 1,
+    singleLine: Boolean = false,
+    minLines: Int = 2,
+    maxLines: Int = 10,
     explainValue: String = "",
+    isExplainExpanded: Boolean = false,
+    onToggleExplainExpand: () -> Unit = {},
     onValueChange: (String) -> Unit,
     onOpenPrevious: () -> Unit,
     onExplainChange: ((String) -> Unit)? = null,
@@ -1489,6 +1745,13 @@ private fun SensoryFieldWithPrevious(
             placeholder = { Text(placeholder, color = Slate400, fontSize = 13.sp) },
             singleLine = singleLine,
             minLines = minLines,
+            maxLines = maxLines,
+            textStyle = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Normal,
+                color = Slate900,
+                lineHeight = 20.sp
+            ),
             modifier = Modifier
                 .fillMaxWidth()
                 .testTag(tag),
@@ -1497,7 +1760,9 @@ private fun SensoryFieldWithPrevious(
                 focusedBorderColor = Color(0xFF9333EA),
                 unfocusedBorderColor = Slate200,
                 focusedContainerColor = Color.White,
-                unfocusedContainerColor = Color.White
+                unfocusedContainerColor = Color.White,
+                focusedTextColor = Slate900,
+                unfocusedTextColor = Slate900
             )
         )
 
@@ -1508,8 +1773,8 @@ private fun SensoryFieldWithPrevious(
                 fieldLabel = label,
                 value = explainValue,
                 onValueChange = onExplainChange,
-                isExpanded = true,
-                onToggleExpand = {},
+                isExpanded = isExplainExpanded,
+                onToggleExpand = onToggleExplainExpand,
                 allClothes = allClothes,
                 allReports = allReports,
                 dictionaryService = dictionaryService,

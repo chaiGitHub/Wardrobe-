@@ -808,17 +808,15 @@ class WardrobeRepository(private val context: Context) {
                         ?: rootObj.optJSONArray("drillPresets")
                 }
 
+                val presetService = com.example.ui.drilldown.ReportPresetService(context)
                 if (presetsArrayToSave != null && presetsArrayToSave.length() > 0) {
-                    val presetsString = presetsArrayToSave.toString(2)
-                    // 1. Write file
-                    val presetsFile = File(context.filesDir, "drilldown_presets.json")
-                    FileOutputStream(presetsFile).use { fos ->
-                        fos.write(presetsString.toByteArray(Charsets.UTF_8))
-                    }
-                    // 2. Write to SharedPreferences so ReportPresetService picks it up instantly
-                    val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
-                    prefs.edit().putString("custom_presets_json_v3", presetsArrayToSave.toString()).apply()
-                    Log.i("WardrobeRepo", "Successfully restored ${presetsArrayToSave.length()} drilldown presets from backup into SharedPreferences!")
+                    val presetsString = presetsArrayToSave.toString()
+                    val saved = presetService.importPresetsFromJson(presetsString)
+                    Log.i("WardrobeRepo", "Successfully restored ${saved.size} drilldown presets from backup into ReportPresetService!")
+                } else {
+                    val current = presetService.getPresets()
+                    presetService.savePresets(current)
+                    Log.i("WardrobeRepo", "Ensured ${current.size} standard drilldown presets (including No Aircond) are restored!")
                 }
             } catch (e: Exception) {
                 Log.w("WardrobeRepo", "Drilldown presets restore notice: ${e.message}")
@@ -854,21 +852,24 @@ class WardrobeRepository(private val context: Context) {
         root.put("totalReports", reportsList.size)
         root.put("totalJunctions", junctionsList.size)
 
-        // Read and embed drilldownPresets from SharedPreferences first, then file or asset fallback
+        // Read and embed drilldownPresets from ReportPresetService
         val presetsArr = try {
-            val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
-            val spPresets = prefs.getString("custom_presets_json_v3", null)
-            if (!spPresets.isNullOrBlank()) {
-                JSONArray(spPresets)
-            } else {
-                val presetsFile = File(context.filesDir, "drilldown_presets.json")
-                val raw = if (presetsFile.exists()) {
-                    presetsFile.readText(Charsets.UTF_8)
-                } else {
-                    context.assets.open("drilldown_presets.json").bufferedReader().use { it.readText() }
+            val list = com.example.ui.drilldown.ReportPresetService(context).getPresets()
+            val arr = JSONArray()
+            list.forEach { p ->
+                val obj = JSONObject().apply {
+                    put("id", p.id)
+                    put("name", p.name)
+                    put("description", p.description)
+                    put("sortField", p.sortField)
+                    put("sortOrder", p.sortOrder)
+                    put("isCustom", p.isCustom)
+                    put("groupTiers", JSONArray().apply { p.groupTiers.forEach { put(it) } })
+                    put("visibleFields", JSONArray().apply { p.visibleFields.forEach { put(it) } })
                 }
-                JSONArray(raw)
+                arr.put(obj)
             }
+            arr
         } catch (_: Exception) {
             JSONArray()
         }
@@ -976,16 +977,22 @@ class WardrobeRepository(private val context: Context) {
 
                     // 2. Also write drilldown_presets.json and presets.json at root
                     try {
-                        val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
-                        val spPresets = prefs.getString("custom_presets_json_v3", null)
-                        val presetsBytes = if (!spPresets.isNullOrBlank()) {
-                            spPresets.toByteArray(Charsets.UTF_8)
-                        } else {
-                            val presetsFile = File(context.filesDir, "drilldown_presets.json")
-                            if (presetsFile.exists()) presetsFile.readBytes() else {
-                                context.assets.open("drilldown_presets.json").readBytes()
+                        val list = com.example.ui.drilldown.ReportPresetService(context).getPresets()
+                        val arr = JSONArray()
+                        list.forEach { p ->
+                            val obj = JSONObject().apply {
+                                put("id", p.id)
+                                put("name", p.name)
+                                put("description", p.description)
+                                put("sortField", p.sortField)
+                                put("sortOrder", p.sortOrder)
+                                put("isCustom", p.isCustom)
+                                put("groupTiers", JSONArray().apply { p.groupTiers.forEach { put(it) } })
+                                put("visibleFields", JSONArray().apply { p.visibleFields.forEach { put(it) } })
                             }
+                            arr.put(obj)
                         }
+                        val presetsBytes = arr.toString(2).toByteArray(Charsets.UTF_8)
                         zos.putNextEntry(ZipEntry("drilldown_presets.json"))
                         zos.write(presetsBytes)
                         zos.closeEntry()
@@ -1041,16 +1048,22 @@ class WardrobeRepository(private val context: Context) {
 
                 // Also write drilldown_presets.json and presets.json
                 try {
-                    val prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
-                    val spPresets = prefs.getString("custom_presets_json_v3", null)
-                    val presetsBytes = if (!spPresets.isNullOrBlank()) {
-                        spPresets.toByteArray(Charsets.UTF_8)
-                    } else {
-                        val presetsFile = File(context.filesDir, "drilldown_presets.json")
-                        if (presetsFile.exists()) presetsFile.readBytes() else {
-                            context.assets.open("drilldown_presets.json").readBytes()
+                    val list = com.example.ui.drilldown.ReportPresetService(context).getPresets()
+                    val arr = JSONArray()
+                    list.forEach { p ->
+                        val obj = JSONObject().apply {
+                            put("id", p.id)
+                            put("name", p.name)
+                            put("description", p.description)
+                            put("sortField", p.sortField)
+                            put("sortOrder", p.sortOrder)
+                            put("isCustom", p.isCustom)
+                            put("groupTiers", JSONArray().apply { p.groupTiers.forEach { put(it) } })
+                            put("visibleFields", JSONArray().apply { p.visibleFields.forEach { put(it) } })
                         }
+                        arr.put(obj)
                     }
+                    val presetsBytes = arr.toString(2).toByteArray(Charsets.UTF_8)
                     zos.putNextEntry(ZipEntry("drilldown_presets.json"))
                     zos.write(presetsBytes)
                     zos.closeEntry()
