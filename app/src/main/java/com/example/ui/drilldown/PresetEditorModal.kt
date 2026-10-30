@@ -83,7 +83,8 @@ fun PresetEditorModal(
     onSavePreset: (DrillPreset) -> Unit,
     onSaveAsNew: (DrillPreset) -> Unit,
     onDeletePreset: (String) -> Unit,
-    onResetDefaults: () -> Unit
+    onResetDefaults: () -> Unit,
+    onRestorePreset: ((String) -> Unit)? = null
 ) {
     if (!isOpen) return
 
@@ -570,10 +571,32 @@ fun PresetEditorModal(
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Reset defaults button
+                        // Restore current preset to default if built-in
+                        val isDefaultPreset = DEFAULT_DRILL_PRESETS.any { it.id == preset.id }
+                        if (isDefaultPreset && onRestorePreset != null) {
+                            OutlinedButton(
+                                onClick = {
+                                    onRestorePreset(preset.id)
+                                    onClose()
+                                },
+                                shape = RoundedCornerShape(10.dp),
+                                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFD97706))
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.RestartAlt,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                    tint = Color(0xFFD97706)
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text("Restore This Preset", fontSize = 11.sp, color = Color(0xFFB45309), fontWeight = FontWeight.Bold)
+                            }
+                        }
+
+                        // Reset all defaults button
                         OutlinedButton(
                             onClick = {
                                 onResetDefaults()
@@ -588,8 +611,10 @@ fun PresetEditorModal(
                                 tint = Slate600
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Reset Defaults", fontSize = 11.sp, color = Slate700)
+                            Text("Reset All Defaults", fontSize = 11.sp, color = Slate700)
                         }
+
+                        Spacer(modifier = Modifier.weight(1f))
 
                         // Delete preset button if custom
                         if (preset.isCustom) {

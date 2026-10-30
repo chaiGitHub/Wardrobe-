@@ -104,6 +104,13 @@ class WardrobeRepository(private val context: Context) {
                 val jsonStr = reader.readText()
                 importFromJsonString(jsonStr, clearExisting = true)
             }
+            try {
+                val presetService = com.example.ui.drilldown.ReportPresetService(context)
+                presetService.resetToDefaults()
+                presetService.setActivePresetId("preset-without-aircond-hot")
+            } catch (pe: Exception) {
+                Log.w("WardrobeRepo", "Preset reset notice: ${pe.message}")
+            }
             Result.success("Database restored to default seed collection (52 garments, 33 reports, 111 wear records).")
         } catch (e: Exception) {
             Log.e("WardrobeRepo", "Reset to seed error: ${e.message}", e)
@@ -483,6 +490,17 @@ class WardrobeRepository(private val context: Context) {
             val customFieldsObj = obj.optJSONObject("customFields")
                 ?: obj.optJSONObject("extraAttributes")
                 ?: JSONObject()
+            val garmentSchemaKeys = listOf(
+                "id", "name", "clothesType", "material", "thickClothes",
+                "price", "wearingFrequency", "trackedAppWashes", "lastWashed",
+                "mayThrow", "lastComment", "aiClothesAnalysis", "aiReports",
+                "pictures", "photos", "tags", "created"
+            )
+            garmentSchemaKeys.forEach { k ->
+                customFieldsObj.remove(k)
+                customFieldsObj.remove(k.lowercase(Locale.ROOT))
+                customFieldsObj.remove(k.uppercase(Locale.ROOT))
+            }
             val feObj = obj.optJSONObject("fieldExplanations")
             if (feObj != null && !customFieldsObj.has("_fieldExplanations")) {
                 customFieldsObj.put("_fieldExplanations", feObj)
@@ -566,6 +584,18 @@ class WardrobeRepository(private val context: Context) {
             val customFieldsObj = obj.optJSONObject("customFields")
                 ?: obj.optJSONObject("extraAttributes")
                 ?: JSONObject()
+            // Clean up any built-in schema keys that must never be treated as dynamic attributes
+            val standardSchemaKeys = listOf(
+                "id", "name", "created", "wearDate", "categories", "tags",
+                "aiReports", "aiWearingAnalysis", "pictures", "photos",
+                "shoulderFeel", "midBreast", "nightMidBreast", "sweat",
+                "nightSweat", "legFeel", "nightLegFeel", "reportDetail"
+            )
+            standardSchemaKeys.forEach { k ->
+                customFieldsObj.remove(k)
+                customFieldsObj.remove(k.lowercase(Locale.ROOT))
+                customFieldsObj.remove(k.uppercase(Locale.ROOT))
+            }
             val feReportObj = obj.optJSONObject("fieldExplanations")
             if (feReportObj != null && !customFieldsObj.has("_fieldExplanations")) {
                 customFieldsObj.put("_fieldExplanations", feReportObj)
@@ -665,6 +695,22 @@ class WardrobeRepository(private val context: Context) {
         dao.insertClothes(parsedClothes)
         dao.insertReports(parsedReports)
         dao.insertJunctions(parsedJunctions)
+
+        // Also restore drilldownPresets if present in JSON root
+        try {
+            val root = if (!jsonStr.trimStart().startsWith("[")) JSONObject(jsonStr) else null
+            val presetsArr = root?.optJSONArray("drilldownPresets")
+                ?: root?.optJSONArray("presets")
+                ?: root?.optJSONArray("drillPresets")
+            if (presetsArr != null && presetsArr.length() > 0) {
+                val presetService = com.example.ui.drilldown.ReportPresetService(context)
+                presetService.importPresetsFromJson(presetsArr.toString())
+                presetService.setActivePresetId("preset-without-aircond-hot")
+            }
+        } catch (pe: Exception) {
+            Log.w("WardrobeRepo", "Notice: could not parse presets in import: ${pe.message}")
+        }
+
         Triple(parsedClothes.size, parsedReports.size, parsedJunctions.size)
     }
 

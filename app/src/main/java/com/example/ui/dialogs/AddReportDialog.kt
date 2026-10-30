@@ -33,6 +33,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarToday
@@ -144,7 +146,11 @@ fun AddReportDialog(
             if (clean.length >= 10) {
                 val parts = clean.substring(0, 10).split("-")
                 if (parts.size == 3) {
-                    "${parts[2]}/${parts[1]}/${parts[0]}"
+                    val y = parts[0].toIntOrNull() ?: 2026
+                    val m = parts[1].toIntOrNull() ?: 1
+                    val d = parts[2].toIntOrNull() ?: 1
+                    val ld = java.time.LocalDate.of(y, m, d)
+                    ld.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", java.util.Locale.US))
                 } else clean
             } else clean
         } catch (_: Exception) {
@@ -775,41 +781,86 @@ fun AddReportDialog(
                             } catch (_: Exception) {}
                         }
 
-                        Box(
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.5.dp, Color(0xFF6366F1).copy(alpha = 0.5f)),
+                            shadowElevation = 0.5.dp,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(RoundedCornerShape(14.dp))
                                 .clickable { openWearDatePicker() }
+                                .testTag("input_wear_date")
                         ) {
-                            OutlinedTextField(
-                                value = formatDisplayDate(wearDate),
-                                onValueChange = {},
-                                readOnly = true,
-                                enabled = false,
-                                placeholder = { Text(todayDisplay, color = Slate400, fontSize = 13.sp) },
-                                trailingIcon = {
-                                    IconButton(onClick = openWearDatePicker) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(Color(0xFFEEF2FF)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
                                         Icon(
                                             imageVector = Icons.Default.CalendarToday,
                                             contentDescription = "Pick Wear Date",
-                                            tint = Slate700,
+                                            tint = Color(0xFF4F46E5),
                                             modifier = Modifier.size(18.dp)
                                         )
                                     }
-                                },
-                                singleLine = true,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .testTag("input_wear_date"),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    disabledTextColor = Slate900,
-                                    disabledBorderColor = Slate200,
-                                    disabledContainerColor = Color.White,
-                                    disabledTrailingIconColor = Slate700,
-                                    disabledPlaceholderColor = Slate400
-                                )
-                            )
+                                    Column {
+                                        Text(
+                                            text = formatDisplayDate(wearDate),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate900,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = com.example.util.CalendarCalculations.normalizeDate(wearDate),
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = Slate500
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFF1F5F9),
+                                    border = BorderStroke(1.dp, Slate200)
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Text(
+                                            text = "Pick Date",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Slate700
+                                        )
+                                        Icon(
+                                            Icons.AutoMirrored.Filled.ArrowForward,
+                                            contentDescription = null,
+                                            tint = Slate500,
+                                            modifier = Modifier.size(12.dp)
+                                        )
+                                    }
+                                }
+                            }
                         }
 
                         // Permanent Explain Field below WEAR DATE
@@ -1665,7 +1716,8 @@ fun AddReportDialog(
 
                         Button(
                             onClick = {
-                                val finalTitle = title.ifBlank { "$wearDate wearing report" }
+                                val cleanWearDate = com.example.util.CalendarCalculations.normalizeDate(wearDate).ifBlank { todayIso }
+                                val finalTitle = title.ifBlank { "$cleanWearDate wearing report" }
                                 val picsJson = JSONArray().apply {
                                     photoUrls.forEach { put(it) }
                                 }.toString()
@@ -1673,6 +1725,18 @@ fun AddReportDialog(
                                 val customFieldsObj = try {
                                     if (!initialReport?.customFields.isNullOrBlank()) JSONObject(initialReport.customFields) else JSONObject()
                                 } catch (_: Exception) { JSONObject() }
+
+                                val standardSchemaKeys = listOf(
+                                    "id", "name", "created", "wearDate", "categories", "tags",
+                                    "aiReports", "aiWearingAnalysis", "pictures", "photos",
+                                    "shoulderFeel", "midBreast", "nightMidBreast", "sweat",
+                                    "nightSweat", "legFeel", "nightLegFeel", "reportDetail"
+                                )
+                                standardSchemaKeys.forEach { k ->
+                                    customFieldsObj.remove(k)
+                                    customFieldsObj.remove(k.lowercase(Locale.ROOT))
+                                    customFieldsObj.remove(k.uppercase(Locale.ROOT))
+                                }
 
                                 val explainObj = JSONObject()
                                 reportFieldExplanations.forEach { (k, v) ->
@@ -1686,7 +1750,7 @@ fun AddReportDialog(
                                 val reportEntity = ReportEntity(
                                     id = initialReport?.id ?: "",
                                     name = finalTitle,
-                                    wearDate = wearDate.ifBlank { todayIso },
+                                    wearDate = cleanWearDate,
                                     created = initialReport?.created ?: "",
                                     shoulderFeel = shoulderFeel,
                                     midBreast = midBreast,

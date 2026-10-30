@@ -212,8 +212,15 @@ object CalendarCalculations {
             val washedByDate = mutableMapOf<String, MutableList<JunctionEntity>>()
             for (j in gJunctions) {
                 val isDirty = j.washStated.equals("need wash", ignoreCase = true)
-                val rawWashDate = j.washDate.ifBlank { j.washedDate }
-                val wDate = normalizeDate(rawWashDate)
+                var rawWashDate = j.washDate.ifBlank { j.washedDate }
+                var wDate = normalizeDate(rawWashDate)
+                if (wDate.isBlank() && !isDirty && garment.lastWashed.isNotBlank()) {
+                    val normLw = normalizeDate(garment.lastWashed)
+                    val wWear = resolveJunctionWearDate(j, reportsById)
+                    if (wWear.isNotBlank() && normLw >= wWear) {
+                        wDate = normLw
+                    }
+                }
                 if (!isDirty && wDate.isNotBlank()) {
                     washedByDate.getOrPut(wDate) { mutableListOf() }.add(j)
                 }
@@ -231,7 +238,7 @@ object CalendarCalculations {
                         durationHours = round1Decimal(j.duration / 3600.0),
                         report = rep
                     )
-                }.sortedBy { it.wearDate }
+                }.sortedByDescending { it.wearDate }
 
                 val totalHours = round1Decimal(washedSessions.sumOf { it.duration } / 3600.0)
                 val summary = WashedGarmentSummary(

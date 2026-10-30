@@ -174,14 +174,25 @@ fun DrilldownScreen(
     androidx.compose.runtime.LaunchedEffect(Unit) {
         val latest = presetService.getPresets()
         presets = latest
+        val active = presetService.getActivePresetId()
+        if (latest.none { it.id == activePresetId }) {
+            activePresetId = if (latest.any { it.id == active }) active else "preset-without-aircond-hot"
+        }
     }
     androidx.compose.runtime.LaunchedEffect(clothes.size, reports.size) {
         val latest = presetService.getPresets()
         presets = latest
+        val active = presetService.getActivePresetId()
+        if (latest.none { it.id == activePresetId }) {
+            activePresetId = if (latest.any { it.id == active }) active else "preset-without-aircond-hot"
+        }
     }
 
     val currentPreset = remember(presets, activePresetId) {
-        presets.find { it.id == activePresetId } ?: presets.firstOrNull() ?: DEFAULT_DRILL_PRESETS.first()
+        presets.find { it.id == activePresetId }
+            ?: presets.find { it.id == "preset-without-aircond-hot" }
+            ?: presets.firstOrNull()
+            ?: DEFAULT_DRILL_PRESETS[2]
     }
     var showPresetEditor by rememberSaveable { mutableStateOf(false) }
 
@@ -493,8 +504,87 @@ fun DrilldownScreen(
                                 onDismissRequest = { presetDropdownExpanded = false },
                                 modifier = Modifier
                                     .background(Color.White)
-                                    .widthIn(min = 280.dp)
+                                    .widthIn(min = 300.dp)
+                                    .heightIn(max = 480.dp)
                             ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Thermostat,
+                                                contentDescription = null,
+                                                tint = Color(0xFFD97706),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Column {
+                                                Text(
+                                                    text = "☀️ Restore: No Aircond (Hot feeling)",
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFFB45309)
+                                                )
+                                                Text(
+                                                    text = "L1: when without aircond: hot feeling > L2: Clothes Type",
+                                                    fontSize = 10.sp,
+                                                    color = Slate500
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        val restored = presetService.restoreNoAircondHotPreset()
+                                        presets = restored
+                                        activePresetId = "preset-without-aircond-hot"
+                                        presetService.setActivePresetId("preset-without-aircond-hot")
+                                        updateDrillPath(emptyList())
+                                        presetDropdownExpanded = false
+                                        android.widget.Toast.makeText(context, "Restored & switched to: No Aircond Upper Body (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+
+                                DropdownMenuItem(
+                                    text = {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.RestartAlt,
+                                                contentDescription = null,
+                                                tint = Color(0xFF7C3AED),
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                            Column {
+                                                Text(
+                                                    text = "🔄 Restore All 13 Standard Presets",
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF6D28D9)
+                                                )
+                                                Text(
+                                                    text = "Resets all presets & activates No Aircond Hot feeling",
+                                                    fontSize = 10.sp,
+                                                    color = Slate500
+                                                )
+                                            }
+                                        }
+                                    },
+                                    onClick = {
+                                        val restored = presetService.resetToDefaults()
+                                        presets = restored
+                                        activePresetId = "preset-without-aircond-hot"
+                                        presetService.setActivePresetId("preset-without-aircond-hot")
+                                        updateDrillPath(emptyList())
+                                        presetDropdownExpanded = false
+                                        android.widget.Toast.makeText(context, "Restored all 13 standard presets & switched to No Aircond Hot feeling", android.widget.Toast.LENGTH_SHORT).show()
+                                    }
+                                )
+
+                                HorizontalDivider(color = Slate200)
+
                                 presets.forEach { p ->
                                     val isSel = p.id == activePresetId
                                     DropdownMenuItem(
@@ -528,85 +618,6 @@ fun DrilldownScreen(
                                         }
                                     )
                                 }
-
-                                HorizontalDivider(color = Slate200)
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Thermostat,
-                                                contentDescription = null,
-                                                tint = Color(0xFFD97706),
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Column {
-                                                Text(
-                                                    text = "☀️ 恢复并切换: 无空调上身体感 (Hot feeling)",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFFB45309)
-                                                )
-                                                Text(
-                                                    text = "L1: when without aircond: hot feeling > L2: Clothes Type",
-                                                    fontSize = 10.sp,
-                                                    color = Slate500
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onClick = {
-                                        val restored = presetService.restoreNoAircondHotPreset()
-                                        presets = restored
-                                        activePresetId = "preset-without-aircond-hot"
-                                        presetService.setActivePresetId("preset-without-aircond-hot")
-                                        updateDrillPath(emptyList())
-                                        presetDropdownExpanded = false
-                                        android.widget.Toast.makeText(context, "已恢复并切换至: 无空调上身体感预设", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.RestartAlt,
-                                                contentDescription = null,
-                                                tint = Color(0xFF7C3AED),
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Column {
-                                                Text(
-                                                    text = "🔄 恢复/重置全部标准预设",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFF6D28D9)
-                                                )
-                                                Text(
-                                                    text = "含无空调体感、空调体感、睡眠等完整13预设",
-                                                    fontSize = 10.sp,
-                                                    color = Slate500
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onClick = {
-                                        val restored = presetService.resetToDefaults()
-                                        presets = restored
-                                        val target = restored.find { it.id == "preset-without-aircond-hot" } ?: restored.first()
-                                        activePresetId = target.id
-                                        presetService.setActivePresetId(target.id)
-                                        updateDrillPath(emptyList())
-                                        presetDropdownExpanded = false
-                                        android.widget.Toast.makeText(context, "已恢复全部13个标准预设（已切换至无空调体感预设）", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                )
                             }
                         }
 
@@ -628,7 +639,7 @@ fun DrilldownScreen(
                                     activePresetId = "preset-without-aircond-hot"
                                     presetService.setActivePresetId("preset-without-aircond-hot")
                                     updateDrillPath(emptyList())
-                                    android.widget.Toast.makeText(context, "已切换至: 无空调上身体感 (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, "Switched to: No Aircond Upper Body (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             ) {
                                 Row(
@@ -637,7 +648,7 @@ fun DrilldownScreen(
                                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                                 ) {
                                     Text(
-                                        text = "☀️ 无空调: 上身体感",
+                                        text = "☀️ No Aircond: Upper (Hot)",
                                         fontSize = 11.sp,
                                         fontWeight = if (isNoAircondHot) FontWeight.Bold else FontWeight.Medium,
                                         color = if (isNoAircondHot) Color(0xFFB45309) else Slate700
@@ -661,7 +672,7 @@ fun DrilldownScreen(
                                 }
                             ) {
                                 Text(
-                                    text = "☀️ 无空调: 腿部体感",
+                                    text = "☀️ No Aircond: Leg Feeling",
                                     fontSize = 11.sp,
                                     fontWeight = if (isNoAircondLeg) FontWeight.Bold else FontWeight.Medium,
                                     color = if (isNoAircondLeg) Color(0xFFB45309) else Slate700,
@@ -685,7 +696,7 @@ fun DrilldownScreen(
                                 }
                             ) {
                                 Text(
-                                    text = "❄️ 空调: 上身",
+                                    text = "❄️ AC: Upper Body",
                                     fontSize = 11.sp,
                                     fontWeight = if (isAircondHot) FontWeight.Bold else FontWeight.Medium,
                                     color = if (isAircondHot) Color(0xFF0369A1) else Slate700,
@@ -709,7 +720,7 @@ fun DrilldownScreen(
                                 }
                             ) {
                                 Text(
-                                    text = "❄️ 空调: 腿部",
+                                    text = "❄️ AC: Leg Feeling",
                                     fontSize = 11.sp,
                                     fontWeight = if (isAircondLeg) FontWeight.Bold else FontWeight.Medium,
                                     color = if (isAircondLeg) Color(0xFF0369A1) else Slate700,
@@ -728,7 +739,7 @@ fun DrilldownScreen(
                                     activePresetId = "preset-without-aircond-hot"
                                     presetService.setActivePresetId("preset-without-aircond-hot")
                                     updateDrillPath(emptyList())
-                                    android.widget.Toast.makeText(context, "已恢复全部13个默认预设并激活无空调(Hot feeling)预设", android.widget.Toast.LENGTH_SHORT).show()
+                                    android.widget.Toast.makeText(context, "Restored all 13 standard presets & activated No Aircond (hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
                                 }
                             ) {
                                 Row(
@@ -738,7 +749,7 @@ fun DrilldownScreen(
                                 ) {
                                     Icon(Icons.Default.RestartAlt, contentDescription = null, tint = Color(0xFF7C3AED), modifier = Modifier.size(12.dp))
                                     Text(
-                                        text = "🔄 恢复默认预设",
+                                        text = "🔄 Restore All Defaults",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF6D28D9)
@@ -1391,7 +1402,17 @@ fun DrilldownScreen(
             onResetDefaults = {
                 val updatedList = presetService.resetToDefaults()
                 presets = updatedList
-                activePresetId = updatedList.first().id
+                activePresetId = "preset-without-aircond-hot"
+                presetService.setActivePresetId("preset-without-aircond-hot")
+                updateDrillPath(emptyList())
+                showPresetEditor = false
+            },
+            onRestorePreset = { presetId ->
+                val updatedList = presetService.restorePreset(presetId)
+                presets = updatedList
+                activePresetId = presetId
+                presetService.setActivePresetId(presetId)
+                updateDrillPath(emptyList())
                 showPresetEditor = false
             }
         )

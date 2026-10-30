@@ -87,8 +87,17 @@ object DrilldownUtils {
             "Clothes Type", "clothesType" -> garment.clothesType.ifBlank { "undefined" }
             "material", "materialProp" -> garment.material.ifBlank { "undefined" }
             "thick clothes", "thickClothes" -> garment.thickClothes.ifBlank { "undefined" }
-            "Hot at noon", "hotAtNoon" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "undefined" }
-            "when without aircond: hot feeling" -> (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).ifBlank { "undefined" }
+            "Hot at noon", "hotAtNoon", "when without aircond: hot feeling" -> {
+                val candidate = (garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }).trim()
+                if (candidate.isBlank() || candidate.equals("undefined", ignoreCase = true)) {
+                    "undefined"
+                } else if (candidate.length > 25 || candidate.contains("material", ignoreCase = true) || candidate.contains("chiffon", ignoreCase = true)) {
+                    // Fallback to hotAtNoon if candidate is an explanation string
+                    garment.hotAtNoon.ifBlank { "undefined" }
+                } else {
+                    candidate
+                }
+            }
             "when without aircond: leg feeling" -> garment.noAircondLegFeeling.ifBlank { "undefined" }
             "when with aircond: hot feeling" -> garment.aircondHotFeeling.ifBlank { "undefined" }
             "when with aircond: leg feeling" -> garment.aircondLegFeeling.ifBlank { "undefined" }
@@ -164,7 +173,16 @@ class ReportPresetService(private val context: Context) {
 
     fun parsePresetsJson(jsonStr: String): List<DrillPreset> {
         return try {
-            val jsonArray = JSONArray(jsonStr)
+            val trimmed = jsonStr.trim()
+            val jsonArray = if (trimmed.startsWith("{")) {
+                val root = JSONObject(trimmed)
+                root.optJSONArray("drilldownPresets")
+                    ?: root.optJSONArray("presets")
+                    ?: root.optJSONArray("drillPresets")
+                    ?: JSONArray()
+            } else {
+                JSONArray(trimmed)
+            }
             val list = mutableListOf<DrillPreset>()
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
@@ -396,32 +414,22 @@ class ReportPresetService(private val context: Context) {
         return defaults
     }
 
-    fun restoreNoAircondHotPreset(): List<DrillPreset> {
+    fun restorePreset(presetId: String): List<DrillPreset> {
+        val canonical = DEFAULT_DRILL_PRESETS.find { it.id == presetId } ?: return getPresets()
         val current = getPresets().toMutableList()
-        val canonicalHotPreset = DrillPreset(
-            id = "preset-without-aircond-hot",
-            name = "Normal / No Aircond: Upper Body (hot feeling)",
-            description = "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-            groupTiers = listOf("when without aircond: hot feeling", "Clothes Type"),
-            sortField = "Name",
-            sortOrder = "asc",
-            visibleFields = listOf(
-                "Clothes Type",
-                "when without aircond: hot feeling",
-                "when without aircond: leg feeling",
-                "material",
-                "thick clothes"
-            )
-        )
-        val idx = current.indexOfFirst { it.id == "preset-without-aircond-hot" }
+        val idx = current.indexOfFirst { it.id == presetId }
         if (idx >= 0) {
-            current[idx] = canonicalHotPreset
+            current[idx] = canonical
         } else {
-            current.add(minOf(2, current.size), canonicalHotPreset)
+            current.add(canonical)
         }
         savePresets(current)
-        setActivePresetId("preset-without-aircond-hot")
+        setActivePresetId(presetId)
         return current
+    }
+
+    fun restoreNoAircondHotPreset(): List<DrillPreset> {
+        return restorePreset("preset-without-aircond-hot")
     }
 
     fun getActivePresetId(): String {

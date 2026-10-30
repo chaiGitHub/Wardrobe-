@@ -785,6 +785,7 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             val res = repository.resetDatabaseToSeed()
             val msg = res.getOrElse { "Error resetting database: ${it.message}" }
+            resetDrillPath()
             _exportStatus.value = msg
             onComplete?.invoke(msg)
         }

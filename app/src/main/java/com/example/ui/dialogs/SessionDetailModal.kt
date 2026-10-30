@@ -66,6 +66,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -206,10 +207,38 @@ fun SessionDetailModal(
         map
     }
 
+    val parsedTags = remember(report.tags) {
+        try {
+            val list = mutableListOf<String>()
+            val arr = org.json.JSONArray(report.tags)
+            for (i in 0 until arr.length()) {
+                val t = arr.optString(i).trim()
+                if (t.isNotBlank()) list.add(t)
+            }
+            list
+        } catch (_: Exception) {
+            if (report.tags.isNotBlank() && report.tags != "[]") listOf(report.tags) else emptyList()
+        }
+    }
+
+    val parsedCategories = remember(report.categories) {
+        try {
+            val list = mutableListOf<String>()
+            val arr = org.json.JSONArray(report.categories)
+            for (i in 0 until arr.length()) {
+                val c = arr.optString(i).trim().removePrefix("[[").removeSuffix("]]")
+                if (c.isNotBlank()) list.add(c)
+            }
+            list
+        } catch (_: Exception) {
+            if (report.categories.isNotBlank() && report.categories != "[]") listOf(report.categories.removePrefix("[[").removeSuffix("]]")) else emptyList()
+        }
+    }
+
     // Custom Environmental Attributes (strictly filtering out internal schema & explain fields & AI reports)
-    val customAttributes = remember(report.id, report.customFields) {
-        val map = mutableStateMapOf<String, String>()
-        val reservedKeys = setOf(
+    // Reserved schema keys that must NEVER appear as dynamic attributes
+    val reservedKeys = remember {
+        setOf(
             "id", "name", "report_name", "report_title", "title",
             "created", "createdtime", "created_time", "createdat",
             "weardate", "wear_date", "date",
@@ -224,9 +253,37 @@ fun SessionDetailModal(
             "legfeel", "leg_feel",
             "nightlegfeel", "night_leg_feel",
             "reportdetail", "report_detail",
-            "pictures", "picture",
-            "_fieldexplanations", "_field_explanations"
+            "pictures", "picture", "photos", "photo",
+            "_fieldexplanations", "_field_explanations",
+            "_deletedcustomfields"
         )
+    }
+
+    // Auto-clean any legacy leaked schema keys in report.customFields in SQLite
+    LaunchedEffect(report.id, report.customFields) {
+        try {
+            if (report.customFields.isNotBlank() && report.customFields != "{}") {
+                val obj = org.json.JSONObject(report.customFields)
+                val leakedKeys = mutableListOf<String>()
+                val keysIt = obj.keys()
+                while (keysIt.hasNext()) {
+                    val k = keysIt.next()
+                    val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
+                    if (norm in reservedKeys || norm.contains("aireport") || norm.contains("created") || norm.contains("category") || norm.contains("categories") || norm.contains("tags")) {
+                        leakedKeys.add(k)
+                    }
+                }
+                if (leakedKeys.isNotEmpty()) {
+                    leakedKeys.forEach { obj.remove(it) }
+                    onUpdateReport?.invoke(report.copy(customFields = obj.toString()))
+                }
+            }
+        } catch (_: Exception) {}
+    }
+
+    // Custom Environmental Attributes (strictly filtering out internal schema & explain fields & AI reports)
+    val customAttributes = remember(report.id, report.customFields) {
+        val map = mutableStateMapOf<String, String>()
         try {
             if (report.customFields.isNotBlank() && report.customFields != "{}") {
                 val obj = org.json.JSONObject(report.customFields)
@@ -235,11 +292,14 @@ fun SessionDetailModal(
                     val isReserved = norm in reservedKeys ||
                             norm.endsWith("_explain") ||
                             norm.endsWith("explain") ||
-                            norm.startsWith("_")
+                            norm.startsWith("_") ||
+                            norm.contains("aireport") ||
+                            norm.contains("category") ||
+                            norm.contains("tag")
                     val v = obj.optString(k, "").trim()
                     val isAiJson = v.startsWith("[{") || v.startsWith("{\n") ||
                             (v.contains("\"model\"") && v.contains("\"gemini\"")) ||
-                            norm.contains("aireport")
+                            v.startsWith("[\"#") || v.startsWith("[\"[[")
                     if (!isReserved && !isAiJson && v.isNotBlank()) {
                         map[k] = v
                     }
@@ -251,24 +311,6 @@ fun SessionDetailModal(
 
     val persistCustomAttributes: () -> Unit = {
         try {
-            val reservedKeys = setOf(
-                "id", "name", "report_name", "report_title", "title",
-                "created", "createdtime", "created_time", "createdat",
-                "weardate", "wear_date", "date",
-                "tags", "tag", "categories", "category",
-                "aireports", "ai_reports", "aireport", "ai_report",
-                "aiwearinganalysis", "ai_wearing_analysis",
-                "shoulderfeel", "shoulder_feel",
-                "midbreast", "mid_breast",
-                "nightmidbreast", "night_mid_breast",
-                "sweat",
-                "nightsweat", "night_sweat",
-                "legfeel", "leg_feel",
-                "nightlegfeel", "night_leg_feel",
-                "reportdetail", "report_detail",
-                "pictures", "picture",
-                "_fieldexplanations", "_field_explanations"
-            )
             val obj = if (report.customFields.isNotBlank() && report.customFields != "{}") {
                 org.json.JSONObject(report.customFields)
             } else {
@@ -277,13 +319,17 @@ fun SessionDetailModal(
             val toRemove = mutableListOf<String>()
             obj.keys().forEach { k ->
                 val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
-                if (norm !in reservedKeys && !norm.endsWith("_explain") && !norm.startsWith("_")) {
+                // Remove previous dynamic attributes and any leaked schema keys
+                if (norm in reservedKeys || (!norm.endsWith("_explain") && !norm.startsWith("_"))) {
                     toRemove.add(k)
                 }
             }
             toRemove.forEach { obj.remove(it) }
             customAttributes.forEach { (k, v) ->
-                obj.put(k, v)
+                val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
+                if (norm !in reservedKeys && !norm.endsWith("_explain") && !norm.startsWith("_")) {
+                    obj.put(k, v)
+                }
             }
             onUpdateReport?.invoke(report.copy(customFields = obj.toString()))
         } catch (_: Exception) {}
@@ -1346,6 +1392,110 @@ fun SessionDetailModal(
                         }
                     }
 
+                    // 5.5 TAGS & CATEGORIES CARD (Built-in schema fields, not dynamic attributes)
+                    if (parsedTags.isNotEmpty() || parsedCategories.isNotEmpty()) {
+                        item {
+                            Surface(
+                                shape = RoundedCornerShape(22.dp),
+                                color = Color.White,
+                                border = BorderStroke(1.dp, Slate200),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(18.dp),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(10.dp))
+                                                .background(Color(0xFFEFF6FF)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.LocalOffer,
+                                                contentDescription = null,
+                                                tint = Color(0xFF2563EB),
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "TAGS & CATEGORIES",
+                                                fontSize = 13.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = Slate900
+                                            )
+                                            Text(
+                                                text = "Standard report schema classification fields",
+                                                fontSize = 11.sp,
+                                                color = Slate500
+                                            )
+                                        }
+                                    }
+
+                                    if (parsedCategories.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Text("CATEGORIES", fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                parsedCategories.forEach { cat ->
+                                                    Surface(
+                                                        shape = RoundedCornerShape(8.dp),
+                                                        color = Color(0xFFF3E8FF),
+                                                        border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                                                    ) {
+                                                        Text(
+                                                            text = cat,
+                                                            fontSize = 11.sp,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Color(0xFF6B21A8),
+                                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (parsedTags.isNotEmpty()) {
+                                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Text("TAGS", fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                parsedTags.forEach { tag ->
+                                                    val cleanTag = if (!tag.startsWith("#")) "#$tag" else tag
+                                                    Surface(
+                                                        shape = RoundedCornerShape(8.dp),
+                                                        color = Color(0xFFF1F5F9),
+                                                        border = BorderStroke(1.dp, Slate200)
+                                                    ) {
+                                                        Text(
+                                                            text = cleanTag,
+                                                            fontSize = 11.sp,
+                                                            fontWeight = FontWeight.SemiBold,
+                                                            color = Slate800,
+                                                            modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     // 6. ENVIRONMENTAL & CUSTOM CONTEXT CARD (IMG_9723)
                     item {
                         Surface(
@@ -1806,14 +1956,14 @@ fun SessionDetailModal(
                                         )
 
                                         SchemaValueBox(label = "NAME", value = report.name.ifBlank { "(empty)" })
-                                        SchemaValueBox(label = "WEAR DATE", value = report.wearDate.ifBlank { "(empty)" })
+                                        SchemaValueBox(label = "WEAR DATE", value = com.example.util.CalendarCalculations.normalizeDate(report.wearDate).ifBlank { "(empty)" })
                                         SchemaValueBox(
                                             label = "CREATED",
-                                            value = report.created.ifBlank { "${report.wearDate}T04:20:38.578Z" },
+                                            value = com.example.util.CalendarCalculations.normalizeDate(report.created).ifBlank { report.wearDate.take(10).ifBlank { "(empty)" } },
                                             mono = true
                                         )
-                                        SchemaValueBox(label = "CATEGORIES", value = "[[Notes]], [[Wearing Report]]")
-                                        SchemaValueBox(label = "TAGS", value = "#journal")
+                                        SchemaValueBox(label = "CATEGORIES", value = parsedCategories.joinToString(", ").ifBlank { "Wearing Report" })
+                                        SchemaValueBox(label = "TAGS", value = parsedTags.joinToString(", ").ifBlank { "#journal" })
                                         SchemaValueBox(
                                             label = "PICTURES",
                                             value = if (outfitPhotos.isEmpty()) "(empty)" else "${outfitPhotos.size} attached",

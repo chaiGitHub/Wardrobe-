@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -57,6 +58,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -1185,6 +1187,7 @@ private fun SelectedDateInspectorPanel(
         LocalDate.now()
     }
     val formattedDate = parsedDate.format(DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.US))
+    val expandedGarmentReports = remember { mutableStateMapOf<String, Boolean>() }
 
     Card(
         shape = RoundedCornerShape(24.dp),
@@ -1488,92 +1491,291 @@ private fun SelectedDateInspectorPanel(
                         )
                     } else {
                         // Summary row
-                        val totalCleaned = washEntry?.totalWashedCount ?: 0
+                        val totalCleaned = washEntry?.totalWashedCount ?: washed.size
                         val totalHours = washed.sumOf { it.accumulatedWearHours }
+                        val totalHoursStr = if (totalHours % 1.0 == 0.0) "${totalHours.toInt()} hrs" else String.format(Locale.US, "%.1f hrs", totalHours)
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = "$totalCleaned clothes washed on this day",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF065F46)
-                            )
-                            Text(
-                                text = "Total Accumulated: ${String.format(Locale.US, "%.1f", totalHours)} hrs cleaned",
-                                fontSize = 12.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate900
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF059669),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "$totalCleaned clothes washed\non this day",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF065F46),
+                                    lineHeight = 16.sp
+                                )
+                            }
+                            Column(horizontalAlignment = Alignment.End) {
+                                Text(
+                                    text = "Total Accumulated:",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+                                Text(
+                                    text = "$totalHoursStr cleaned",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+                            }
                         }
 
                         // Washed garments list
                         washed.forEach { item ->
                             Surface(
-                                shape = RoundedCornerShape(14.dp),
-                                color = Color(0xFFECFDF5).copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(18.dp),
+                                color = Color(0xFFF9FDFB),
                                 border = BorderStroke(1.dp, Color(0xFFA7F3D0)),
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(14.dp))
-                                    .clickable { onSelectGarment(item.garment) }
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                Column(
+                                    modifier = Modifier.padding(14.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
                                 ) {
-                                    val firstPhoto = ImageUtils.parsePhotoList(item.garment.pictures).firstOrNull()
-                                    val photoModel = ImageUtils.resolvePhotoModel(context, firstPhoto)
-                                    Box(
+                                    // Garment Header Row
+                                    Row(
                                         modifier = Modifier
-                                            .size(46.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Color.White),
-                                        contentAlignment = Alignment.Center
+                                            .fillMaxWidth()
+                                            .clickable { onSelectGarment(item.garment) },
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
-                                        if (photoModel != null) {
-                                            AsyncImage(
-                                                model = photoModel,
-                                                contentDescription = item.garment.name,
-                                                contentScale = ContentScale.Fit,
-                                                modifier = Modifier.fillMaxSize()
+                                        val firstPhoto = ImageUtils.parsePhotoList(item.garment.pictures).firstOrNull()
+                                        val photoModel = ImageUtils.resolvePhotoModel(context, firstPhoto)
+                                        Box(
+                                            modifier = Modifier
+                                                .size(52.dp)
+                                                .clip(RoundedCornerShape(14.dp))
+                                                .background(Color(0xFFE2E8F0).copy(alpha = 0.6f)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (photoModel != null) {
+                                                AsyncImage(
+                                                    model = photoModel,
+                                                    contentDescription = item.garment.name,
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            } else {
+                                                Icon(
+                                                    Icons.Default.Checkroom,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF64748B),
+                                                    modifier = Modifier.size(26.dp)
+                                                )
+                                            }
+                                        }
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = item.garment.name,
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate900,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
-                                        } else {
-                                            Icon(Icons.Default.LocalLaundryService, contentDescription = null, tint = BrandBlue)
+                                            val accHoursStr = if (item.accumulatedWearHours % 1.0 == 0.0) {
+                                                "${item.accumulatedWearHours.toInt()} hrs"
+                                            } else {
+                                                String.format(Locale.US, "%.1f hrs", item.accumulatedWearHours)
+                                            }
+                                            Text(
+                                                text = "$accHoursStr accumulated wear",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF065F46)
+                                            )
+                                            Text(
+                                                text = "Across ${item.wearSessionsCount} wear session${if (item.wearSessionsCount == 1) "" else "s"} since last clean",
+                                                fontSize = 11.sp,
+                                                color = Slate600
+                                            )
+                                        }
+
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = Color(0xFFD1FAE5)
+                                        ) {
+                                            Text(
+                                                text = "Clean",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF065F46),
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                            )
                                         }
                                     }
 
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            text = item.garment.name,
-                                            fontSize = 13.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Slate900,
-                                            maxLines = 1
-                                        )
-                                        Text(
-                                            text = "${item.garment.clothesType} • ${item.wearSessionsCount} wear session(s) cleaned",
-                                            fontSize = 11.sp,
-                                            color = Slate600
-                                        )
-                                    }
+                                    // Contributing reports section
+                                    val isExpanded = expandedGarmentReports[item.garment.id] ?: true
+                                    val sessionCount = item.contributingSessions.size
 
-                                    Surface(
-                                        shape = RoundedCornerShape(6.dp),
-                                        color = Color(0xFFD1FAE5)
-                                    ) {
-                                        Text(
-                                            text = "${item.accumulatedWearHours}h cleaned",
-                                            fontSize = 11.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF065F46),
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        )
+                                    if (sessionCount > 0) {
+                                        HorizontalDivider(color = Color(0xFFA7F3D0).copy(alpha = 0.5f))
+
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable { expandedGarmentReports[item.garment.id] = !isExpanded },
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.Visibility,
+                                                    contentDescription = null,
+                                                    tint = Color(0xFF059669),
+                                                    modifier = Modifier.size(15.dp)
+                                                )
+                                                Text(
+                                                    text = "CONTRIBUTING WEARING REPORTS ($sessionCount):",
+                                                    fontSize = 11.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF065F46),
+                                                    letterSpacing = 0.5.sp
+                                                )
+                                            }
+
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = Color(0xFFECFDF5),
+                                                border = BorderStroke(1.dp, Color(0xFFA7F3D0))
+                                            ) {
+                                                Text(
+                                                    text = if (isExpanded) "CLICK TO HIDE" else "CLICK TO VIEW",
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF059669),
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                )
+                                            }
+                                        }
+
+                                        if (isExpanded) {
+                                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                item.contributingSessions.forEach { session ->
+                                                    val sessionDurStr = if (session.durationHours % 1.0 == 0.0) {
+                                                        "${session.durationHours.toInt()}h"
+                                                    } else {
+                                                        String.format(Locale.US, "%.1fh", session.durationHours)
+                                                    }
+
+                                                    val formattedWearDate = try {
+                                                        val ld = LocalDate.parse(session.wearDate.take(10))
+                                                        DateTimeFormatter.ofPattern("EEE, MMM d, yyyy", Locale.US).format(ld)
+                                                    } catch (_: Exception) {
+                                                        session.wearDate
+                                                    }
+
+                                                    Surface(
+                                                        shape = RoundedCornerShape(12.dp),
+                                                        color = Color.White,
+                                                        border = BorderStroke(1.dp, Color(0xFFA7F3D0)),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier.padding(8.dp),
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                        ) {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .size(34.dp)
+                                                                    .clip(RoundedCornerShape(8.dp))
+                                                                    .background(Color(0xFFD1FAE5)),
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                Icon(
+                                                                    Icons.Default.Visibility,
+                                                                    contentDescription = null,
+                                                                    tint = Color(0xFF059669),
+                                                                    modifier = Modifier.size(16.dp)
+                                                                )
+                                                            }
+
+                                                            Column(modifier = Modifier.weight(1f)) {
+                                                                Text(
+                                                                    text = session.reportTitle.ifBlank { "Wearing report" },
+                                                                    fontSize = 12.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Slate900,
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.Ellipsis
+                                                                )
+                                                                Text(
+                                                                    text = "Worn on $formattedWearDate",
+                                                                    fontSize = 10.sp,
+                                                                    color = Slate600
+                                                                )
+                                                            }
+
+                                                            Surface(
+                                                                shape = RoundedCornerShape(6.dp),
+                                                                color = Color(0xFFD1FAE5)
+                                                            ) {
+                                                                Text(
+                                                                    text = sessionDurStr,
+                                                                    fontSize = 11.sp,
+                                                                    fontFamily = FontFamily.Monospace,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Color(0xFF065F46),
+                                                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                                                )
+                                                            }
+
+                                                            Surface(
+                                                                shape = RoundedCornerShape(8.dp),
+                                                                color = Color.White,
+                                                                border = BorderStroke(1.dp, Color(0xFFA7F3D0)),
+                                                                modifier = Modifier.clickable {
+                                                                    val rep = session.report ?: allReports.find { it.id == session.reportId }
+                                                                    if (rep != null) {
+                                                                        onSelectReport(rep)
+                                                                    }
+                                                                }
+                                                            ) {
+                                                                Row(
+                                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                                    verticalAlignment = Alignment.CenterVertically,
+                                                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                                                ) {
+                                                                    Text(
+                                                                        text = "View",
+                                                                        fontSize = 11.sp,
+                                                                        fontWeight = FontWeight.Bold,
+                                                                        color = Color(0xFF059669)
+                                                                    )
+                                                                    Icon(
+                                                                        Icons.AutoMirrored.Filled.ArrowForward,
+                                                                        contentDescription = null,
+                                                                        tint = Color(0xFF059669),
+                                                                        modifier = Modifier.size(10.dp)
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
