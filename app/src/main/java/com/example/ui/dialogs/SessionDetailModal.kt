@@ -163,21 +163,11 @@ fun SessionDetailModal(
     }
 
     // Outfit Photos state (resolved against internal storage photos if present)
+    var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
     val outfitPhotos = remember(report.id, report.pictures) {
         val list = mutableStateListOf<String>()
         list.addAll(ImageUtils.resolveAllValidPhotos(report.pictures, context))
         list
-    }
-
-    val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetMultipleContents()
-    ) { uris: List<Uri> ->
-        uris.forEach { uri ->
-            val savedPath = ImageUtils.copyUriToInternalStorage(context, uri, "session_${report.id}") ?: uri.toString()
-            outfitPhotos.add(savedPath)
-        }
-        val arr = JSONArray().apply { outfitPhotos.forEach { put(it) } }
-        onUpdateReport?.invoke(report.copy(pictures = arr.toString()))
     }
 
     // Explanations for ergonomic and sensory fields
@@ -733,96 +723,44 @@ fun SessionDetailModal(
                                         Row(
                                             modifier = Modifier.padding(16.dp),
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.SpaceBetween
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                                modifier = Modifier.weight(1f)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Image,
-                                                    contentDescription = null,
-                                                    tint = Slate400,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                                Text(
-                                                    text = "No outfit photos captured for this session yet.",
-                                                    fontSize = 13.sp,
-                                                    color = Slate500
-                                                )
-                                            }
-
-                                            Row(
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                                modifier = Modifier
-                                                    .clickable { photoPickerLauncher.launch("image/*") }
-                                                    .padding(horizontal = 8.dp, vertical = 4.dp)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Upload,
-                                                    contentDescription = null,
-                                                    tint = Color(0xFF7C3AED),
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Text(
-                                                    text = "Add\nPhoto",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.ExtraBold,
-                                                    color = Color(0xFF7C3AED)
-                                                )
-                                            }
+                                            Icon(
+                                                imageVector = Icons.Default.Image,
+                                                contentDescription = null,
+                                                tint = Slate400,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Text(
+                                                text = "No outfit photos captured for this session yet. Tap \"Edit Report\" to add photos.",
+                                                fontSize = 13.sp,
+                                                color = Slate500
+                                            )
                                         }
                                     }
                                 } else {
-                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        LazyRow(
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            items(outfitPhotos) { url ->
-                                                Box(
-                                                    modifier = Modifier
-                                                        .size(110.dp)
-                                                        .clip(RoundedCornerShape(16.dp))
-                                                        .background(Slate100)
-                                                        .border(1.dp, Slate200, RoundedCornerShape(16.dp))
-                                                ) {
-                                                    AsyncImage(
-                                                        model = ImageUtils.resolveImageModel(url, context),
-                                                        contentDescription = "Session photo",
-                                                        contentScale = ContentScale.Fit,
-                                                        modifier = Modifier.fillMaxSize()
-                                                    )
-                                                    Box(
-                                                        modifier = Modifier
-                                                            .align(Alignment.TopEnd)
-                                                            .padding(6.dp)
-                                                            .size(24.dp)
-                                                            .clip(CircleShape)
-                                                            .background(Color(0xFFE11D48))
-                                                            .clickable {
-                                                                outfitPhotos.remove(url)
-                                                                val arr = JSONArray().apply { outfitPhotos.forEach { put(it) } }
-                                                                onUpdateReport?.invoke(report.copy(pictures = arr.toString()))
-                                                            },
-                                                        contentAlignment = Alignment.Center
-                                                    ) {
-                                                        Icon(
-                                                            imageVector = Icons.Default.Close,
-                                                            contentDescription = "Delete photo",
-                                                            tint = Color.White,
-                                                            modifier = Modifier.size(14.dp)
-                                                        )
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(outfitPhotos) { url ->
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(110.dp)
+                                                    .clip(RoundedCornerShape(16.dp))
+                                                    .background(Slate100)
+                                                    .border(1.dp, Slate200, RoundedCornerShape(16.dp))
+                                                    .clickable {
+                                                        viewingPhotoIndex = outfitPhotos.indexOf(url)
                                                     }
-                                                }
+                                            ) {
+                                                AsyncImage(
+                                                    model = ImageUtils.resolveImageModel(url, context),
+                                                    contentDescription = "Session photo",
+                                                    contentScale = ContentScale.Fit,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
                                             }
-                                        }
-                                        TextButton(onClick = { photoPickerLauncher.launch("image/*") }) {
-                                            Icon(imageVector = Icons.Default.Upload, contentDescription = null, tint = Color(0xFF7C3AED), modifier = Modifier.size(16.dp))
-                                            Spacer(modifier = Modifier.width(6.dp))
-                                            Text("Add Another Photo", color = Color(0xFF7C3AED), fontWeight = FontWeight.Bold, fontSize = 12.sp)
                                         }
                                     }
                                 }
@@ -2053,6 +1991,14 @@ fun SessionDetailModal(
                 }
             }
         }
+    }
+
+    if (viewingPhotoIndex != null) {
+        com.example.ui.components.FullScreenImageViewerDialog(
+            photos = outfitPhotos.toList(),
+            initialIndex = viewingPhotoIndex ?: 0,
+            onDismiss = { viewingPhotoIndex = null }
+        )
     }
 
     // Add Environmental Attribute Dialog

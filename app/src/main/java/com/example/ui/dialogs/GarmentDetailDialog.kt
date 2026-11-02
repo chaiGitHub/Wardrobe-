@@ -27,7 +27,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -49,7 +52,10 @@ import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.LocalLaundryService
+import androidx.compose.material.icons.filled.LocalOffer
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -125,6 +131,37 @@ data class GarmentAiReportVersion(
     val isPrimary: Boolean = false
 )
 
+fun formatCleanDate(raw: String): String {
+    if (raw.isBlank() || raw.equals("Never", ignoreCase = true) || raw.equals("null", ignoreCase = true)) {
+        return "Never"
+    }
+    val datePart = if (raw.contains("T")) raw.substringBefore("T") else raw.trim()
+    val patterns = listOf(
+        "yyyy-MM-dd",
+        "yyyy/MM/dd",
+        "dd/MM/yyyy",
+        "MM/dd/yyyy",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss"
+    )
+    for (pat in patterns) {
+        try {
+            val parser = SimpleDateFormat(pat, Locale.US)
+            val d = parser.parse(if (pat.contains("T")) raw else datePart)
+            if (d != null) {
+                return SimpleDateFormat("EEE, MMM d, yyyy", Locale.US).format(d)
+            }
+        } catch (_: Exception) {}
+    }
+    raw.toLongOrNull()?.let { epoch ->
+        try {
+            return SimpleDateFormat("EEE, MMM d, yyyy", Locale.US).format(Date(epoch))
+        } catch (_: Exception) {}
+    }
+    return datePart
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GarmentDetailDialog(
@@ -145,12 +182,14 @@ fun GarmentDetailDialog(
     var isEditing by remember { mutableStateOf(false) }
     var isFullScreen by remember { mutableStateOf(false) }
     var isGeneratingAiReport by remember { mutableStateOf(false) }
+    var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     // Editable form state initialized with garment data (matching all fields from Add Clothes Modal)
     var editName by remember(garment) { mutableStateOf(garment.name) }
     var editClothesType by remember(garment) { mutableStateOf(garment.clothesType) }
     var editMaterial by remember(garment) { mutableStateOf(garment.material) }
     var editPriceStr by remember(garment) { mutableStateOf(if (garment.price > 0) garment.price.toString() else "") }
+    var editLastWashed by remember(garment.lastWashed) { mutableStateOf(garment.lastWashed) }
 
     var editThickClothes by remember(garment) { mutableStateOf(garment.thickClothes) }
     var editHotAtNoon by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
@@ -232,20 +271,36 @@ fun GarmentDetailDialog(
     val expandedExplainFields = remember { mutableStateMapOf<String, Boolean>() }
     val dictionaryService = remember { FieldDictionaryService(context) }
 
-    // Extract tags
+    // Extract tags (clean parsing without dummy defaults)
     val tagsList = remember(garment.tags) {
         try {
             val arr = JSONArray(garment.tags)
             val list = mutableListOf<String>()
             for (i in 0 until arr.length()) {
-                val t = arr.optString(i)
+                val t = arr.optString(i).trim()
                 if (t.isNotBlank()) list.add(t)
             }
-            if (list.isEmpty()) listOf("clothes", "test") else list
+            list
         } catch (_: Exception) {
-            listOf("clothes", "test")
+            if (garment.tags.isNotBlank() && garment.tags != "[]") listOf(garment.tags.trim()) else emptyList()
         }
     }
+
+    // Editable tags state
+    val editTags = remember(garment.tags) {
+        val list = mutableStateListOf<String>()
+        try {
+            val arr = JSONArray(garment.tags)
+            for (i in 0 until arr.length()) {
+                val t = arr.optString(i).trim()
+                if (t.isNotBlank()) list.add(t)
+            }
+        } catch (_: Exception) {
+            if (garment.tags.isNotBlank() && garment.tags != "[]") list.add(garment.tags.trim())
+        }
+        list
+    }
+    var newTagInput by remember { mutableStateOf("") }
 
     // Photo URLs state — resolve valid local photos from ZIP backup or user uploads
     val photoUrls = remember(garment.pictures) {
@@ -263,6 +318,13 @@ fun GarmentDetailDialog(
                 photoUrls.add(savedUri)
             }
         }
+        val updatedJson = JSONArray(photoUrls).toString()
+        onSaveGarment?.invoke(garment.copy(pictures = updatedJson))
+    }
+
+    // Helper to delete photo from both state and persisted garment entity
+    fun deletePhoto(url: String) {
+        photoUrls.remove(url)
         val updatedJson = JSONArray(photoUrls).toString()
         onSaveGarment?.invoke(garment.copy(pictures = updatedJson))
     }
@@ -451,6 +513,16 @@ fun GarmentDetailDialog(
             mayThrow = editMayThrow,
             wearingFrequency = editWearingFrequency.toIntOrNull() ?: garment.wearingFrequency,
             trackedAppWashes = editTrackedAppWashes.toIntOrNull() ?: garment.trackedAppWashes,
+            lastWashed = editLastWashed,
+            pictures = JSONArray(photoUrls).toString(),
+            tags = JSONArray().apply {
+                editTags.forEach { tag ->
+                    val clean = tag.trim()
+                    if (clean.isNotBlank()) {
+                        put(if (clean.startsWith("#")) clean else "#$clean")
+                    }
+                }
+            }.toString(),
             descriptions = editDescriptions,
             descriptions2 = editDescriptions2,
             lastComment = editLastCommentAction,
@@ -466,6 +538,19 @@ fun GarmentDetailDialog(
         editClothesType = garment.clothesType
         editMaterial = garment.material
         editPriceStr = if (garment.price > 0) garment.price.toString() else ""
+        editLastWashed = garment.lastWashed
+        editTags.clear()
+        try {
+            val arr = JSONArray(garment.tags)
+            for (i in 0 until arr.length()) {
+                val t = arr.optString(i).trim()
+                if (t.isNotBlank()) editTags.add(t)
+            }
+        } catch (_: Exception) {
+            if (garment.tags.isNotBlank() && garment.tags != "[]") editTags.add(garment.tags.trim())
+        }
+        photoUrls.clear()
+        photoUrls.addAll(ImageUtils.resolveAllValidPhotos(garment.pictures, context))
         editThickClothes = garment.thickClothes
         editHotAtNoon = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
         editDiaoDai = garment.diaoDai
@@ -775,6 +860,365 @@ fun GarmentDetailDialog(
                         // ------------------------------------------
                         // EDIT MODE CONTENT (Matching Screenshot IMG_9642)
                         // ------------------------------------------
+
+                        // EDIT CARD: GARMENT PHOTOS
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(Color(0xFFF3E8FF)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Image,
+                                                contentDescription = null,
+                                                tint = BrandPurple,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "GARMENT PHOTOS (${photoUrls.size})",
+                                                fontSize = 12.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate900
+                                            )
+                                            Text(
+                                                text = "Visual photos for this wardrobe item",
+                                                fontSize = 11.sp,
+                                                color = Slate500
+                                            )
+                                        }
+                                    }
+
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Color(0xFFF3E8FF),
+                                        border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
+                                        modifier = Modifier.clickable { photoPickerLauncher.launch("image/*") }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Upload,
+                                                contentDescription = null,
+                                                tint = BrandPurple,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                            Text(
+                                                text = "+ Attach Photo",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandPurple
+                                            )
+                                        }
+                                    }
+                                }
+
+                                if (photoUrls.isNotEmpty()) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        LazyRow(
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            items(photoUrls) { rawUrl ->
+                                                val model = ImageUtils.resolvePhotoModel(context, rawUrl)
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(110.dp)
+                                                        .clip(RoundedCornerShape(14.dp))
+                                                        .background(Color(0xFFF1F5F9))
+                                                        .border(BorderStroke(1.dp, Slate200), RoundedCornerShape(14.dp))
+                                                        .clickable {
+                                                            viewingPhotoIndex = photoUrls.indexOf(rawUrl)
+                                                        }
+                                                ) {
+                                                    if (model != null) {
+                                                        AsyncImage(
+                                                            model = model,
+                                                            contentDescription = "Garment photo",
+                                                            contentScale = ContentScale.Fit,
+                                                            modifier = Modifier.fillMaxSize()
+                                                        )
+                                                    } else {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Image,
+                                                            contentDescription = null,
+                                                            tint = Slate400,
+                                                            modifier = Modifier.size(28.dp).align(Alignment.Center)
+                                                        )
+                                                    }
+                                                    // Delete button (Red circular X)
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .align(Alignment.TopEnd)
+                                                            .padding(4.dp)
+                                                            .size(24.dp)
+                                                            .clip(CircleShape)
+                                                            .background(Color(0xFFE11D48))
+                                                            .clickable {
+                                                                deletePhoto(rawUrl)
+                                                            },
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Close,
+                                                            contentDescription = "Delete photo",
+                                                            tint = Color.White,
+                                                            modifier = Modifier.size(13.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        TextButton(
+                                            onClick = { photoPickerLauncher.launch("image/*") }
+                                        ) {
+                                            Icon(imageVector = Icons.Default.Upload, contentDescription = null, tint = BrandPurple, modifier = Modifier.size(15.dp))
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text("Add Another Photo", color = BrandPurple, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                                        }
+                                    }
+                                } else {
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = Color(0xFFF8FAFC),
+                                        border = BorderStroke(1.dp, Slate200),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { photoPickerLauncher.launch("image/*") }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(14.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.CameraAlt,
+                                                contentDescription = "Add Photo",
+                                                tint = Slate400,
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                            Text(
+                                                text = "No photos attached yet. Tap to attach photo.",
+                                                fontSize = 12.sp,
+                                                color = Slate500
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // EDIT CARD: GARMENT TAGS
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(32.dp)
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(Color(0xFFF3E8FF)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.LocalOffer,
+                                                contentDescription = null,
+                                                tint = BrandPurple,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "GARMENT TAGS (${editTags.size})",
+                                                fontSize = 12.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate900
+                                            )
+                                            Text(
+                                                text = "Tags for quick filtering and search",
+                                                fontSize = 11.sp,
+                                                color = Slate500
+                                            )
+                                        }
+                                    }
+                                }
+
+                                // Active tags chips with remove button
+                                if (editTags.isNotEmpty()) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        editTags.forEach { tag ->
+                                            val cleanTag = if (tag.startsWith("#")) tag else "#$tag"
+                                            Surface(
+                                                shape = RoundedCornerShape(20.dp),
+                                                color = Color(0xFFF3E8FF),
+                                                border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(start = 10.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Text(
+                                                        text = cleanTag,
+                                                        fontSize = 12.sp,
+                                                        fontWeight = FontWeight.Bold,
+                                                        color = BrandPurple
+                                                    )
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(18.dp)
+                                                            .clip(CircleShape)
+                                                            .background(Color(0xFFE9D5FF))
+                                                            .clickable { editTags.remove(tag) },
+                                                        contentAlignment = Alignment.Center
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Close,
+                                                            contentDescription = "Remove tag",
+                                                            tint = BrandPurple,
+                                                            modifier = Modifier.size(11.dp)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    Text(
+                                        text = "No tags added yet. Type below or choose from quick suggestions.",
+                                        fontSize = 12.sp,
+                                        color = Slate400,
+                                        fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
+                                    )
+                                }
+
+                                // Add Tag Input Row
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = newTagInput,
+                                        onValueChange = { newTagInput = it },
+                                        placeholder = { Text("e.g. favorite, summer, silk", fontSize = 12.sp, color = Slate400) },
+                                        prefix = { Text("#", fontWeight = FontWeight.Bold, color = BrandPurple) },
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            unfocusedContainerColor = Color(0xFFF8FAFC),
+                                            focusedContainerColor = Color.White,
+                                            unfocusedBorderColor = Slate200,
+                                            focusedBorderColor = BrandPurple
+                                        )
+                                    )
+
+                                    Button(
+                                        onClick = {
+                                            val trimmed = newTagInput.trim().removePrefix("#")
+                                            if (trimmed.isNotBlank()) {
+                                                val formattedTag = "#$trimmed"
+                                                if (!editTags.any { it.equals(formattedTag, ignoreCase = true) || it.equals(trimmed, ignoreCase = true) }) {
+                                                    editTags.add(formattedTag)
+                                                }
+                                                newTagInput = ""
+                                            }
+                                        },
+                                        enabled = newTagInput.isNotBlank(),
+                                        shape = RoundedCornerShape(12.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = BrandPurple,
+                                            contentColor = Color.White
+                                        ),
+                                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 12.dp)
+                                    ) {
+                                        Text("+ Add Tag", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+
+                                // Quick suggestions row
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        text = "QUICK SUGGESTIONS:",
+                                        fontSize = 10.sp,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate500
+                                    )
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                                    ) {
+                                        listOf("#favorite", "#casual", "#formal", "#summer", "#winter", "#comfort", "#work", "#loungewear", "#ai", "#unai").forEach { suggestion ->
+                                            val isAlreadyAdded = editTags.any { it.equals(suggestion, ignoreCase = true) || it.equals(suggestion.removePrefix("#"), ignoreCase = true) }
+                                            Surface(
+                                                shape = RoundedCornerShape(16.dp),
+                                                color = if (isAlreadyAdded) Color(0xFFEDE9FE) else Color(0xFFF1F5F9),
+                                                border = BorderStroke(1.dp, if (isAlreadyAdded) Color(0xFFC4B5FD) else Slate200),
+                                                modifier = Modifier.clickable {
+                                                    if (!isAlreadyAdded) {
+                                                        editTags.add(suggestion)
+                                                    }
+                                                }
+                                            ) {
+                                                Text(
+                                                    text = suggestion,
+                                                    fontSize = 11.sp,
+                                                    fontWeight = if (isAlreadyAdded) FontWeight.Bold else FontWeight.Medium,
+                                                    color = if (isAlreadyAdded) BrandPurple else Slate600,
+                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
 
                         // CARD 1: CORE INFORMATION (Soft Purple Tinted Card)
                         Surface(
@@ -1348,6 +1792,135 @@ fun GarmentDetailDialog(
                                         )
                                     )
                                 }
+
+                                // LAST WASHED DATE
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "LAST WASHED DATE",
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate600
+                                        )
+                                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = Color(0xFFF0FDF4),
+                                                border = BorderStroke(1.dp, Color(0xFFBBF7D0)),
+                                                modifier = Modifier.clickable {
+                                                    val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+                                                    editLastWashed = today
+                                                }
+                                            ) {
+                                                Text(
+                                                    text = "Set Today",
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFF15803D),
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                                )
+                                            }
+                                            Surface(
+                                                shape = RoundedCornerShape(6.dp),
+                                                color = Color(0xFFFEF2F2),
+                                                border = BorderStroke(1.dp, Color(0xFFFECDD3)),
+                                                modifier = Modifier.clickable {
+                                                    editLastWashed = ""
+                                                }
+                                            ) {
+                                                Text(
+                                                    text = "Clear / Never",
+                                                    fontSize = 10.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color(0xFFB91C1C),
+                                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    val displayDate = remember(editLastWashed) {
+                                        if (editLastWashed.isBlank() || editLastWashed.equals("Never", ignoreCase = true)) "Never washed"
+                                        else formatCleanDate(editLastWashed)
+                                    }
+
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color.White,
+                                        border = BorderStroke(1.dp, Slate200),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable {
+                                                val cal = java.util.Calendar.getInstance()
+                                                if (editLastWashed.isNotBlank()) {
+                                                    try {
+                                                        val dPart = if (editLastWashed.contains("T")) editLastWashed.substringBefore("T") else editLastWashed
+                                                        val parsed = SimpleDateFormat("yyyy-MM-dd", Locale.US).parse(dPart)
+                                                        if (parsed != null) cal.time = parsed
+                                                    } catch (_: Exception) {}
+                                                }
+                                                android.app.DatePickerDialog(
+                                                    context,
+                                                    { _, y, m, d ->
+                                                        val picked = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d)
+                                                        editLastWashed = picked
+                                                    },
+                                                    cal.get(java.util.Calendar.YEAR),
+                                                    cal.get(java.util.Calendar.MONTH),
+                                                    cal.get(java.util.Calendar.DAY_OF_MONTH)
+                                                ).show()
+                                            }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.CalendarToday,
+                                                    contentDescription = null,
+                                                    tint = BrandPurple,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                                Text(
+                                                    text = displayDate,
+                                                    fontSize = 13.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = if (editLastWashed.isBlank()) Slate400 else Slate900
+                                                )
+                                            }
+                                            Text(
+                                                text = "Pick Date 📅",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandPurple
+                                            )
+                                        }
+                                    }
+
+                                    ErgonomicExplainField(
+                                        fieldKey = "Last Washed",
+                                        fieldLabel = "Last Washed",
+                                        value = editFieldExplanations["Last Washed"] ?: "",
+                                        onValueChange = { editFieldExplanations["Last Washed"] = it },
+                                        isExpanded = expandedExplainFields["Last Washed"] == true,
+                                        onToggleExpand = { expandedExplainFields["Last Washed"] = !(expandedExplainFields["Last Washed"] ?: false) },
+                                        allClothes = fullClothesList,
+                                        allReports = reports,
+                                        allJunctions = junctions,
+                                        customPlaceholder = "补充最后一次洗涤方式或特别说明...",
+                                        dictionaryService = dictionaryService
+                                    )
+                                }
                             }
                         }
 
@@ -1415,81 +1988,200 @@ fun GarmentDetailDialog(
                         // VIEW MODE CONTENT (From screenshots IMG_9639, 9640, 9641)
                         // ------------------------------------------
 
-                        // Title section
-                        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                            Text(
-                                text = "GARMENT RECORD · NAME",
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate400
-                            )
-
-                            Text(
-                                text = garment.name,
-                                fontSize = 20.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate900
-                            )
-
-                            val thick = garment.thickClothes.ifBlank { "03 thick clothes" }
-                            val mat = garment.material.ifBlank { "lace" }
-                            Text(
-                                text = "$mat · $thick · long dress",
-                                fontSize = 12.sp,
-                                color = Slate600
-                            )
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                        // 1. TOP HERO CARD (Consolidating Name, Subtitle, Tags, and Wash Dates into a single unified card)
+                        Surface(
+                            shape = RoundedCornerShape(20.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
-                                Surface(
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = Color.White,
-                                    border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "Date: 25 Sep 2026",
+                                        text = "GARMENT RECORD",
                                         fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Slate700,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                                        fontFamily = FontFamily.Monospace,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate400
+                                    )
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFFF1F5F9),
+                                        border = BorderStroke(1.dp, Slate200)
+                                    ) {
+                                        Text(
+                                            text = garment.clothesType.ifBlank { "Garment" },
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate700,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                        )
+                                    }
+                                }
+
+                                Text(
+                                    text = garment.name,
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
+
+                                val thick = garment.thickClothes.takeIf { it.isNotBlank() }
+                                val mat = garment.material.takeIf { it.isNotBlank() }
+                                val dressLen = garment.longDress.takeIf { it.isNotBlank() }
+                                val summarySub = listOfNotNull(mat, thick, dressLen).joinToString(" · ").ifBlank { garment.clothesType }
+                                if (summarySub.isNotBlank()) {
+                                    Text(
+                                        text = summarySub,
+                                        fontSize = 13.sp,
+                                        color = Slate600
                                     )
                                 }
 
-                                Surface(
-                                    shape = RoundedCornerShape(16.dp),
-                                    color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF059669),
-                                    modifier = Modifier.clickable {
-                                        onMarkWashNow?.invoke(garment)
-                                    }
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                                // Prominent Tags chips matching wearing report
+                                if (tagsList.isNotEmpty()) {
+                                    FlowRow(
+                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                                        modifier = Modifier.padding(top = 2.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = if (isNeedWash) Icons.Default.Warning else Icons.Default.Check,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(13.dp)
-                                        )
-                                        Text(
-                                            text = if (isNeedWash) "Wash Now (${unwashedHours}h)" else "Clean",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
+                                        tagsList.forEach { tag ->
+                                            val cleanTag = if (tag.startsWith("#")) tag else "#$tag"
+                                            Surface(
+                                                shape = RoundedCornerShape(20.dp),
+                                                color = Color(0xFFF3E8FF),
+                                                border = BorderStroke(1.dp, Color(0xFFD8B4FE))
+                                            ) {
+                                                Row(
+                                                    modifier = Modifier.padding(horizontal = 9.dp, vertical = 4.dp),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.LocalOffer,
+                                                        contentDescription = null,
+                                                        tint = BrandPurple,
+                                                        modifier = Modifier.size(11.dp)
+                                                    )
+                                                    Text(
+                                                        text = cleanTag,
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = BrandPurple
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                HorizontalDivider(color = Color(0xFFF1F5F9), modifier = Modifier.padding(vertical = 2.dp))
+
+                                val displayLastWashed = remember(garment.lastWashed, garmentStats.latestWashDate) {
+                                    val raw = garment.lastWashed.ifBlank { garmentStats.latestWashDate }
+                                    formatCleanDate(raw)
+                                }
+
+                                // Date & Wash Status Badges in FlowRow (prevents awkward 2-line wrapped text)
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = Color(0xFFF8FAFC),
+                                        border = BorderStroke(1.dp, Slate200)
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.CalendarToday,
+                                                contentDescription = null,
+                                                tint = Slate500,
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Text(
+                                                text = "Created: $displayCreatedDate",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = Slate700,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                    }
+
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = Color(0xFFF0FDF4),
+                                        border = BorderStroke(1.dp, Color(0xFFBBF7D0))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.LocalLaundryService,
+                                                contentDescription = null,
+                                                tint = Color(0xFF16A34A),
+                                                modifier = Modifier.size(12.dp)
+                                            )
+                                            Text(
+                                                text = "Last Washed: $displayLastWashed",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF15803D),
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
+                                    }
+
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = if (isNeedWash) Color(0xFFF59E0B) else Color(0xFF059669),
+                                        modifier = Modifier.clickable {
+                                            onMarkWashNow?.invoke(garment)
+                                        }
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 5.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = if (isNeedWash) Icons.Default.Warning else Icons.Default.Check,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Text(
+                                                text = if (isNeedWash) "Wash Now (${unwashedHours}h)" else "Clean",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White,
+                                                maxLines = 1,
+                                                softWrap = false
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
 
-                        // Photos Section
+                        // 2. Photos Section (View Mode: Inspection and full screen view only - no add/delete)
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             color = Color.White,
@@ -1524,29 +2216,32 @@ fun GarmentDetailDialog(
                                         )
                                     }
 
-                                    Text(
-                                        text = "Click photo to view fullscreen",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = BrandPurple
-                                    )
+                                    if (photoUrls.isNotEmpty()) {
+                                        Text(
+                                            text = "Tap photo to view fullscreen",
+                                            fontSize = 11.sp,
+                                            color = Slate400,
+                                            fontWeight = FontWeight.Medium
+                                        )
+                                    }
                                 }
 
-                                Row(
-                                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                                ) {
-                                    if (photoUrls.isNotEmpty()) {
-                                        photoUrls.forEach { rawUrl ->
+                                if (photoUrls.isNotEmpty()) {
+                                    LazyRow(
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        items(photoUrls) { rawUrl ->
                                             val model = ImageUtils.resolvePhotoModel(context, rawUrl)
                                             Box(
                                                 modifier = Modifier
-                                                    .size(140.dp)
+                                                    .size(130.dp)
                                                     .clip(RoundedCornerShape(16.dp))
                                                     .background(Color(0xFFF1F5F9))
                                                     .border(BorderStroke(1.dp, Slate200), RoundedCornerShape(16.dp))
-                                                    .clickable { photoPickerLauncher.launch("image/*") },
-                                                contentAlignment = Alignment.Center
+                                                    .clickable {
+                                                        viewingPhotoIndex = photoUrls.indexOf(rawUrl)
+                                                    }
                                             ) {
                                                 if (model != null) {
                                                     AsyncImage(
@@ -1560,26 +2255,34 @@ fun GarmentDetailDialog(
                                                         imageVector = Icons.Default.Image,
                                                         contentDescription = null,
                                                         tint = Slate400,
-                                                        modifier = Modifier.size(32.dp)
+                                                        modifier = Modifier.size(32.dp).align(Alignment.Center)
                                                     )
                                                 }
                                             }
                                         }
-                                    } else {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(140.dp)
-                                                .clip(RoundedCornerShape(16.dp))
-                                                .background(Color(0xFFF1F5F9))
-                                                .border(BorderStroke(1.dp, Slate200), RoundedCornerShape(16.dp))
-                                                .clickable { photoPickerLauncher.launch("image/*") },
-                                            contentAlignment = Alignment.Center
+                                    }
+                                } else {
+                                    Surface(
+                                        shape = RoundedCornerShape(14.dp),
+                                        color = Color(0xFFF8FAFC),
+                                        border = BorderStroke(1.dp, Slate200),
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(14.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.CameraAlt,
-                                                contentDescription = "Add Photo",
+                                                imageVector = Icons.Default.Image,
+                                                contentDescription = null,
                                                 tint = Slate400,
-                                                modifier = Modifier.size(28.dp)
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "No photos attached. Tap \"Edit Garment\" to add photos.",
+                                                fontSize = 12.sp,
+                                                color = Slate500
                                             )
                                         }
                                     }
@@ -1663,7 +2366,7 @@ fun GarmentDetailDialog(
                                 ErgonomicRow("wearing frequency(legacy):", garment.wearingFrequency.toString())
                                 ErgonomicRow("Total Washed Count:", totalWashesCount.toString(), boldValue = true)
                                 ErgonomicRow("Tracked App Washes:", garment.trackedAppWashes.toString())
-                                ErgonomicRow("Last Washed:", garment.lastWashed.ifBlank { "Never" }, explanation = fieldExplanationsInView["Last Washed"])
+                                ErgonomicRow("Last Washed:", formatCleanDate(garment.lastWashed.ifBlank { garmentStats.latestWashDate }), explanation = fieldExplanationsInView["Last Washed"])
                                 ErgonomicRow("unwash time rollup:", if (garmentStats.unwashedSeconds > 0) "${garmentStats.unwashedHours}h (${garmentStats.unwashedSeconds}s)" else "0s")
                                 ErgonomicRow("created:", displayCreatedDate)
                                 ErgonomicRow("wet reason:", garment.wetReason.ifBlank { "No data" }, isItalic = garment.wetReason.isBlank(), explanation = fieldExplanationsInView["wet reason"])
@@ -2526,22 +3229,35 @@ fun GarmentDetailDialog(
                                 )
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                tagsList.forEach { tag ->
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = Color.White,
-                                        border = BorderStroke(1.dp, Slate300)
-                                    ) {
-                                        Text(
-                                            text = "#$tag",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Slate800,
-                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                        )
+                            if (tagsList.isNotEmpty()) {
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    tagsList.forEach { tag ->
+                                        val clean = if (tag.startsWith("#")) tag else "#$tag"
+                                        Surface(
+                                            shape = RoundedCornerShape(10.dp),
+                                            color = Color.White,
+                                            border = BorderStroke(1.dp, Slate300)
+                                        ) {
+                                            Text(
+                                                text = clean,
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate800,
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                                            )
+                                        }
                                     }
                                 }
+                            } else {
+                                Text(
+                                    text = "No tags",
+                                    fontSize = 11.sp,
+                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                                    color = Slate400
+                                )
                             }
                         }
                     }
@@ -2625,6 +3341,14 @@ fun GarmentDetailDialog(
                 }
             }
         }
+    }
+
+    if (viewingPhotoIndex != null) {
+        com.example.ui.components.FullScreenImageViewerDialog(
+            photos = photoUrls.toList(),
+            initialIndex = viewingPhotoIndex ?: 0,
+            onDismiss = { viewingPhotoIndex = null }
+        )
     }
 
     // Previous Entries Modal

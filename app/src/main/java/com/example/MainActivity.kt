@@ -186,7 +186,8 @@ fun WardrobeMainApp(
                 dirtyCount = dirtyCount,
                 onFontSizeClick = { showFontSizeModal = true },
                 onNotebookLmClick = { showNotebookLmModal = true },
-                isAiPaused = isAiPaused
+                isAiPaused = isAiPaused,
+                currentFontScale = currentFontScale
             )
         },
         bottomBar = {

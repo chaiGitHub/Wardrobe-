@@ -465,5 +465,25 @@ val DEFAULT_DRILL_PRESETS: List<DrillPreset> = listOf(
         sortField = "wearing frequency(how many times legacy washed)",
         sortOrder = "asc",
         visibleFields = listOf("may throw", "Clothes Type", "material", "beautiful", "price", "wearing frequency(how many times legacy washed)")
+    ),
+    DrillPreset(
+        id = "custom-preset-1791990087862",
+        name = "Diao dai (Copy)",
+        description = "L1: diao dai, L2: Clothes Type, L3: material",
+        groupTiers = listOf("diao dai", "Clothes Type", "material"),
+        sortField = "Name",
+        sortOrder = "asc",
+        visibleFields = listOf("diao dai", "Clothes Type", "material", "beautiful", "wearing frequency(how many times legacy washed)"),
+        isCustom = true
+    ),
+    DrillPreset(
+        id = "custom-preset-1791990140511",
+        name = "Beautiful (Copy)",
+        description = "L1: beautiful, L2: beatiful reason, L3: Clothes Type",
+        groupTiers = listOf("beautiful", "beatiful reason", "Clothes Type"),
+        sortField = "Name",
+        sortOrder = "asc",
+        visibleFields = listOf("beautiful", "beatiful reason", "Clothes Type", "material", "wearing frequency(how many times legacy washed)"),
+        isCustom = true
     )
 )

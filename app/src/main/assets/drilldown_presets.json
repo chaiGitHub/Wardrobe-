@@ -2,7 +2,7 @@
   {
     "id": "preset-aircond-hot",
     "name": "Aircond Suitable: Upper Body (not cold / hot)",
-    "description": "L1: Clothes Type, L2: wet, L3: aircond hot feeling, L4: aircond leg feeling, L5: beautiful, L6: beatiful reason",
+    "description": "Tier 1: when with aircond: hot feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
     "groupTiers": [
       "Clothes Type",
       "wet",
@@ -19,7 +19,8 @@
       "when with aircond: leg feeling",
       "material",
       "thick clothes"
-    ]
+    ],
+    "updatedAt": "2026-10-17T00:23:57.742Z"
   },
   {
     "id": "preset-aircond-leg",
@@ -44,8 +45,12 @@
     "name": "Normal / No Aircond: Upper Body (hot feeling)",
     "description": "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
     "groupTiers": [
+      "Clothes Type",
+      "wet",
       "when without aircond: hot feeling",
-      "Clothes Type"
+      "when without aircond: leg feeling",
+      "beautiful",
+      "beatiful reason"
     ],
     "sortField": "Name",
     "sortOrder": "asc",
@@ -55,7 +60,8 @@
       "when without aircond: leg feeling",
       "material",
       "thick clothes"
-    ]
+    ],
+    "updatedAt": "2026-10-17T00:23:04.546Z"
   },
   {
     "id": "preset-without-aircond-leg",
@@ -80,8 +86,12 @@
     "name": "Sleep Under Fan: Upper Body (hot feeling)",
     "description": "Tier 1: when sleep under fan: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type.",
     "groupTiers": [
+      "Clothes Type",
+      "wet",
       "when sleep under fan: hot feeling",
-      "Clothes Type"
+      "when sleep under fan: leg feeling",
+      "beautiful",
+      "beatiful reason"
     ],
     "sortField": "Name",
     "sortOrder": "asc",
@@ -91,7 +101,8 @@
       "when sleep under fan: leg feeling",
       "material",
       "long dress"
-    ]
+    ],
+    "updatedAt": "2026-10-17T00:20:34.408Z"
   },
   {
     "id": "preset-sleep-fan-leg",
@@ -131,21 +142,22 @@
   },
   {
     "id": "preset-breast-gather-bra",
-    "name": "Breast Fit: With 聚拢bra",
-    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: sit breast ok: With 聚拢bra.",
+    "name": "Breast Fit: With \u805a\u62e2bra",
+    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: sit breast ok: With \u805a\u62e2bra.",
     "groupTiers": [
       "Clothes Type",
-      "sit breast ok: With 聚拢bra"
+      "sit breast ok: With \u805a\u62e2bra"
     ],
     "sortField": "Name",
     "sortOrder": "asc",
     "visibleFields": [
       "Clothes Type",
-      "sit breast ok: With 聚拢bra",
-      "side breast ok: with 聚拢 bra",
+      "sit breast ok: With \u805a\u62e2bra",
+      "side breast ok: with \u805a\u62e2 bra",
       "beautiful",
       "diao dai"
-    ]
+    ],
+    "updatedAt": "2026-10-13T08:36:28.775Z"
   },
   {
     "id": "preset-thickness-climate",
@@ -247,5 +259,47 @@
       "price",
       "wearing frequency(how many times legacy washed)"
     ]
+  },
+  {
+    "id": "custom-preset-1791990087862",
+    "name": "Diao dai (Copy)",
+    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
+    "isCustom": true,
+    "groupTiers": [
+      "Clothes Type",
+      "diao dai"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "wet",
+      "wet reason",
+      "material",
+      "Hot at noon"
+    ],
+    "updatedAt": "2026-10-14T15:01:56.224Z"
+  },
+  {
+    "id": "custom-preset-1791990140511",
+    "name": "Beautiful (Copy)",
+    "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
+    "isCustom": true,
+    "groupTiers": [
+      "Clothes Type",
+      "beautiful",
+      "wet",
+      "beatiful reason"
+    ],
+    "sortField": "Name",
+    "sortOrder": "asc",
+    "visibleFields": [
+      "Clothes Type",
+      "wet",
+      "wet reason",
+      "material",
+      "Hot at noon"
+    ],
+    "updatedAt": "2026-10-17T13:07:13.648Z"
   }
 ]

@@ -299,6 +299,7 @@ fun AddReportDialog(
         }
         list
     }
+    var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -1651,6 +1652,9 @@ fun AddReportDialog(
                                                 .clip(RoundedCornerShape(14.dp))
                                                 .background(Slate100)
                                                 .border(1.dp, Slate200, RoundedCornerShape(14.dp))
+                                                .clickable {
+                                                    viewingPhotoIndex = photoUrls.indexOf(url)
+                                                }
                                         ) {
                                             AsyncImage(
                                                 model = ImageUtils.resolveImagePath(url, context),
@@ -1797,6 +1801,14 @@ fun AddReportDialog(
                 }
             }
         }
+    }
+
+    if (viewingPhotoIndex != null) {
+        com.example.ui.components.FullScreenImageViewerDialog(
+            photos = photoUrls.toList(),
+            initialIndex = viewingPhotoIndex ?: 0,
+            onDismiss = { viewingPhotoIndex = null }
+        )
     }
 
     // Historical Previous Entries Picker Modal

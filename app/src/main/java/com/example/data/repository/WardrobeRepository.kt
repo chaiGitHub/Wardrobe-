@@ -37,15 +37,21 @@ class WardrobeRepository(private val context: Context) {
         val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
         val seedVersion = prefs.getInt("seed_imported_version", 0)
         val count = dao.getClothesCount()
-        if (count == 0 || seedVersion < 6) {
+        // Only seed on clean initial launch when database is completely empty
+        if (count == 0 && seedVersion < 30) {
             try {
                 copySeedPhotosToDisk()
                 context.assets.open("initial_seed.json").use { stream ->
                     val reader = BufferedReader(InputStreamReader(stream))
                     val jsonStr = reader.readText()
-                    importFromJsonString(jsonStr, clearExisting = false)
+                    importFromJsonString(jsonStr, clearExisting = true)
                 }
-                prefs.edit().putInt("seed_imported_version", 6).apply()
+                try {
+                    val presetService = com.example.ui.drilldown.ReportPresetService(context)
+                    presetService.resetToDefaults()
+                    presetService.setActivePresetId("preset-without-aircond-hot")
+                } catch (_: Exception) {}
+                prefs.edit().putInt("seed_imported_version", 30).apply()
             } catch (e: Exception) {
                 Log.e("WardrobeRepo", "Seed database error: ${e.message}", e)
             }
@@ -99,6 +105,7 @@ class WardrobeRepository(private val context: Context) {
 
     suspend fun resetDatabaseToSeed(): Result<String> = withContext(Dispatchers.IO) {
         try {
+            copySeedPhotosToDisk()
             context.assets.open("initial_seed.json").use { stream ->
                 val reader = BufferedReader(InputStreamReader(stream))
                 val jsonStr = reader.readText()
@@ -111,7 +118,9 @@ class WardrobeRepository(private val context: Context) {
             } catch (pe: Exception) {
                 Log.w("WardrobeRepo", "Preset reset notice: ${pe.message}")
             }
-            Result.success("Database restored to default seed collection (52 garments, 33 reports, 111 wear records).")
+            val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putInt("seed_imported_version", 30).apply()
+            Result.success("Database restored to default seed collection (3 garments, 3 reports, 5 wear records).")
         } catch (e: Exception) {
             Log.e("WardrobeRepo", "Reset to seed error: ${e.message}", e)
             Result.failure(e)
@@ -710,6 +719,9 @@ class WardrobeRepository(private val context: Context) {
         } catch (pe: Exception) {
             Log.w("WardrobeRepo", "Notice: could not parse presets in import: ${pe.message}")
         }
+
+        val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
+        prefs.edit().putInt("seed_imported_version", 30).apply()
 
         Triple(parsedClothes.size, parsedReports.size, parsedJunctions.size)
     }

@@ -155,6 +155,7 @@ fun AddGarmentDialog(
 
     // Uploaded photo URIs/strings
     val photoUrls = remember { mutableStateListOf<String>() }
+    var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
 
     // Photo picker launcher (Android Photo Picker)
     val photoPickerLauncher = rememberLauncherForActivityResult(
@@ -884,6 +885,9 @@ fun AddGarmentDialog(
                                                 .size(80.dp)
                                                 .clip(RoundedCornerShape(12.dp))
                                                 .border(1.dp, Slate200, RoundedCornerShape(12.dp))
+                                                .clickable {
+                                                    viewingPhotoIndex = photoUrls.indexOf(url)
+                                                }
                                         ) {
                                             AsyncImage(
                                                 model = ImageUtils.resolveImagePath(url, context),
@@ -1074,6 +1078,14 @@ fun AddGarmentDialog(
                 }
             }
         }
+    }
+
+    if (viewingPhotoIndex != null) {
+        com.example.ui.components.FullScreenImageViewerDialog(
+            photos = photoUrls.toList(),
+            initialIndex = viewingPhotoIndex ?: 0,
+            onDismiss = { viewingPhotoIndex = null }
+        )
     }
 
     // Previous Entries Modal

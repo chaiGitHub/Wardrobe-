@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.TableRows
 import androidx.compose.material.icons.filled.Thermostat
 import androidx.compose.material.icons.filled.ViewSidebar
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -57,6 +58,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.ContentPaste
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -176,15 +183,19 @@ fun DrilldownScreen(
         presets = latest
         val active = presetService.getActivePresetId()
         if (latest.none { it.id == activePresetId }) {
-            activePresetId = if (latest.any { it.id == active }) active else "preset-without-aircond-hot"
+            val fallback = if (latest.any { it.id == active }) active else (latest.firstOrNull()?.id ?: "preset-without-aircond-hot")
+            activePresetId = fallback
+            presetService.setActivePresetId(fallback)
         }
     }
     androidx.compose.runtime.LaunchedEffect(clothes.size, reports.size) {
         val latest = presetService.getPresets()
         presets = latest
-        val active = presetService.getActivePresetId()
         if (latest.none { it.id == activePresetId }) {
-            activePresetId = if (latest.any { it.id == active }) active else "preset-without-aircond-hot"
+            val active = presetService.getActivePresetId()
+            val fallback = if (latest.any { it.id == active }) active else (latest.firstOrNull()?.id ?: "preset-without-aircond-hot")
+            activePresetId = fallback
+            presetService.setActivePresetId(fallback)
         }
     }
 
@@ -276,7 +287,7 @@ fun DrilldownScreen(
     }
 
     // Sorted garments in the current branch
-    val sortedBranchGarments = remember(currentBranchGarments, branchSearchQuery, currentPreset, junctions) {
+    val sortedBranchGarments = remember(currentBranchGarments, branchSearchQuery, currentPreset, junctions, statsById) {
         val q = branchSearchQuery.trim().lowercase(Locale.ROOT)
         val filtered = if (q.isEmpty()) currentBranchGarments else {
             currentBranchGarments.filter { g ->
@@ -293,16 +304,34 @@ fun DrilldownScreen(
                     reportMatch
             }
         }
-        if (currentPreset.sortOrder.equals("asc", ignoreCase = true)) {
-            filtered.sortedWith(
-                compareBy<GarmentEntity> { DrilldownUtils.getNumericalSortValue(it, currentPreset.sortField, junctions) }
-                    .thenBy { it.name.lowercase(Locale.ROOT) }
-            )
+        val isAsc = currentPreset.sortOrder.equals("asc", ignoreCase = true)
+        val field = currentPreset.sortField
+
+        val baseComparator: Comparator<GarmentEntity> = when {
+            field.equals("Last Washed", ignoreCase = true) || field.equals("last_wash_date", ignoreCase = true) || field.contains("wash date", ignoreCase = true) -> {
+                compareBy { g: GarmentEntity ->
+                    g.lastWashed.ifBlank { statsById[g.id]?.latestWashDate ?: "" }
+                }
+            }
+            field.equals("Name", ignoreCase = true) -> {
+                compareBy { g: GarmentEntity -> g.name.lowercase(Locale.ROOT) }
+            }
+            field.equals("Clothes Type", ignoreCase = true) -> {
+                compareBy { g: GarmentEntity -> g.clothesType.lowercase(Locale.ROOT) }
+            }
+            field == "Total Washed Count" || field.contains("wearing frequency", ignoreCase = true) ||
+            field == "Tracked App Washes" || field == "price" || field == "wash stated" -> {
+                compareBy { g: GarmentEntity -> DrilldownUtils.getNumericalSortValue(g, field, junctions) }
+            }
+            else -> {
+                compareBy { g: GarmentEntity -> DrilldownUtils.getFieldValue(g, field, junctions).lowercase(Locale.ROOT) }
+            }
+        }
+
+        if (isAsc) {
+            filtered.sortedWith(baseComparator.thenBy { it.name.lowercase(Locale.ROOT) })
         } else {
-            filtered.sortedWith(
-                compareByDescending<GarmentEntity> { DrilldownUtils.getNumericalSortValue(it, currentPreset.sortField, junctions) }
-                    .thenBy { it.name.lowercase(Locale.ROOT) }
-            )
+            filtered.sortedWith(baseComparator.reversed().thenBy { it.name.lowercase(Locale.ROOT) })
         }
     }
 
@@ -514,44 +543,6 @@ fun DrilldownScreen(
                                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Thermostat,
-                                                contentDescription = null,
-                                                tint = Color(0xFFD97706),
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Column {
-                                                Text(
-                                                    text = "☀️ Restore: No Aircond (Hot feeling)",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFFB45309)
-                                                )
-                                                Text(
-                                                    text = "L1: when without aircond: hot feeling > L2: Clothes Type",
-                                                    fontSize = 10.sp,
-                                                    color = Slate500
-                                                )
-                                            }
-                                        }
-                                    },
-                                    onClick = {
-                                        val restored = presetService.restoreNoAircondHotPreset()
-                                        presets = restored
-                                        activePresetId = "preset-without-aircond-hot"
-                                        presetService.setActivePresetId("preset-without-aircond-hot")
-                                        updateDrillPath(emptyList())
-                                        presetDropdownExpanded = false
-                                        android.widget.Toast.makeText(context, "Restored & switched to: No Aircond Upper Body (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
-                                    }
-                                )
-
-                                DropdownMenuItem(
-                                    text = {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                        ) {
-                                            Icon(
                                                 imageVector = Icons.Default.RestartAlt,
                                                 contentDescription = null,
                                                 tint = Color(0xFF7C3AED),
@@ -559,13 +550,13 @@ fun DrilldownScreen(
                                             )
                                             Column {
                                                 Text(
-                                                    text = "🔄 Restore All 13 Standard Presets",
+                                                    text = "🔄 Reset to Standard Presets (15)",
                                                     fontSize = 12.sp,
                                                     fontWeight = FontWeight.Bold,
                                                     color = Color(0xFF6D28D9)
                                                 )
                                                 Text(
-                                                    text = "Resets all presets & activates No Aircond Hot feeling",
+                                                    text = "Reload standard 15 presets from config",
                                                     fontSize = 10.sp,
                                                     color = Slate500
                                                 )
@@ -579,7 +570,7 @@ fun DrilldownScreen(
                                         presetService.setActivePresetId("preset-without-aircond-hot")
                                         updateDrillPath(emptyList())
                                         presetDropdownExpanded = false
-                                        android.widget.Toast.makeText(context, "Restored all 13 standard presets & switched to No Aircond Hot feeling", android.widget.Toast.LENGTH_SHORT).show()
+                                        android.widget.Toast.makeText(context, "Reset to standard 15 presets", android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 )
 
@@ -634,12 +625,12 @@ fun DrilldownScreen(
                                 color = if (isNoAircondHot) Color(0xFFFEF3C7) else Color.White,
                                 border = BorderStroke(1.dp, if (isNoAircondHot) Color(0xFFD97706) else Slate200),
                                 modifier = Modifier.clickable {
-                                    val restored = presetService.restoreNoAircondHotPreset()
-                                    presets = restored
-                                    activePresetId = "preset-without-aircond-hot"
-                                    presetService.setActivePresetId("preset-without-aircond-hot")
-                                    updateDrillPath(emptyList())
-                                    android.widget.Toast.makeText(context, "Switched to: No Aircond Upper Body (Hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
+                                    val target = presets.find { it.id == "preset-without-aircond-hot" }
+                                    if (target != null) {
+                                        activePresetId = target.id
+                                        presetService.setActivePresetId(target.id)
+                                        updateDrillPath(emptyList())
+                                    }
                                 }
                             ) {
                                 Row(
@@ -726,35 +717,6 @@ fun DrilldownScreen(
                                     color = if (isAircondLeg) Color(0xFF0369A1) else Slate700,
                                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                                 )
-                            }
-
-                            // 5. 一键恢复全部预设 (Restore All)
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFF3E8FF),
-                                border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
-                                modifier = Modifier.clickable {
-                                    val restored = presetService.resetToDefaults()
-                                    presets = restored
-                                    activePresetId = "preset-without-aircond-hot"
-                                    presetService.setActivePresetId("preset-without-aircond-hot")
-                                    updateDrillPath(emptyList())
-                                    android.widget.Toast.makeText(context, "Restored all 13 standard presets & activated No Aircond (hot feeling)", android.widget.Toast.LENGTH_SHORT).show()
-                                }
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Icon(Icons.Default.RestartAlt, contentDescription = null, tint = Color(0xFF7C3AED), modifier = Modifier.size(12.dp))
-                                    Text(
-                                        text = "🔄 Restore All Defaults",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF6D28D9)
-                                    )
-                                }
                             }
                         }
 
@@ -1385,18 +1347,23 @@ fun DrilldownScreen(
                 val updatedList = presetService.savePreset(updated)
                 presets = updatedList
                 activePresetId = updated.id
+                presetService.setActivePresetId(updated.id)
                 showPresetEditor = false
             },
             onSaveAsNew = { newPreset ->
                 val updatedList = presetService.savePreset(newPreset)
                 presets = updatedList
                 activePresetId = newPreset.id
+                presetService.setActivePresetId(newPreset.id)
                 showPresetEditor = false
             },
             onDeletePreset = { delId ->
                 val updatedList = presetService.deletePreset(delId)
                 presets = updatedList
-                activePresetId = presets.firstOrNull()?.id ?: DEFAULT_DRILL_PRESETS.first().id
+                val nextActive = presets.firstOrNull()?.id ?: DEFAULT_DRILL_PRESETS.first().id
+                activePresetId = nextActive
+                presetService.setActivePresetId(nextActive)
+                updateDrillPath(emptyList())
                 showPresetEditor = false
             },
             onResetDefaults = {
@@ -1416,6 +1383,7 @@ fun DrilldownScreen(
                 showPresetEditor = false
             }
         )
+
 
         // Fallback Garment Detail Modal
         selectedGarmentForDetail?.let { garment ->

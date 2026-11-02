@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Checkroom
+import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Opacity
@@ -70,6 +71,7 @@ import com.example.ui.theme.Slate900
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
+import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.LinearProgressIndicator
 
@@ -91,6 +93,7 @@ fun AppHeader(
     onFontSizeClick: (() -> Unit)? = null,
     onNotebookLmClick: (() -> Unit)? = null,
     isAiPaused: Boolean = false,
+    currentFontScale: Float = 1.0f,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -119,7 +122,7 @@ fun AppHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Left: Gradient purple/indigo square shirt logo + "Wardrobe & Wear Journal" title
+                    // Left: Gradient purple/indigo square shirt logo + "Wardrobe Journal" title
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -127,11 +130,11 @@ fun AppHeader(
                     ) {
                         Box(
                             modifier = Modifier
-                                .size(38.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .size(36.dp)
+                                .clip(RoundedCornerShape(10.dp))
                                 .background(
                                     Brush.linearGradient(
-                                        listOf(Color(0xFF6B21A8), Color(0xFF3730A3))
+                                        listOf(Color(0xFF7C3AED), Color(0xFF4F46E5))
                                     )
                                 ),
                             contentAlignment = Alignment.Center
@@ -140,78 +143,17 @@ fun AppHeader(
                                 imageVector = Icons.Default.Checkroom,
                                 contentDescription = "Wardrobe Logo",
                                 tint = Color.White,
-                                modifier = Modifier.size(22.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
 
-                        Column {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                Text(
-                                    text = if (isWide) "Wardrobe & Wear Journal" else "Wardrobe",
-                                    fontSize = if (isWide) 17.sp else 15.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    color = Slate900,
-                                    maxLines = 1
-                                )
-
-                                // Cloud status indicator pill
-                                Surface(
-                                    shape = RoundedCornerShape(999.dp),
-                                    color = if (isCloudConnected) Color(0xFFECFDF5) else Color(0xFFFFFBEB),
-                                    border = BorderStroke(1.dp, if (isCloudConnected) Color(0xFFA7F3D0) else Color(0xFFFDE68A))
-                                ) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(6.dp)
-                                                .clip(CircleShape)
-                                                .background(if (isCloudConnected) Color(0xFF059669) else Color(0xFFD97706))
-                                        )
-                                        Spacer(modifier = Modifier.width(4.dp))
-                                        Text(
-                                            text = if (isCloudConnected) "Cloud" else "Local",
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = if (isCloudConnected) Color(0xFF047857) else Color(0xFFB45309)
-                                        )
-                                    }
-                                }
-
-                                if (isAiPaused) {
-                                    Surface(
-                                        shape = RoundedCornerShape(999.dp),
-                                        color = Color(0xFFFEF3C7),
-                                        border = BorderStroke(1.dp, Color(0xFFFDE68A)),
-                                        modifier = Modifier.clickable { onTabSelected?.invoke(AppTab.ADVISOR) }
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                        ) {
-                                            Text(
-                                                text = "⏸️ Zero Token",
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color(0xFF92400E)
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-
-                            Text(
-                                text = "Local-First · Google Firestore",
-                                fontSize = 10.sp,
-                                color = Slate500,
-                                maxLines = 1
-                            )
-                        }
+                        Text(
+                            text = "Wardrobe Journal",
+                            fontSize = if (isWide) 18.sp else 16.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Slate900,
+                            maxLines = 1
+                        )
                     }
 
                     // Middle: Desktop Navigation Tabs (matching webapp nav: hidden md:flex)
@@ -282,189 +224,79 @@ fun AppHeader(
                         }
                     }
 
-                    // Right: Action area matching webapp App.tsx header
+                    // Right: Clean Status & Font scale buttons matching closet module upper screenshot
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.horizontalScroll(rememberScrollState())
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Pull from Cloud button (blue tint)
-                        if (onPullFromCloudClick != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEFF6FF),
-                                border = BorderStroke(1.dp, Color(0xFFBFDBFE)),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onPullFromCloudClick() }
-                                    .testTag("header_pull_cloud_btn")
+                        // [Aa  100%] Font scale button
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFF5F3FF),
+                            border = BorderStroke(1.5.dp, Color(0xFFC7D2FE)),
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { onFontSizeClick?.invoke() }
+                                .testTag("header_font_size_btn")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF6366F1)),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CloudDownload,
-                                        contentDescription = "Pull",
-                                        tint = Color(0xFF1D4ED8),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    if (isWide) {
-                                        Text(
-                                            text = "Pull",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF1D4ED8)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Push to Cloud button (emerald tint)
-                        if (onPushToCloudClick != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFECFDF5),
-                                border = BorderStroke(1.dp, Color(0xFFA7F3D0)),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onPushToCloudClick() }
-                                    .testTag("header_push_cloud_btn")
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.CloudUpload,
-                                        contentDescription = "Push",
-                                        tint = Color(0xFF047857),
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    if (isWide) {
-                                        Text(
-                                            text = "Push",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFF047857)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Log Outfit button (Purple 700 with + icon)
-                        if (onLogWearClick != null) {
-                            Button(
-                                onClick = onLogWearClick,
-                                shape = RoundedCornerShape(8.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF6B21A8),
-                                    contentColor = Color.White
-                                ),
-                                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
-                                modifier = Modifier
-                                    .height(32.dp)
-                                    .testTag("header_log_wear_btn")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(3.dp))
-                                Text(
-                                    text = if (isWide) "Log Outfit" else "Log",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-
-                        // Add Item button
-                        if (onAddItemClick != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFF059669),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onAddItemClick() }
-                                    .testTag("header_add_item_btn")
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = "Item",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp)
-                                    )
                                     Text(
-                                        text = "Item",
-                                        fontSize = 11.sp,
+                                        text = "Aa",
+                                        fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White
                                     )
                                 }
+                                Text(
+                                    text = "${(currentFontScale * 100).toInt()}%",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900
+                                )
                             }
                         }
 
-                        // Google NotebookLM Knowledge Base export button
-                        if (onNotebookLmClick != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFEEF2FF),
-                                border = BorderStroke(1.dp, Color(0xFFC7D2FE)),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onNotebookLmClick() }
-                                    .testTag("header_notebooklm_btn")
+                        // [📱 App  🟢] Local-first status pill
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFECFDF5),
+                            border = BorderStroke(1.5.dp, Color(0xFFA7F3D0)),
+                            modifier = Modifier.testTag("header_app_status_pill")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(3.dp)
-                                ) {
-                                    Text("📚", fontSize = 11.sp)
-                                    Text(
-                                        text = "NotebookLM",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = BrandIndigo
-                                    )
-                                }
-                            }
-                        }
-
-                        // Font Size Switcher button (Aa)
-                        if (onFontSizeClick != null) {
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Color(0xFFF1F5F9),
-                                border = BorderStroke(1.dp, Slate200),
-                                modifier = Modifier
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onFontSizeClick() }
-                                    .testTag("header_font_size_btn")
-                            ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 7.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Aa",
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        color = Slate800
-                                    )
-                                }
+                                Icon(
+                                    imageVector = Icons.Default.PhoneAndroid,
+                                    contentDescription = null,
+                                    tint = Color(0xFF059669),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Text(
+                                    text = "App",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF065F46)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF10B981))
+                                )
                             }
                         }
                     }
@@ -568,7 +400,7 @@ fun AppBottomNavigationBar(
                         tab = AppTab.CLOSET,
                         title = "Closet",
                         icon = Icons.Default.Checkroom,
-                        badge = if (clothesCount > 0) clothesCount.toString() else null,
+                        badge = null,
                         activeColor = BrandPurple,
                         testTag = "nav_tab_closet"
                     ),
@@ -583,14 +415,14 @@ fun AppBottomNavigationBar(
                     NavTabSpec(
                         tab = AppTab.JOURNAL,
                         title = "Journal",
-                        icon = Icons.Default.Description,
-                        badge = if (journalCount > 0) journalCount.toString() else null,
+                        icon = Icons.AutoMirrored.Filled.MenuBook,
+                        badge = null,
                         activeColor = BrandIndigo,
                         testTag = "nav_tab_journal"
                     ),
                     NavTabSpec(
                         tab = AppTab.DRILLDOWN,
-                        title = "Drill-Down",
+                        title = "Reports",
                         icon = Icons.Default.AccountTree,
                         badge = null,
                         activeColor = BrandEmerald,
@@ -598,7 +430,7 @@ fun AppBottomNavigationBar(
                     ),
                     NavTabSpec(
                         tab = AppTab.ADVISOR,
-                        title = "AI Styling",
+                        title = "AI (Paused)",
                         icon = Icons.Default.AutoAwesome,
                         badge = null,
                         activeColor = BrandAmber,

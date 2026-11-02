@@ -16,9 +16,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -102,8 +105,10 @@ fun JunctionAIModal(
     ) {
         Surface(
             modifier = Modifier
+                .widthIn(min = 320.dp, max = 620.dp)
                 .fillMaxWidth(0.95f)
-                .fillMaxHeight(0.90f)
+                .heightIn(max = 720.dp)
+                .wrapContentHeight()
                 .testTag("junction_ai_modal"),
             shape = RoundedCornerShape(24.dp),
             color = Color.White,

@@ -75,8 +75,10 @@ object DrilldownUtils {
             "wearing frequency(how many times legacy washed)" -> {
                 garment.wearingFrequency.toString()
             }
-            "Last Washed" -> {
-                garment.lastWashed.ifBlank { "undefined" }
+            "Last Washed", "last_wash_date", "lastWashed" -> {
+                val stats = calculateGarmentStats(garment.id, junctions)
+                val lw = garment.lastWashed.ifBlank { stats.latestWashDate }
+                lw.ifBlank { "undefined" }
             }
             "created" -> {
                 garment.created.ifBlank { "undefined" }
@@ -154,9 +156,9 @@ class ReportPresetService(private val context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
-        const val PREFS_NAME = "wardrobe_drilldown_presets_v4"
-        const val PRESETS_KEY = "custom_presets_json_v4"
-        const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v4"
+        const val PREFS_NAME = "wardrobe_drilldown_presets_v5"
+        const val PRESETS_KEY = "custom_presets_json_v5"
+        const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v5"
     }
 
     private fun loadPresetsFromAsset(): List<DrillPreset> {
@@ -223,80 +225,31 @@ class ReportPresetService(private val context: Context) {
                     )
                 )
             }
-
-            // CRITICAL NORMALIZATION & MERGE:
-            // 1. Guarantee "Normal / No Aircond: Upper Body (hot feeling)" (id = "preset-without-aircond-hot")
-            //    has the canonical tiers ["when without aircond: hot feeling", "Clothes Type"] and is never corrupted or lost!
-            val canonicalHotIndex = list.indexOfFirst {
-                it.id == "preset-without-aircond-hot" ||
-                it.groupTiers.contains("when without aircond: hot feeling") ||
-                (it.name.contains("without aircond", ignoreCase = true) && it.name.contains("hot", ignoreCase = true)) ||
-                (it.name.contains("no aircond", ignoreCase = true) && it.name.contains("hot", ignoreCase = true))
-            }
-            val canonicalHotPreset = DrillPreset(
-                id = "preset-without-aircond-hot",
-                name = "Normal / No Aircond: Upper Body (hot feeling)",
-                description = "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-                groupTiers = listOf("when without aircond: hot feeling", "Clothes Type"),
-                sortField = "Name",
-                sortOrder = "asc",
-                visibleFields = listOf(
-                    "Clothes Type",
-                    "when without aircond: hot feeling",
-                    "when without aircond: leg feeling",
-                    "material",
-                    "thick clothes"
-                )
-            )
-            if (canonicalHotIndex >= 0) {
-                list[canonicalHotIndex] = canonicalHotPreset
-            } else {
-                list.add(minOf(2, list.size), canonicalHotPreset)
-            }
-
-            // 2. Guarantee "Normal / No Aircond: Leg Feeling (not cold leg)" (id = "preset-without-aircond-leg")
-            val canonicalLegIndex = list.indexOfFirst {
-                it.id == "preset-without-aircond-leg" ||
-                it.groupTiers.contains("when without aircond: leg feeling") ||
-                (it.name.contains("without aircond", ignoreCase = true) && it.name.contains("leg", ignoreCase = true)) ||
-                (it.name.contains("no aircond", ignoreCase = true) && it.name.contains("leg", ignoreCase = true))
-            }
-            val canonicalLegPreset = DrillPreset(
-                id = "preset-without-aircond-leg",
-                name = "Normal / No Aircond: Leg Feeling (not cold leg)",
-                description = "Tier 1: when without aircond: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
-                groupTiers = listOf("when without aircond: leg feeling", "Clothes Type"),
-                sortField = "Name",
-                sortOrder = "asc",
-                visibleFields = listOf(
-                    "Clothes Type",
-                    "when without aircond: leg feeling",
-                    "when without aircond: hot feeling",
-                    "material",
-                    "thick clothes"
-                )
-            )
-            if (canonicalLegIndex >= 0) {
-                list[canonicalLegIndex] = canonicalLegPreset
-            } else {
-                list.add(minOf(3, list.size), canonicalLegPreset)
-            }
-
-            // 3. Ensure all 13 standard default presets are present
-            val existingIds = list.map { it.id }.toSet()
-            val existingNamesLower = list.map { it.name.trim().lowercase(java.util.Locale.ROOT) }.toSet()
-
-            val merged = list.toMutableList()
-            DEFAULT_DRILL_PRESETS.forEach { def ->
-                val nameLower = def.name.trim().lowercase(java.util.Locale.ROOT)
-                if (def.id !in existingIds && nameLower !in existingNamesLower) {
-                    merged.add(def)
-                }
-            }
-            merged
+            list
         } catch (e: Exception) {
-            DEFAULT_DRILL_PRESETS
+            emptyList()
         }
+    }
+
+    fun exportPresetsToJson(): String {
+        val array = JSONArray()
+        for (p in getPresets()) {
+            val obj = JSONObject()
+            obj.put("id", p.id)
+            obj.put("name", p.name)
+            obj.put("description", p.description)
+            obj.put("sortField", p.sortField)
+            obj.put("sortOrder", p.sortOrder)
+            obj.put("isCustom", p.isCustom)
+            val tiers = JSONArray()
+            p.groupTiers.forEach { tiers.put(it) }
+            obj.put("groupTiers", tiers)
+            val visible = JSONArray()
+            p.visibleFields.forEach { visible.put(it) }
+            obj.put("visibleFields", visible)
+            array.put(obj)
+        }
+        return array.toString(2)
     }
 
     fun getPresets(): List<DrillPreset> {
@@ -305,18 +258,11 @@ class ReportPresetService(private val context: Context) {
         if (!v4Json.isNullOrBlank()) {
             val parsed = parsePresetsJson(v4Json)
             if (parsed.isNotEmpty()) {
-                // Ensure default No Aircond presets are persisted back if they were missing
-                try {
-                    val rawCount = JSONArray(v4Json).length()
-                    if (parsed.size > rawCount) {
-                        savePresets(parsed)
-                    }
-                } catch (_: Exception) {}
                 return parsed
             }
         }
 
-        // 2. Try restored file in filesDir (from ZIP restore)
+        // 2. Try restored file in filesDir
         try {
             val f = java.io.File(context.filesDir, "drilldown_presets.json")
             if (f.exists() && f.length() > 10) {
@@ -329,29 +275,20 @@ class ReportPresetService(private val context: Context) {
             }
         } catch (_: Exception) {}
 
-        // 3. Try v3 SharedPreferences (from previous versions or backup restore)
-        try {
-            val v3Prefs = context.getSharedPreferences("wardrobe_drilldown_presets_v3", Context.MODE_PRIVATE)
-            val v3Json = v3Prefs.getString("custom_presets_json_v3", null)
-            if (!v3Json.isNullOrBlank()) {
-                val parsed = parsePresetsJson(v3Json)
-                if (parsed.isNotEmpty()) {
-                    savePresets(parsed)
-                    return parsed
-                }
-            }
-        } catch (_: Exception) {}
-
-        // 4. Fallback to asset drilldown_presets.json
+        // 3. Fallback to asset drilldown_presets.json or default 15 presets
         val fromAsset = loadPresetsFromAsset()
-        savePresets(fromAsset)
-        return fromAsset
+        val result = if (fromAsset.isNotEmpty()) fromAsset else DEFAULT_DRILL_PRESETS
+        savePresets(result)
+        return result
     }
 
     fun importPresetsFromJson(jsonStr: String): List<DrillPreset> {
         val parsed = parsePresetsJson(jsonStr)
-        savePresets(parsed)
-        return parsed
+        if (parsed.isNotEmpty()) {
+            savePresets(parsed)
+            return parsed
+        }
+        return getPresets()
     }
 
     fun savePresets(presets: List<DrillPreset>) {

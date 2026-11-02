@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -112,8 +115,10 @@ fun PreviousEntriesModal(
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(0.96f)
-                .fillMaxHeight(0.90f)
+                .widthIn(min = 320.dp, max = 600.dp)
+                .fillMaxWidth(0.95f)
+                .heightIn(max = 720.dp)
+                .wrapContentHeight()
                 .testTag("previous_entries_modal"),
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),

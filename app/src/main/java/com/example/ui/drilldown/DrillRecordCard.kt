@@ -37,8 +37,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -262,9 +265,10 @@ fun DrillRecordCard(
                 }
 
                 // Dynamic Preset Attributes (visible fields chips)
+                // Display ALL fields user selected in preset.visibleFields (without arbitrary take(4) limit)
                 val extraFields = remember(preset.visibleFields) {
                     preset.visibleFields.filter {
-                        it != "Name" && it != "Clothes Type" && it != "wash stated" && it != "price"
+                        it != "Name"
                     }
                 }
 
@@ -272,24 +276,46 @@ fun DrillRecordCard(
                     Spacer(modifier = Modifier.height(8.dp))
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        extraFields.take(4).forEach { fieldKey ->
+                        extraFields.forEach { fieldKey ->
                             val value = DrilldownUtils.getFieldValue(garment, fieldKey, junctions)
                             if (value != "(Not specified)" && value.isNotBlank()) {
                                 val fieldLabel = ALL_AVAILABLE_FIELDS.find { it.key == fieldKey }?.label ?: fieldKey
                                 val isUndefined = value.equals("undefined", ignoreCase = true)
                                 Surface(
                                     color = if (isUndefined) Color(0xFFF8FAFC) else Color(0xFFF1F5F9),
-                                    shape = RoundedCornerShape(6.dp)
+                                    shape = RoundedCornerShape(6.dp),
+                                    border = androidx.compose.foundation.BorderStroke(
+                                        width = 1.dp,
+                                        color = if (isUndefined) Color(0xFFE2E8F0) else Color(0xFFCBD5E1)
+                                    )
                                 ) {
                                     Text(
-                                        text = "$fieldLabel: $value",
-                                        fontSize = 10.sp,
-                                        fontStyle = if (isUndefined) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
-                                        color = if (isUndefined) Slate400 else Slate600,
-                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        text = buildAnnotatedString {
+                                            withStyle(
+                                                SpanStyle(
+                                                    color = Color(0xFF6D28D9), // Vibrant purple for Field label
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 10.sp
+                                                )
+                                            ) {
+                                                append(fieldLabel)
+                                                append(": ")
+                                            }
+                                            withStyle(
+                                                SpanStyle(
+                                                    color = if (isUndefined) Slate400 else Color(0xFF0F172A), // Slate 900 distinct dark text for Data value
+                                                    fontWeight = if (isUndefined) FontWeight.Normal else FontWeight.SemiBold,
+                                                    fontSize = 10.sp,
+                                                    fontStyle = if (isUndefined) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal
+                                                )
+                                            ) {
+                                                append(value)
+                                            }
+                                        },
+                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
                                     )
                                 }
                             }
