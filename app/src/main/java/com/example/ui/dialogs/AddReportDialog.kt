@@ -118,7 +118,7 @@ data class OutfitGarmentEntry(
     val washStated: String = "need wash" // "need wash" or "Clean"
 )
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun AddReportDialog(
     clothes: List<GarmentEntity>,
@@ -139,6 +139,7 @@ fun AddReportDialog(
         val raw = initialReport?.wearDate?.ifBlank { todayIso } ?: todayIso
         mutableStateOf(com.example.util.CalendarCalculations.normalizeDate(raw).ifBlank { todayIso })
     }
+    var showWearDatePicker by remember { mutableStateOf(false) }
 
     val formatDisplayDate: (String) -> String = { iso ->
         val clean = com.example.util.CalendarCalculations.normalizeDate(iso)
@@ -218,28 +219,41 @@ fun AddReportDialog(
 
     val getFieldExplain: (String) -> String = { key ->
         val clean = key.trim()
-        val cUpper = clean.uppercase()
-        val cSnake = clean.replace(" ", "_").uppercase()
-        val cLower = clean.lowercase()
-        val cSnakeLower = clean.replace(" ", "_").lowercase()
-        val cNoSpaceLower = clean.replace(" ", "").lowercase()
-        reportFieldExplanations[clean]
+        val cUpper = clean.uppercase(Locale.ROOT)
+        val cSnake = clean.replace(" ", "_").uppercase(Locale.ROOT)
+        val cLower = clean.lowercase(Locale.ROOT)
+        val cSnakeLower = clean.replace(" ", "_").lowercase(Locale.ROOT)
+        val cNoSpaceLower = clean.replace(" ", "").lowercase(Locale.ROOT)
+        val direct = reportFieldExplanations[clean]
             ?: reportFieldExplanations[cUpper]
             ?: reportFieldExplanations[cSnake]
             ?: reportFieldExplanations[cLower]
             ?: reportFieldExplanations[cSnakeLower]
             ?: reportFieldExplanations[cNoSpaceLower]
-            ?: ""
+        if (!direct.isNullOrBlank()) {
+            direct
+        } else {
+            val normTarget = clean.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+            var matched = ""
+            for ((k, v) in reportFieldExplanations) {
+                val normK = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                if (normTarget == normK && v.isNotBlank()) {
+                    matched = v
+                    break
+                }
+            }
+            matched
+        }
     }
 
     val setFieldExplain: (String, String) -> Unit = { key, newVal ->
         val clean = key.trim()
-        val cUpper = clean.uppercase()
-        val cSnake = clean.replace(" ", "_").uppercase()
         reportFieldExplanations[clean] = newVal
-        reportFieldExplanations[cUpper] = newVal
-        reportFieldExplanations[cSnake] = newVal
-        reportFieldExplanations[clean.lowercase()] = newVal
+        reportFieldExplanations[clean.lowercase(Locale.ROOT)] = newVal
+        reportFieldExplanations[clean.uppercase(Locale.ROOT)] = newVal
+        reportFieldExplanations[clean.replace(" ", "_")] = newVal
+        reportFieldExplanations[clean.replace(" ", "_").lowercase(Locale.ROOT)] = newVal
+        reportFieldExplanations[clean.replace(" ", "").lowercase(Locale.ROOT)] = newVal
     }
 
     val isFieldExplainExpanded: (String) -> Boolean = { key ->
@@ -300,6 +314,7 @@ fun AddReportDialog(
         list
     }
     var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
+    var fullScreenGarmentPhotos by remember { mutableStateOf<List<String>?>(null) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetMultipleContents()
@@ -337,73 +352,88 @@ fun AddReportDialog(
 
         val isExplainField = fieldKey.endsWith(" explain", ignoreCase = true) || fieldKey.contains("explain", ignoreCase = true)
         val baseKey = if (isExplainField) {
-            fieldKey.substringBeforeLast(" explain", "").ifBlank { fieldKey.removeSuffix(" explain") }.trim()
+            val stripped = fieldKey.replace("(?i)\\s*explain$".toRegex(), "").trim()
+            stripped.ifBlank { fieldKey.trim() }
         } else {
             fieldKey.trim()
         }
+        val targetNorm = baseKey.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
         val candidateKeys = listOf(
             baseKey,
             "${baseKey}_explain",
-            baseKey.lowercase(),
-            "${baseKey.lowercase()}_explain",
+            baseKey.lowercase(Locale.ROOT),
+            "${baseKey.lowercase(Locale.ROOT)}_explain",
             baseKey.replace(" ", "_"),
             "${baseKey.replace(" ", "_")}_explain",
-            baseKey.replace(" ", "").lowercase(),
-            "${baseKey.replace(" ", "").lowercase()}_explain"
+            baseKey.replace(" ", "").lowercase(Locale.ROOT),
+            "${baseKey.replace(" ", "").lowercase(Locale.ROOT)}_explain"
         )
 
         existingReports.forEach { r ->
-            val v = when {
-                fieldKey.equals("NAME", ignoreCase = true) || fieldKey.equals("REPORT TITLE", ignoreCase = true) -> r.name
-                fieldKey.equals("WEAR DATE", ignoreCase = true) -> r.wearDate
-                fieldKey == "SHOULDER FEEL" -> r.shoulderFeel
-                fieldKey == "MID BREAST" -> r.midBreast
-                fieldKey == "NIGHT MID BREAST" -> r.nightMidBreast
-                fieldKey == "SWEAT" -> r.sweat
-                fieldKey == "NIGHT SWEAT" -> r.nightSweat
-                fieldKey == "LEG FEEL" -> r.legFeel
-                fieldKey == "NIGHT LEG FEEL" -> r.nightLegFeel
-                fieldKey == "REPORT DETAIL" -> r.reportDetail
-                isExplainField -> {
-                    try {
-                        val obj = org.json.JSONObject(r.customFields)
-                        val sub = obj.optJSONObject("_fieldExplanations")
-                        var found = ""
-                        if (sub != null) {
-                            for (k in candidateKeys) {
+            if (isExplainField) {
+                try {
+                    val obj = org.json.JSONObject(r.customFields)
+                    val sub = obj.optJSONObject("_fieldExplanations")
+                    if (sub != null) {
+                        val subKeys = sub.keys()
+                        while (subKeys.hasNext()) {
+                            val k = subKeys.next()
+                            val normK = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                            if (normK == targetNorm || normK == "${targetNorm}explain" || normK == "explain$targetNorm") {
                                 val s = sub.optString(k, "").trim()
-                                if (s.isNotBlank() && s != "No data" && s != "N/A") {
-                                    found = s
-                                    break
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                    countMap[s] = (countMap[s] ?: 0) + 1
+                                    val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
+                                    val src = if (gNames.isNotEmpty()) "👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})" else "📅 记录: ${r.name}"
+                                    sourcesMap.getOrPut(s) { mutableSetOf() }.add(src)
                                 }
                             }
                         }
-                        if (found.isBlank()) {
-                            for (k in candidateKeys) {
+                    }
+                    val objKeys = obj.keys()
+                    while (objKeys.hasNext()) {
+                        val k = objKeys.next()
+                        if (k.endsWith("_explain", ignoreCase = true)) {
+                            val normK = k.removeSuffix("_explain").lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                            if (normK == targetNorm) {
                                 val s = obj.optString(k, "").trim()
-                                if (s.isNotBlank() && s != "No data" && s != "N/A") {
-                                    found = s
-                                    break
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                    countMap[s] = (countMap[s] ?: 0) + 1
+                                    val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
+                                    val src = if (gNames.isNotEmpty()) "👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})" else "📅 记录: ${r.name}"
+                                    sourcesMap.getOrPut(s) { mutableSetOf() }.add(src)
                                 }
                             }
                         }
-                        found
-                    } catch (_: Exception) { "" }
-                }
-                else -> {
-                    try {
-                        org.json.JSONObject(r.customFields).optString(fieldKey, "")
-                    } catch (_: Exception) { "" }
-                }
-            }.trim()
+                    }
+                } catch (_: Exception) {}
+            } else {
+                val v = when {
+                    fieldKey.equals("NAME", ignoreCase = true) || fieldKey.equals("REPORT TITLE", ignoreCase = true) -> r.name
+                    fieldKey.equals("WEAR DATE", ignoreCase = true) -> r.wearDate
+                    fieldKey == "SHOULDER FEEL" -> r.shoulderFeel
+                    fieldKey == "MID BREAST" -> r.midBreast
+                    fieldKey == "NIGHT MID BREAST" -> r.nightMidBreast
+                    fieldKey == "SWEAT" -> r.sweat
+                    fieldKey == "NIGHT SWEAT" -> r.nightSweat
+                    fieldKey == "LEG FEEL" -> r.legFeel
+                    fieldKey == "NIGHT LEG FEEL" -> r.nightLegFeel
+                    fieldKey == "REPORT DETAIL" -> r.reportDetail
+                    else -> {
+                        try {
+                            org.json.JSONObject(r.customFields).optString(fieldKey, "")
+                        } catch (_: Exception) { "" }
+                    }
+                }.trim()
 
-            if (v.isNotBlank() && v != "No data" && v != "N/A") {
-                countMap[v] = (countMap[v] ?: 0) + 1
-                val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase()] ?: emptySet()
-                if (gNames.isNotEmpty()) {
-                    sourcesMap.getOrPut(v) { mutableSetOf() }.add("👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})")
-                } else {
-                    sourcesMap.getOrPut(v) { mutableSetOf() }.add("📅 记录: ${r.name}")
+                if (v.isNotBlank() && v != "No data" && v != "N/A") {
+                    countMap[v] = (countMap[v] ?: 0) + 1
+                    val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
+                    if (gNames.isNotEmpty()) {
+                        sourcesMap.getOrPut(v) { mutableSetOf() }.add("👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})")
+                    } else {
+                        sourcesMap.getOrPut(v) { mutableSetOf() }.add("📅 记录: ${r.name}")
+                    }
                 }
             }
         }
@@ -411,34 +441,24 @@ fun AddReportDialog(
         // Also check garment explanations for explanation fields
         if (isExplainField) {
             clothes.forEach { g ->
-                var found = ""
                 try {
                     val obj = org.json.JSONObject(g.customFields)
                     val sub = obj.optJSONObject("_fieldExplanations")
                     if (sub != null) {
-                        for (k in candidateKeys) {
-                            val s = sub.optString(k, "").trim()
-                            if (s.isNotBlank() && s != "No data" && s != "N/A") {
-                                found = s
-                                break
-                            }
-                        }
-                    }
-                    if (found.isBlank()) {
-                        for (k in candidateKeys) {
-                            val s = obj.optString(k, "").trim()
-                            if (s.isNotBlank() && s != "No data" && s != "N/A") {
-                                found = s
-                                break
+                        val subKeys = sub.keys()
+                        while (subKeys.hasNext()) {
+                            val k = subKeys.next()
+                            val normK = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                            if (normK == targetNorm || normK == "${targetNorm}explain" || normK == "explain$targetNorm") {
+                                val s = sub.optString(k, "").trim()
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                    countMap[s] = (countMap[s] ?: 0) + 1
+                                    sourcesMap.getOrPut(s) { mutableSetOf() }.add("👕 衣服: ${g.name} (${g.clothesType})")
+                                }
                             }
                         }
                     }
                 } catch (_: Exception) {}
-
-                if (found.isNotBlank() && found != "No data" && found != "N/A") {
-                    countMap[found] = (countMap[found] ?: 0) + 1
-                    sourcesMap.getOrPut(found) { mutableSetOf() }.add("👕 衣服: ${g.name} (${g.clothesType})")
-                }
             }
         }
 
@@ -493,6 +513,57 @@ fun AddReportDialog(
             fieldKey == "REPORT DETAIL" -> if (countMap.isEmpty()) listOf(
                 "Comprehensive wearing notes, weather, activities..."
             ).forEach { countMap[it] = 1 }
+            isExplainField -> {
+                when (targetNorm) {
+                    "shoulderfeel" -> if (countMap.isEmpty()) listOf(
+                        "非细肩带/宽肩设计有效分散了肩部受力与压迫感，无勒痕",
+                        "the not diao dai make the shoulder no so irrate and pain.",
+                        "由于肩带偏细或内衣尺码偏紧，连续穿戴数小时后勒肩部微疼",
+                        "肩部活动自如，领口剪裁贴合无摩擦"
+                    ).forEach { countMap[it] = 1 }
+                    "midbreast" -> if (countMap.isEmpty()) listOf(
+                        "白天mid breast体感- 聚拢设计衣服加聚拢内衣，这款衣服胸前变成紧，中午聚热， 但是还是胸型好看因为聚拢center chest",
+                        "聚拢设计衣服加聚拢内衣，胸前紧致，中午聚热，但是胸型饱满",
+                        "自然承托无束缚，透气轻薄，胸前不闷热",
+                        "下围松紧适中，久坐无压迫感"
+                    ).forEach { countMap[it] = 1 }
+                    "nightmidbreast" -> if (countMap.isEmpty()) listOf(
+                        "晚上mid breast体感- 夜晚无钢圈内衣，胸前放松舒适",
+                        "夜晚居家宽松内衣，彻底解开束缚",
+                        "夜晚温度降低，胸前不再闷热，舒适度提升"
+                    ).forEach { countMap[it] = 1 }
+                    "sweat" -> if (countMap.isEmpty()) listOf(
+                        "白天流汗程度- 这款聚拢dress， 加聚拢bra，所以白天闷热流汗多",
+                        "中厚布料透气性一般，中午气温高时容易集汗",
+                        "雪纺/轻薄透气面料，排汗快，保持干爽",
+                        "静止环境下舒适，活动量大时后背容易出汗"
+                    ).forEach { countMap[it] = 1 }
+                    "nightsweat" -> if (countMap.isEmpty()) listOf(
+                        "晚上流汗程度- 夜间开风扇睡眠，体感干爽",
+                        "夜间开风扇/空调睡眠，排汗平稳，不黏腻",
+                        "夜晚气温舒适，完全无汗感"
+                    ).forEach { countMap[it] = 1 }
+                    "legfeel" -> if (countMap.isEmpty()) listOf(
+                        "白天腿感- 由于plain middle thick布料长，贴腿，所以汗多",
+                        "长裙内衬贴腿，走动时稍有束缚，中午较热",
+                        "裙摆宽松通风，腿部凉爽轻便"
+                    ).forEach { countMap[it] = 1 }
+                    "nightlegfeel" -> if (countMap.isEmpty()) listOf(
+                        "中长裙夜间风扇下稍凉，睡眠时需要盖薄毯",
+                        "保暖适度，夜间腿部体感舒适"
+                    ).forEach { countMap[it] = 1 }
+                    "reportdetail" -> if (countMap.isEmpty()) listOf(
+                        "全天穿戴舒适度综合体感记录与清洗建议",
+                        "不同时段温湿度变化与面料贴合度记录"
+                    ).forEach { countMap[it] = 1 }
+                    "weardate" -> if (countMap.isEmpty()) listOf(
+                        "记录穿戴的具体日期与天气环境背景"
+                    ).forEach { countMap[it] = 1 }
+                    "reporttitle" -> if (countMap.isEmpty()) listOf(
+                        "报告命名备注与穿戴场合说明"
+                    ).forEach { countMap[it] = 1 }
+                }
+            }
         }
 
         val dictFields = try { dictionaryService.getFields() } catch (_: Exception) { emptyList() }
@@ -624,7 +695,7 @@ fun AddReportDialog(
                         "${dateStr.ifBlank { todayIso }} · $garmentPart"
                     }
 
-                    // 1. REPORT TITLE * (Arranged first with permanent explain field below)
+                    // 1. WEAR DATE * (Arranged first with permanent explain field below)
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -632,7 +703,206 @@ fun AddReportDialog(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "REPORT TITLE *",
+                                text = "WEAR DATE (穿着日期)",
+                                fontSize = 11.sp,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                color = Slate700,
+                                letterSpacing = 0.5.sp
+                            )
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Slate100,
+                                modifier = Modifier.clickable {
+                                    wearDate = todayIso
+                                    if (isAutoNameMode) {
+                                        title = buildAutoTitle(todayIso, chosenGarments)
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = "设为今天 ($todayIso)",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate700,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(14.dp),
+                            color = Color.White,
+                            border = BorderStroke(1.5.dp, Color(0xFF6366F1).copy(alpha = 0.5f)),
+                            shadowElevation = 0.5.dp,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(14.dp))
+                                .clickable { showWearDatePicker = true }
+                                .testTag("input_wear_date")
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .background(Color(0xFFEEF2FF)),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarToday,
+                                            contentDescription = "Pick Wear Date",
+                                            tint = Color(0xFF4F46E5),
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    Column {
+                                        Text(
+                                            text = formatDisplayDate(wearDate),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate900,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = com.example.util.CalendarCalculations.normalizeDate(wearDate),
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily.Monospace,
+                                            color = Slate500
+                                        )
+                                    }
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color(0xFFEEF2FF),
+                                    border = BorderStroke(1.dp, Color(0xFFC7D2FE))
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.CalendarToday,
+                                            contentDescription = null,
+                                            tint = Color(0xFF4F46E5),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Text(
+                                            text = "Select Date",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF4F46E5)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Compose Material 3 Date Picker Dialog
+                        if (showWearDatePicker) {
+                            val initialEpochMillis = remember(wearDate) {
+                                val clean = com.example.util.CalendarCalculations.normalizeDate(wearDate)
+                                try {
+                                    if (clean.length >= 10) {
+                                        val parts = clean.substring(0, 10).split("-")
+                                        val y = parts[0].toIntOrNull() ?: 2026
+                                        val m = (parts[1].toIntOrNull() ?: 1) - 1
+                                        val d = parts[2].toIntOrNull() ?: 1
+                                        val cal = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                                        cal.set(y, m, d, 12, 0, 0)
+                                        cal.timeInMillis
+                                    } else System.currentTimeMillis()
+                                } catch (_: Exception) {
+                                    System.currentTimeMillis()
+                                }
+                            }
+                            val datePickerState = androidx.compose.material3.rememberDatePickerState(
+                                initialSelectedDateMillis = initialEpochMillis
+                            )
+                            androidx.compose.material3.DatePickerDialog(
+                                onDismissRequest = { showWearDatePicker = false },
+                                confirmButton = {
+                                    androidx.compose.material3.TextButton(
+                                        onClick = {
+                                            val millis = datePickerState.selectedDateMillis
+                                            if (millis != null) {
+                                                val cal = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+                                                cal.timeInMillis = millis
+                                                val y = cal.get(java.util.Calendar.YEAR)
+                                                val m = cal.get(java.util.Calendar.MONTH) + 1
+                                                val d = cal.get(java.util.Calendar.DAY_OF_MONTH)
+                                                val pickedIso = String.format(Locale.US, "%04d-%02d-%02d", y, m, d)
+                                                wearDate = pickedIso
+                                                if (isAutoNameMode) {
+                                                    title = buildAutoTitle(pickedIso, chosenGarments)
+                                                }
+                                            }
+                                            showWearDatePicker = false
+                                        }
+                                    ) {
+                                        Text("Confirm", fontWeight = FontWeight.Bold, color = Color(0xFF6366F1))
+                                    }
+                                },
+                                dismissButton = {
+                                    androidx.compose.material3.TextButton(onClick = { showWearDatePicker = false }) {
+                                        Text("Cancel", color = Slate600)
+                                    }
+                                }
+                            ) {
+                                androidx.compose.material3.DatePicker(state = datePickerState)
+                            }
+                        }
+
+                        // Permanent Explain Field below WEAR DATE
+                        val dateExplain = getFieldExplain("WEAR DATE")
+                        val isDateExpanded = isFieldExplainExpanded("WEAR DATE")
+                        ErgonomicExplainField(
+                            fieldKey = "WEAR DATE",
+                            fieldLabel = "WEAR DATE",
+                            value = dateExplain,
+                            onValueChange = {
+                                setFieldExplain("WEAR DATE", it)
+                            },
+                            isExpanded = isDateExpanded,
+                            onToggleExpand = {
+                                toggleFieldExplainExpanded("WEAR DATE")
+                            },
+                            allClothes = clothes,
+                            allReports = existingReports,
+                            allJunctions = (allJunctions + initialJunctions),
+                            dictionaryService = dictionaryService,
+                            onOpenPrevious = {
+                                activePreviousPicker = "WEAR DATE explain" to { picked ->
+                                    setFieldExplain("WEAR DATE", picked)
+                                }
+                            },
+                            modifier = Modifier.padding(top = 2.dp)
+                        )
+                    }
+
+                    // 2. NAME (REPORT TITLE · 自动命名) * (Arranged second with permanent explain field below)
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "NAME (REPORT TITLE · 自动命名)",
                                 fontSize = 11.sp,
                                 fontFamily = FontFamily.Monospace,
                                 fontWeight = FontWeight.Bold,
@@ -713,178 +983,6 @@ fun AddReportDialog(
                             onOpenPrevious = {
                                 activePreviousPicker = "REPORT TITLE explain" to { picked ->
                                     setFieldExplain("REPORT TITLE", picked)
-                                }
-                            },
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
-                    }
-
-                    // 2. WEAR DATE * (Arranged second with permanent explain field below)
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "WEAR DATE *",
-                                fontSize = 11.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Slate700,
-                                letterSpacing = 0.5.sp
-                            )
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Slate100,
-                                modifier = Modifier.clickable {
-                                    wearDate = todayIso
-                                    if (isAutoNameMode) {
-                                        title = buildAutoTitle(todayIso, chosenGarments)
-                                    }
-                                }
-                            ) {
-                                Text(
-                                    text = "设为今天 ($todayIso)",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Slate700,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-                        val openWearDatePicker = {
-                            try {
-                                val clean = com.example.util.CalendarCalculations.normalizeDate(wearDate)
-                                val cal = java.util.Calendar.getInstance()
-                                if (clean.length >= 10) {
-                                    val parts = clean.substring(0, 10).split("-")
-                                    if (parts.size == 3) {
-                                        val y = parts[0].toIntOrNull() ?: cal.get(java.util.Calendar.YEAR)
-                                        val m = (parts[1].toIntOrNull() ?: (cal.get(java.util.Calendar.MONTH) + 1)) - 1
-                                        val d = parts[2].toIntOrNull() ?: cal.get(java.util.Calendar.DAY_OF_MONTH)
-                                        cal.set(y, m, d)
-                                    }
-                                }
-                                android.app.DatePickerDialog(
-                                    context,
-                                    { _, y, m, d ->
-                                        val pickedIso = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d)
-                                        wearDate = pickedIso
-                                        if (isAutoNameMode) {
-                                            title = buildAutoTitle(pickedIso, chosenGarments)
-                                        }
-                                    },
-                                    cal.get(java.util.Calendar.YEAR),
-                                    cal.get(java.util.Calendar.MONTH),
-                                    cal.get(java.util.Calendar.DAY_OF_MONTH)
-                                ).show()
-                            } catch (_: Exception) {}
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(14.dp),
-                            color = Color.White,
-                            border = BorderStroke(1.5.dp, Color(0xFF6366F1).copy(alpha = 0.5f)),
-                            shadowElevation = 0.5.dp,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(14.dp))
-                                .clickable { openWearDatePicker() }
-                                .testTag("input_wear_date")
-                        ) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(38.dp)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Color(0xFFEEF2FF)),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.CalendarToday,
-                                            contentDescription = "Pick Wear Date",
-                                            tint = Color(0xFF4F46E5),
-                                            modifier = Modifier.size(18.dp)
-                                        )
-                                    }
-                                    Column {
-                                        Text(
-                                            text = formatDisplayDate(wearDate),
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Slate900,
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                        Text(
-                                            text = com.example.util.CalendarCalculations.normalizeDate(wearDate),
-                                            fontSize = 11.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = Slate500
-                                        )
-                                    }
-                                }
-
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color(0xFFF1F5F9),
-                                    border = BorderStroke(1.dp, Slate200)
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Text(
-                                            text = "Pick Date",
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Slate700
-                                        )
-                                        Icon(
-                                            Icons.AutoMirrored.Filled.ArrowForward,
-                                            contentDescription = null,
-                                            tint = Slate500,
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-
-                        // Permanent Explain Field below WEAR DATE
-                        val dateExplain = getFieldExplain("WEAR DATE")
-                        val isDateExpanded = isFieldExplainExpanded("WEAR DATE")
-                        ErgonomicExplainField(
-                            fieldKey = "WEAR DATE",
-                            fieldLabel = "WEAR DATE",
-                            value = dateExplain,
-                            onValueChange = {
-                                setFieldExplain("WEAR DATE", it)
-                            },
-                            isExpanded = isDateExpanded,
-                            onToggleExpand = {
-                                toggleFieldExplainExpanded("WEAR DATE")
-                            },
-                            allClothes = clothes,
-                            allReports = existingReports,
-                            allJunctions = (allJunctions + initialJunctions),
-                            dictionaryService = dictionaryService,
-                            onOpenPrevious = {
-                                activePreviousPicker = "WEAR DATE explain" to { picked ->
-                                    setFieldExplain("WEAR DATE", picked)
                                 }
                             },
                             modifier = Modifier.padding(top = 2.dp)
@@ -1180,29 +1278,76 @@ fun AddReportDialog(
                                                 modifier = Modifier.padding(14.dp),
                                                 verticalArrangement = Arrangement.spacedBy(10.dp)
                                             ) {
-                                                // Category pill + Garment Name
+                                                val gPhotos: List<String> = remember(item.garment.id, item.garment.pictures) {
+                                                    ImageUtils.parsePhotoList(item.garment.pictures)
+                                                }
+                                                val gFirstPhoto = remember(item.garment.pictures) {
+                                                    ImageUtils.resolveFirstValidPhoto(item.garment.pictures, context)?.let {
+                                                        ImageUtils.resolveImageModel(it, context)
+                                                    }
+                                                }
+
+                                                // Category pill + Garment Name + Photo Thumbnail
                                                 Row(
                                                     verticalAlignment = Alignment.CenterVertically,
-                                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                                    modifier = Modifier.fillMaxWidth()
                                                 ) {
-                                                    Surface(
-                                                        shape = RoundedCornerShape(8.dp),
-                                                        color = Color(0xFFF3E8FF)
+                                                    Box(
+                                                        modifier = Modifier
+                                                            .size(46.dp)
+                                                            .clip(RoundedCornerShape(10.dp))
+                                                            .background(Color(0xFFF8FAFC))
+                                                            .border(1.dp, Slate200, RoundedCornerShape(10.dp))
+                                                            .clickable {
+                                                                if (gPhotos.isNotEmpty()) {
+                                                                    fullScreenGarmentPhotos = gPhotos
+                                                                }
+                                                            },
+                                                        contentAlignment = Alignment.Center
                                                     ) {
-                                                        Text(
-                                                            text = item.garment.clothesType.ifBlank { "Item" },
-                                                            fontSize = 11.sp,
-                                                            fontWeight = FontWeight.Bold,
-                                                            color = Color(0xFF7C3AED),
-                                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                                                        )
+                                                        if (gFirstPhoto != null) {
+                                                            AsyncImage(
+                                                                model = gFirstPhoto,
+                                                                contentDescription = item.garment.name,
+                                                                contentScale = ContentScale.Fit,
+                                                                modifier = Modifier.fillMaxSize()
+                                                            )
+                                                        } else {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Checkroom,
+                                                                contentDescription = null,
+                                                                tint = Color(0xFF9333EA),
+                                                                modifier = Modifier.size(22.dp)
+                                                            )
+                                                        }
                                                     }
-                                                    Text(
-                                                        text = item.garment.name,
-                                                        fontWeight = FontWeight.ExtraBold,
-                                                        fontSize = 15.sp,
-                                                        color = Slate900
-                                                    )
+
+                                                    Column(modifier = Modifier.weight(1f)) {
+                                                        Row(
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                                        ) {
+                                                            Surface(
+                                                                shape = RoundedCornerShape(8.dp),
+                                                                color = Color(0xFFF3E8FF)
+                                                            ) {
+                                                                Text(
+                                                                    text = item.garment.clothesType.ifBlank { "Item" },
+                                                                    fontSize = 11.sp,
+                                                                    fontWeight = FontWeight.Bold,
+                                                                    color = Color(0xFF7C3AED),
+                                                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                                                )
+                                                            }
+                                                            Text(
+                                                                text = item.garment.name,
+                                                                fontWeight = FontWeight.ExtraBold,
+                                                                fontSize = 15.sp,
+                                                                color = Slate900
+                                                            )
+                                                        }
+                                                    }
                                                 }
 
                                                 // Material · Thickness subtitle
@@ -1808,6 +1953,14 @@ fun AddReportDialog(
             photos = photoUrls.toList(),
             initialIndex = viewingPhotoIndex ?: 0,
             onDismiss = { viewingPhotoIndex = null }
+        )
+    }
+
+    if (fullScreenGarmentPhotos != null) {
+        com.example.ui.components.FullScreenImageViewerDialog(
+            photos = fullScreenGarmentPhotos ?: emptyList(),
+            initialIndex = 0,
+            onDismiss = { fullScreenGarmentPhotos = null }
         )
     }
 

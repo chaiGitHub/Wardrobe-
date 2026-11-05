@@ -1098,13 +1098,14 @@ private fun CalendarCellItem(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(
-                                        text = "Day ${lifecycleEntry.dayInCycle} unw...",
-                                        fontSize = 7.5.sp,
+                                        text = "Day ${lifecycleEntry.dayInCycle}",
+                                        fontSize = 8.sp,
                                         fontWeight = FontWeight.Bold,
                                         textAlign = TextAlign.Center,
                                         color = Color(0xFF92400E),
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Clip,
                                         modifier = Modifier.padding(horizontal = 1.dp, vertical = 1.5.dp)
                                     )
                                 }

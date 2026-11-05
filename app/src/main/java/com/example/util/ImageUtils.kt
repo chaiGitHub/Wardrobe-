@@ -370,6 +370,8 @@ object ImageUtils {
      * Parses JSON array string (of strings OR JSONObjects) or single path into a list of
      * candidate descriptor strings that `resolveImagePath` can resolve.
      */
+    fun parsePhotoUrls(photoJson: String?): List<String> = parsePhotoList(photoJson)
+
     fun parsePhotoList(photoJson: String?): List<String> {
         if (photoJson.isNullOrBlank()) return emptyList()
         val trimmed = photoJson.trim()

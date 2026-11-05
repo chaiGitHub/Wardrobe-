@@ -436,37 +436,33 @@ private fun ScenarioViewRow(
             .fillMaxWidth()
             .background(Slate100, RoundedCornerShape(8.dp))
             .padding(horizontal = 10.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Medium,
-                color = Slate600
-            )
-            Text(
-                text = value,
-                fontSize = 12.sp,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                color = Slate900
-            )
-        }
-        // Permanent explain field arranged beautifully below related scenario item
-        Row(
+        // 1. Scenario feeling label (e.g. hot feeling:)
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.SemiBold,
+            color = Slate600
+        )
+        // 2. Down: Value displayed on its own line for maximum horizontal space
+        Text(
+            text = value,
+            fontSize = 13.sp,
+            fontFamily = FontFamily.Monospace,
+            fontWeight = FontWeight.Bold,
+            color = Slate900,
+            modifier = Modifier.padding(start = 2.dp)
+        )
+        // 3 & 4. Down: Explain label and explain value card
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFAF5FF), RoundedCornerShape(6.dp))
                 .border(BorderStroke(0.5.dp, Color(0xFFF3E8FF)), RoundedCornerShape(6.dp))
-                .padding(horizontal = 8.dp, vertical = 5.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.Top
+                .padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(3.dp)
         ) {
             Text(
                 text = "${label.removeSuffix(":")} explain:",
@@ -477,11 +473,11 @@ private fun ScenarioViewRow(
             )
             Text(
                 text = if (!explanation.isNullOrBlank()) explanation else "No explain added",
-                fontSize = 11.sp,
+                fontSize = 12.sp,
                 fontStyle = if (explanation.isNullOrBlank()) androidx.compose.ui.text.font.FontStyle.Italic else androidx.compose.ui.text.font.FontStyle.Normal,
                 color = if (explanation.isNullOrBlank()) Slate400 else Color(0xFF6B21A8),
-                lineHeight = 15.sp,
-                modifier = Modifier.weight(1f)
+                lineHeight = 16.sp,
+                modifier = Modifier.padding(start = 2.dp)
             )
         }
     }

@@ -200,39 +200,6 @@ fun GarmentDetailDialog(
     var editSideBreastGatherBra by remember(garment) { mutableStateOf(garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }) }
     var editSideBreastSideOutBra by remember(garment) { mutableStateOf(garment.sideBreastSideOutBra) }
 
-    // 3 Environmental Scenarios
-    var editAircondHotFeeling by remember(garment) { mutableStateOf(garment.aircondHotFeeling) }
-    var editAircondHotExplain by remember(garment) { mutableStateOf(garment.aircondHotExplain) }
-    var editAircondLegFeeling by remember(garment) { mutableStateOf(garment.aircondLegFeeling) }
-    var editAircondLegExplain by remember(garment) { mutableStateOf(garment.aircondLegExplain) }
-
-    var editNoAircondHotFeeling by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
-    var editNoAircondHotExplain by remember(garment) { mutableStateOf(garment.noAircondHotExplain) }
-    var editNoAircondLegFeeling by remember(garment) { mutableStateOf(garment.noAircondLegFeeling) }
-    var editNoAircondLegExplain by remember(garment) { mutableStateOf(garment.noAircondLegExplain) }
-
-    var editFanSleepHotFeeling by remember(garment) { mutableStateOf(garment.fanSleepHotFeeling) }
-    var editFanSleepHotExplain by remember(garment) { mutableStateOf(garment.fanSleepHotExplain) }
-    var editFanSleepLegFeeling by remember(garment) { mutableStateOf(garment.fanSleepLegFeeling) }
-    var editFanSleepLegExplain by remember(garment) { mutableStateOf(garment.fanSleepLegExplain) }
-    var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
-    var editSitBreastGatherBra by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
-    var editSitBreastSideOutBra by remember(garment) { mutableStateOf(garment.sitBreastSideOutBra) }
-    var editCenterChest by remember(garment) { mutableStateOf(garment.standBreast) }
-    var editBeautiful by remember(garment) { mutableStateOf(garment.beautiful) }
-    var editBeautifulReason by remember(garment) { mutableStateOf(garment.beautifulReason) }
-
-    var editWet by remember(garment) { mutableStateOf(garment.wet.ifBlank { "dry" }) }
-    var editWetReason by remember(garment) { mutableStateOf(garment.wetReason) }
-    var editLongDress by remember(garment) { mutableStateOf(garment.longDress) }
-    var editMayThrow by remember(garment) { mutableStateOf(garment.mayThrow) }
-    var editWearingFrequency by remember(garment) { mutableStateOf(garment.wearingFrequency.toString()) }
-    var editTrackedAppWashes by remember(garment) { mutableStateOf(garment.trackedAppWashes.toString()) }
-
-    var editDescriptions by remember(garment) { mutableStateOf(garment.descriptions) }
-    var editDescriptions2 by remember(garment) { mutableStateOf(garment.descriptions2) }
-    var editLastCommentAction by remember(garment) { mutableStateOf(garment.lastComment) }
-
     // Field-level explanations (mapping fieldKey to explanation text) matching Web App _fieldExplanations
     val editFieldExplanations = remember(garment) {
         val map = mutableStateMapOf<String, String>()
@@ -261,6 +228,66 @@ fun GarmentDetailDialog(
         } catch (_: Exception) {}
         map
     }
+
+    fun getExplainFromMap(vararg keys: String): String {
+        for (k in keys) {
+            val v = editFieldExplanations[k]
+            if (!v.isNullOrBlank()) return v
+        }
+        for (k in keys) {
+            val norm = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+            for ((mk, mv) in editFieldExplanations) {
+                val normMk = mk.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                if (norm == normMk && mv.isNotBlank()) return mv
+            }
+        }
+        return ""
+    }
+
+    // 3 Environmental Scenarios
+    var editAircondHotFeeling by remember(garment) { mutableStateOf(garment.aircondHotFeeling) }
+    var editAircondHotExplain by remember(garment) {
+        mutableStateOf(garment.aircondHotExplain.ifBlank { getExplainFromMap("when with aircond: hot feeling", "when with aircond: hot explanation", "aircondHotExplain", "aircondHotFeeling") })
+    }
+    var editAircondLegFeeling by remember(garment) { mutableStateOf(garment.aircondLegFeeling) }
+    var editAircondLegExplain by remember(garment) {
+        mutableStateOf(garment.aircondLegExplain.ifBlank { getExplainFromMap("when with aircond: leg feeling", "when with aircond: leg explanation", "aircondLegExplain", "aircondLegFeeling") })
+    }
+
+    var editNoAircondHotFeeling by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
+    var editNoAircondHotExplain by remember(garment) {
+        mutableStateOf(garment.noAircondHotExplain.ifBlank { getExplainFromMap("when without aircond: hot feeling", "when without aircond: hot explanation", "noAircondHotExplain", "noAircondHotFeeling", "Hot at noon") })
+    }
+    var editNoAircondLegFeeling by remember(garment) { mutableStateOf(garment.noAircondLegFeeling) }
+    var editNoAircondLegExplain by remember(garment) {
+        mutableStateOf(garment.noAircondLegExplain.ifBlank { getExplainFromMap("when without aircond: leg feeling", "when without aircond: leg explanation", "noAircondLegExplain", "noAircondLegFeeling") })
+    }
+
+    var editFanSleepHotFeeling by remember(garment) { mutableStateOf(garment.fanSleepHotFeeling) }
+    var editFanSleepHotExplain by remember(garment) {
+        mutableStateOf(garment.fanSleepHotExplain.ifBlank { getExplainFromMap("when sleep under fan: hot feeling", "when sleep under fan: hot explanation", "fanSleepHotExplain", "fanSleepHotFeeling") })
+    }
+    var editFanSleepLegFeeling by remember(garment) { mutableStateOf(garment.fanSleepLegFeeling) }
+    var editFanSleepLegExplain by remember(garment) {
+        mutableStateOf(garment.fanSleepLegExplain.ifBlank { getExplainFromMap("when sleep under fan: leg feeling", "when sleep under fan: leg explanation", "fanSleepLegExplain", "fanSleepLegFeeling") })
+    }
+    var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
+    var editSitBreastGatherBra by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
+    var editSitBreastSideOutBra by remember(garment) { mutableStateOf(garment.sitBreastSideOutBra) }
+    var editCenterChest by remember(garment) { mutableStateOf(garment.standBreast) }
+    var editBeautiful by remember(garment) { mutableStateOf(garment.beautiful) }
+    var editBeautifulReason by remember(garment) { mutableStateOf(garment.beautifulReason) }
+
+    var editWet by remember(garment) { mutableStateOf(garment.wet.ifBlank { "dry" }) }
+    var editWetReason by remember(garment) { mutableStateOf(garment.wetReason) }
+    var editLongDress by remember(garment) { mutableStateOf(garment.longDress) }
+    var editMayThrow by remember(garment) { mutableStateOf(garment.mayThrow) }
+    var editWearingFrequency by remember(garment) { mutableStateOf(garment.wearingFrequency.toString()) }
+    var editTrackedAppWashes by remember(garment) { mutableStateOf(garment.trackedAppWashes.toString()) }
+
+    var editDescriptions by remember(garment) { mutableStateOf(garment.descriptions) }
+    var editDescriptions2 by remember(garment) { mutableStateOf(garment.descriptions2) }
+    var editLastCommentAction by remember(garment) { mutableStateOf(garment.lastComment) }
 
     val fieldExplanationsInView = remember(garment.customFields) {
         editFieldExplanations.toMap()
@@ -305,7 +332,8 @@ fun GarmentDetailDialog(
     // Photo URLs state — resolve valid local photos from ZIP backup or user uploads
     val photoUrls = remember(garment.pictures) {
         val resolved = ImageUtils.resolveAllValidPhotos(garment.pictures, context)
-        mutableStateListOf<String>().apply { addAll(resolved) }
+        val list = if (resolved.isNotEmpty()) resolved else ImageUtils.parsePhotoList(garment.pictures)
+        mutableStateListOf<String>().apply { addAll(list) }
     }
 
     // Photo picker launcher — persists chosen photos into internal storage filesDir/photos
@@ -557,18 +585,6 @@ fun GarmentDetailDialog(
         editSideBreast = garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }
         editSideBreastGatherBra = garment.sideBreastGatherBra.ifBlank { garment.sideBreastOk }
         editSideBreastSideOutBra = garment.sideBreastSideOutBra
-        editAircondHotFeeling = garment.aircondHotFeeling
-        editAircondHotExplain = garment.aircondHotExplain
-        editAircondLegFeeling = garment.aircondLegFeeling
-        editAircondLegExplain = garment.aircondLegExplain
-        editNoAircondHotFeeling = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
-        editNoAircondHotExplain = garment.noAircondHotExplain
-        editNoAircondLegFeeling = garment.noAircondLegFeeling
-        editNoAircondLegExplain = garment.noAircondLegExplain
-        editFanSleepHotFeeling = garment.fanSleepHotFeeling
-        editFanSleepHotExplain = garment.fanSleepHotExplain
-        editFanSleepLegFeeling = garment.fanSleepLegFeeling
-        editFanSleepLegExplain = garment.fanSleepLegExplain
         editSitBreast = garment.sitBreastGatherBra.ifBlank { garment.sitBreast }
         editSitBreastGatherBra = garment.sitBreastGatherBra.ifBlank { garment.sitBreast }
         editSitBreastSideOutBra = garment.sitBreastSideOutBra
@@ -606,6 +622,19 @@ fun GarmentDetailDialog(
                 }
             }
         } catch (_: Exception) {}
+
+        editAircondHotFeeling = garment.aircondHotFeeling
+        editAircondHotExplain = garment.aircondHotExplain.ifBlank { getExplainFromMap("when with aircond: hot feeling", "when with aircond: hot explanation", "aircondHotExplain", "aircondHotFeeling") }
+        editAircondLegFeeling = garment.aircondLegFeeling
+        editAircondLegExplain = garment.aircondLegExplain.ifBlank { getExplainFromMap("when with aircond: leg feeling", "when with aircond: leg explanation", "aircondLegExplain", "aircondLegFeeling") }
+        editNoAircondHotFeeling = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
+        editNoAircondHotExplain = garment.noAircondHotExplain.ifBlank { getExplainFromMap("when without aircond: hot feeling", "when without aircond: hot explanation", "noAircondHotExplain", "noAircondHotFeeling", "Hot at noon") }
+        editNoAircondLegFeeling = garment.noAircondLegFeeling
+        editNoAircondLegExplain = garment.noAircondLegExplain.ifBlank { getExplainFromMap("when without aircond: leg feeling", "when without aircond: leg explanation", "noAircondLegExplain", "noAircondLegFeeling") }
+        editFanSleepHotFeeling = garment.fanSleepHotFeeling
+        editFanSleepHotExplain = garment.fanSleepHotExplain.ifBlank { getExplainFromMap("when sleep under fan: hot feeling", "when sleep under fan: hot explanation", "fanSleepHotExplain", "fanSleepHotFeeling") }
+        editFanSleepLegFeeling = garment.fanSleepLegFeeling
+        editFanSleepLegExplain = garment.fanSleepLegExplain.ifBlank { getExplainFromMap("when sleep under fan: leg feeling", "when sleep under fan: leg explanation", "fanSleepLegExplain", "fanSleepLegFeeling") }
         isEditing = false
     }
 
@@ -613,13 +642,14 @@ fun GarmentDetailDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .testTag("garment_detail_dialog"),
-            color = Color.White
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("garment_detail_dialog"),
+                color = Color.White
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
 
                 // ==============================
                 // TOP HEADER BAR
@@ -2582,7 +2612,7 @@ fun GarmentDetailDialog(
                             }
                         }
 
-                        // Custom Attributes Section (Matching IMG_9729.png)
+                        // Custom Attributes Section (Filtered to hide internal metadata like _fieldExplanations)
                         var customAttrsMap by remember(garment.customFields) {
                             val map = linkedMapOf<String, String>()
                             try {
@@ -2591,8 +2621,16 @@ fun GarmentDetailDialog(
                                     val keys = obj.keys()
                                     while (keys.hasNext()) {
                                         val k = keys.next()
-                                        if (!k.startsWith("_") && !k.endsWith("_explain") && k !in setOf("id", "fields", "createdTime", "customFields", "extraAttributes")) {
-                                            map[k] = obj.optString(k, "")
+                                        val v = obj.optString(k, "")
+                                        val isInternalKey = k.startsWith("_") ||
+                                                k.endsWith("_explain", ignoreCase = true) ||
+                                                k.contains("fieldExplanation", ignoreCase = true) ||
+                                                k.contains("definition", ignoreCase = true) ||
+                                                k in setOf("id", "fields", "createdTime", "customFields", "extraAttributes", "tags", "pictures", "photos", "aiReports", "reports")
+                                        val rawVal = obj.opt(k)?.toString() ?: ""
+                                        val isComplexJson = rawVal.trim().startsWith("{") || rawVal.trim().startsWith("[") || obj.optJSONObject(k) != null || obj.optJSONArray(k) != null
+                                        if (!isInternalKey && !isComplexJson && v.isNotBlank()) {
+                                            map[k] = v
                                         }
                                     }
                                 }
@@ -2664,6 +2702,9 @@ fun GarmentDetailDialog(
                             } else {
                                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                     customAttrsMap.forEach { (attrKey, attrVal) ->
+                                        if (attrKey.startsWith("_") || attrKey.contains("fieldExplanation", ignoreCase = true) || attrVal.trim().startsWith("{")) {
+                                            return@forEach
+                                        }
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
                                             color = Color.White,
@@ -2697,7 +2738,11 @@ fun GarmentDetailDialog(
                                                         val updated = customAttrsMap.toMutableMap().apply { remove(attrKey) }
                                                         customAttrsMap = updated
                                                         editFieldExplanations.remove(attrKey.removeSuffix("_explain"))
-                                                        val json = JSONObject(updated).toString()
+                                                        val fullObj = try {
+                                                            if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
+                                                        } catch (_: Exception) { JSONObject() }
+                                                        fullObj.remove(attrKey)
+                                                        val json = fullObj.toString()
                                                         onSaveGarment?.invoke(garment.copy(customFields = json))
                                                     },
                                                     modifier = Modifier.size(28.dp)
@@ -2748,7 +2793,11 @@ fun GarmentDetailDialog(
                                             if (k.isNotEmpty() && v.isNotEmpty()) {
                                                 val updated = customAttrsMap.toMutableMap().apply { put(k, v) }
                                                 customAttrsMap = updated
-                                                val json = JSONObject(updated).toString()
+                                                val fullObj = try {
+                                                    if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
+                                                } catch (_: Exception) { JSONObject() }
+                                                fullObj.put(k, v)
+                                                val json = fullObj.toString()
                                                 onSaveGarment?.invoke(garment.copy(customFields = json))
                                                 newAttrName = ""
                                                 newAttrValue = ""
@@ -3341,15 +3390,16 @@ fun GarmentDetailDialog(
                 }
             }
         }
-    }
 
-    if (viewingPhotoIndex != null) {
-        com.example.ui.components.FullScreenImageViewerDialog(
-            photos = photoUrls.toList(),
-            initialIndex = viewingPhotoIndex ?: 0,
-            onDismiss = { viewingPhotoIndex = null }
-        )
+        if (viewingPhotoIndex != null) {
+            com.example.ui.components.FullScreenImageViewerOverlay(
+                photos = photoUrls.toList(),
+                initialIndex = viewingPhotoIndex ?: 0,
+                onDismiss = { viewingPhotoIndex = null }
+            )
+        }
     }
+}
 
     // Previous Entries Modal
     activePreviousPicker?.let { (fieldKey, onValueSelected) ->

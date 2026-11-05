@@ -164,6 +164,7 @@ fun SessionDetailModal(
 
     // Outfit Photos state (resolved against internal storage photos if present)
     var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
+    var fullScreenGarmentPhotos by remember { mutableStateOf<List<String>?>(null) }
     val outfitPhotos = remember(report.id, report.pictures) {
         val list = mutableStateListOf<String>()
         list.addAll(ImageUtils.resolveAllValidPhotos(report.pictures, context))
@@ -195,6 +196,21 @@ fun SessionDetailModal(
             }
         } catch (_: Exception) {}
         map
+    }
+
+    fun getReportExplain(vararg keys: String): String {
+        for (k in keys) {
+            val v = reportExplanations[k]
+            if (!v.isNullOrBlank()) return v
+        }
+        for (k in keys) {
+            val norm = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+            for ((mk, mv) in reportExplanations) {
+                val normMk = mk.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
+                if (norm == normMk && mv.isNotBlank()) return mv
+            }
+        }
+        return ""
     }
 
     val parsedTags = remember(report.tags) {
@@ -345,13 +361,14 @@ fun SessionDetailModal(
         onDismissRequest = onClose,
         properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
     ) {
-        Surface(
-            modifier = Modifier
-                .fillMaxSize()
-                .testTag("session_detail_modal"),
-            color = Color(0xFFF8FAFC)
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("session_detail_modal"),
+                color = Color(0xFFF8FAFC)
+            ) {
+                Column(modifier = Modifier.fillMaxSize()) {
                 // 1. TOP BAR (IMG_9720: <- | REPORT Mon, Sep 21 / Title | +AI | Edit | Delete | Close)
                 Surface(
                     color = Color.White,
@@ -834,6 +851,9 @@ fun SessionDetailModal(
                                         val garment = clothes.find { it.id == junction.clothesId }
                                             ?: clothes.find { junction.clothesTitle.isNotBlank() && it.name.equals(junction.clothesTitle, ignoreCase = true) }
                                             ?: clothes.find { junction.clothesId.isNotBlank() && it.name.equals(junction.clothesId, ignoreCase = true) }
+                                        val garmentPhotos: List<String> = remember(garment?.id, garment?.pictures) {
+                                            if (garment != null) ImageUtils.parsePhotoList(garment.pictures) else emptyList()
+                                        }
                                         val photoModel = remember(garment?.pictures) {
                                             ImageUtils.resolveFirstValidPhoto(garment?.pictures, context)?.let {
                                                 ImageUtils.resolveImageModel(it, context)
@@ -861,9 +881,15 @@ fun SessionDetailModal(
                                                         modifier = Modifier
                                                             .size(64.dp)
                                                             .clip(RoundedCornerShape(14.dp))
-                                                            .background( Color(0xFFF8FAFC))
+                                                            .background(Color(0xFFF8FAFC))
                                                             .border(1.dp, Slate200, RoundedCornerShape(14.dp))
-                                                            .clickable { garment?.let { onSelectGarment(it) } },
+                                                            .clickable {
+                                                                if (garmentPhotos.isNotEmpty()) {
+                                                                    fullScreenGarmentPhotos = garmentPhotos
+                                                                } else {
+                                                                    garment?.let { onSelectGarment(it) }
+                                                                }
+                                                            },
                                                         contentAlignment = Alignment.Center
                                                     ) {
                                                         if (photoModel != null) {
@@ -1191,7 +1217,7 @@ fun SessionDetailModal(
                                 HorizontalDivider(color = Slate100)
 
                                 // SHOULDER FEEL box
-                                val shoulderExplain = reportExplanations["SHOULDER FEEL"] ?: reportExplanations["shoulderFeel"] ?: ""
+                                val shoulderExplain = getReportExplain("shoulder feel", "SHOULDER FEEL", "shoulderFeel")
                                 Surface(
                                     shape = RoundedCornerShape(16.dp),
                                     color = Color(0xFFF8FAFC),
@@ -1250,8 +1276,8 @@ fun SessionDetailModal(
                                     title = "MID BREAST",
                                     dayValue = report.midBreast,
                                     nightValue = report.nightMidBreast,
-                                    dayExplain = reportExplanations["MID BREAST"] ?: reportExplanations["midBreast"] ?: "",
-                                    nightExplain = reportExplanations["NIGHT MID BREAST"] ?: reportExplanations["nightMidBreast"] ?: ""
+                                    dayExplain = getReportExplain("mid breast", "MID BREAST", "midBreast"),
+                                    nightExplain = getReportExplain("night mid breast", "NIGHT MID BREAST", "nightMidBreast")
                                 )
 
                                 // SWEAT & BREATHABILITY box (Day & Night)
@@ -1259,8 +1285,8 @@ fun SessionDetailModal(
                                     title = "SWEAT & BREATHABILITY",
                                     dayValue = report.sweat,
                                     nightValue = report.nightSweat,
-                                    dayExplain = reportExplanations["SWEAT"] ?: reportExplanations["sweat"] ?: "",
-                                    nightExplain = reportExplanations["NIGHT SWEAT"] ?: reportExplanations["nightSweat"] ?: ""
+                                    dayExplain = getReportExplain("sweat", "SWEAT", "sweatProp"),
+                                    nightExplain = getReportExplain("night sweat", "NIGHT SWEAT", "nightSweat")
                                 )
 
                                 // LEG COMFORT box (Day & Night)
@@ -1268,12 +1294,12 @@ fun SessionDetailModal(
                                     title = "LEG COMFORT",
                                     dayValue = report.legFeel,
                                     nightValue = report.nightLegFeel,
-                                    dayExplain = reportExplanations["LEG FEEL"] ?: reportExplanations["legFeel"] ?: "",
-                                    nightExplain = reportExplanations["NIGHT LEG FEEL"] ?: reportExplanations["nightLegFeel"] ?: ""
+                                    dayExplain = getReportExplain("leg feel", "LEG FEEL", "legFeel"),
+                                    nightExplain = getReportExplain("night leg feel", "NIGHT LEG FEEL", "nightLegFeel")
                                 )
 
                                 if (report.reportDetail.isNotBlank()) {
-                                    val detailExplain = reportExplanations["REPORT DETAIL"] ?: reportExplanations["reportDetail"] ?: ""
+                                    val detailExplain = getReportExplain("report detail", "REPORT DETAIL", "reportDetail")
                                     Surface(
                                         shape = RoundedCornerShape(16.dp),
                                         color = Color(0xFFF8FAFC),
@@ -1991,15 +2017,24 @@ fun SessionDetailModal(
                 }
             }
         }
-    }
 
-    if (viewingPhotoIndex != null) {
-        com.example.ui.components.FullScreenImageViewerDialog(
-            photos = outfitPhotos.toList(),
-            initialIndex = viewingPhotoIndex ?: 0,
-            onDismiss = { viewingPhotoIndex = null }
-        )
+        if (viewingPhotoIndex != null) {
+            com.example.ui.components.FullScreenImageViewerOverlay(
+                photos = outfitPhotos.toList(),
+                initialIndex = viewingPhotoIndex ?: 0,
+                onDismiss = { viewingPhotoIndex = null }
+            )
+        }
+
+        if (fullScreenGarmentPhotos != null) {
+            com.example.ui.components.FullScreenImageViewerOverlay(
+                photos = fullScreenGarmentPhotos ?: emptyList(),
+                initialIndex = 0,
+                onDismiss = { fullScreenGarmentPhotos = null }
+            )
+        }
     }
+}
 
     // Add Environmental Attribute Dialog
     if (showAddAttributeDialog) {

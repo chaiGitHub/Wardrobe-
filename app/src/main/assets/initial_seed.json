@@ -1,148 +1,326 @@
 {
-  "version": "3.0",
-  "app": "Wardrobe & Wear Journal",
-  "updatedAt": "2026-10-31T12:00:00.000Z",
   "clothes": [
     {
-      "id": "receYRXEMznrbePfA7g",
-      "Name": "hugo bra new 2\n",
+      "id": "recMeuJu7wtgRlK5yQp",
+      "Name": "blue old bra",
       "Clothes Type": "bra",
-      "material": "Chiffon",
-      "thick clothes": "not so thick bra",
-      "Hot at noon": "Middle",
+      "material": "cotton",
+      "thick clothes": "quick thick material bra",
+      "Hot at noon": "Hot",
       "diao dai": "not diao dai",
       "side breast ok": "side breast shape ok",
       "sit breast ok": "sit breast shape ok",
-      "center chest": "not center but side open",
+      "center chest": "yes center chest bra",
       "beautiful": "Beautiful",
       "beatiful reason": "",
       "wet": "dry",
       "wet reason": "",
-      "Descriptions": "a side open bra, but the bra is tied to chest",
+      "Descriptions": "a old center chest blue bra",
       "Descriptions 2": "",
       "wearing frequency(how many times legacy washed)": 0,
-      "Tracked App Washes": 9,
-      "Total Washed Count": 9,
-      "Last Washed": "2026-09-03T00:00:00.000Z",
-      "AI Clothes Analysis": "## Overall assessment\n**Observed:** \u201chugo bra new 2\u201d is a side-open bra tied to the chest. It is rated **Beautiful**, relatively thin, and currently dry.  \n**Inference:** It appears visually appealing and usable, but heat and extended unwashed wear reduce comfort and hygiene.\n\n## Comfort and climate\n**Observed:** Noon heat is rated **Middle**. The last comment says it felt moderately hot because it sticks to the body.  \n**Inference:** It may be less comfortable in warm weather or during long wear, despite not being very thick.\n\n## Fit and appearance\n**Observed:** The bra is side-open rather than centered at the chest and is secured by tying. Its appearance is rated **Beautiful**.  \n**Missing:** Strap details, sitting fit, side-breast fit, and the reason for the appearance rating are not provided. Fit security and support therefore cannot be fully assessed.\n\n## Care and wash priority\n**Observed:** Unwashed bra time is **37:00 hours**; general unwashed-clothes time is **0:00**. The bra is currently dry.  \n**Recommendation:** **High wash priority\u2014wash it before the next use**, especially because it has been against the body and caused moderate heat. Follow the care label because the material and washing requirements are missing.\n\n## Usage value\n**Observed:** Multiple wearing reports are listed, including one duplicate/copy entry.  \n**Inference:** The item appears to have received repeated use, suggesting practical value. However, wearing frequency, price, material, and disposal status are missing, so value and durability cannot be judged reliably.\n\n## Recommended next action\n1. Wash the bra now and let it dry fully.\n2. At the next wear, check whether the tied, side-open design stays secure while sitting and moving.\n3. Record material, fit results, wearing frequency, and care instructions.\n4. Do not decide whether to discard it until comfort and fit are reassessed after washing.",
-      "Pictures": [
-        {
-          "id": "pic_2",
-          "name": "8a63f3d1-636b-4107-b79b-e136be723f95.jpeg",
-          "filename": "8a63f3d1-636b-4107-b79b-e136be723f95.jpeg",
-          "storagePath": "photos/8a63f3d1-636b-4107-b79b-e136be723f95.jpeg"
-        }
-      ],
+      "Tracked App Washes": 7,
+      "Total Washed Count": 7,
+      "Last Washed": "2026-07-09T00:00:00.000Z",
+      "AI Clothes Analysis": "## Overall assessment\n- **Observed:** “blue old bra,” described as an old, center-chest blue bra with a quick/thick material. It is marked **Beautiful**.\n- **Inference:** It remains usable and visually liked, but its thicker, centered construction may limit comfort in warm weather.\n- **Missing:** Material composition, price, wearing frequency, and disposal status.\n\n## Comfort and climate\n- **Observed:** Rated **Hot at noon**. The last comment attributes this to the thick material and center-chest coverage; nighttime comfort depends on the weather and is usually not a problem.\n- **Inference:** Better suited to evenings, cooler days, or air-conditioned settings than hot midday conditions.\n\n## Fit and appearance\n- **Observed:** The bra is considered beautiful and has center-chest coverage.\n- **Missing:** Reason for its appearance rating, strap details, seated breast fit, and side-breast fit.\n- **Assessment:** Fit quality cannot be confirmed without the missing fit data.\n\n## Care and wash priority\n- **Observed:** Unwashed clothing time and unwashed bra time are both **0:00**. Drying result is **dry**.\n- **Inference:** There is no current wash-priority indication based on the recorded timers.\n- **Missing:** Washing history, drying method, and explanation for the drying result.\n\n## Usage value\n- **Observed:** Seven bra-wearing report timestamps are listed between **2026-06-11 and 2026-06-25**, but their report contents are unavailable.\n- **Inference:** The repeated records suggest active use during that period, though actual wearing frequency and satisfaction cannot be established from timestamps alone.\n\n## Recommended next action\nUse it mainly during cooler periods or at night, and avoid hot midday wear when possible. At the next use, record seated fit, side fit, strap comfort, and fabric composition. No immediate washing or disposal action is indicated by the available data.",
+      "Pictures": [],
       "may throw": "",
-      "last comment or action": "middle hot noon due to stick to body.",
+      "last comment or action": "hot at noon due to thick and centre chest, night depend weather , usually not a problem",
       "tags": [
-        "#clothes"
+        "#clothes",
+        "ai"
       ],
-      "created": "2026-06-04T00:00:00.000Z",
-      "long dress": "short dress",
+      "created": "2026-06-11T00:00:00.000Z",
+      "long dress": "Not related",
       "unwash time rollup": 0,
       "wash stated (from Full Wearing Report (new design) clothes list (linked))": [],
       "customFields": {
-        "_fieldExplanations": {}
+        "_fieldExplanations": {
+          "thick clothes": "quick thick material bra - more likely little wet not fully dry after wash. and normally hot when wear at noon",
+          "Hot at noon": "中午穿，感觉热，流少多因为厚加聚拢胸。",
+          "side breast ok": "When look for side , the breast shape beautifully",
+          "diao dai": "Bra diao dai normal - is another type of diao dai. Normally not pain at shoulder, but new or tight adjust bra diao dai will pain at shoulder.",
+          "center chest": "yes center chest bra - 聚拢 bra设计 - 聚拢设计 bra,适合想一些不能聚拢胸型的服装搭配组合，聚拢也集中闷热， 一些胸部紧压的服装比如pink吊带，green吊带dress会变得胸部非常紧。当紧时，会紧贴胸膛，变成闷热。side out bra可减轻。但是一些衣服变成sit breast shape not ok。",
+          "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）bra，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+          "long dress": "Not related - it is bra, not dress, so not related.",
+          "wet reason": "material and 厚",
+          "wet": "Little wet- this clothes after wash still got little wet， 可能造成其他衣服潮湿发臭",
+          "material": "Cutton thick -  more likely little wet after wash. normally hot when wear at noon 不像chiffon那么透气",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "extraAttributes": {
-        "_fieldExplanations": {}
+        "_fieldExplanations": {
+          "thick clothes": "quick thick material bra - more likely little wet not fully dry after wash. and normally hot when wear at noon",
+          "Hot at noon": "中午穿，感觉热，流少多因为厚加聚拢胸。",
+          "side breast ok": "When look for side , the breast shape beautifully",
+          "diao dai": "Bra diao dai normal - is another type of diao dai. Normally not pain at shoulder, but new or tight adjust bra diao dai will pain at shoulder.",
+          "center chest": "yes center chest bra - 聚拢 bra设计 - 聚拢设计 bra,适合想一些不能聚拢胸型的服装搭配组合，聚拢也集中闷热， 一些胸部紧压的服装比如pink吊带，green吊带dress会变得胸部非常紧。当紧时，会紧贴胸膛，变成闷热。side out bra可减轻。但是一些衣服变成sit breast shape not ok。",
+          "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）bra，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+          "long dress": "Not related - it is bra, not dress, so not related.",
+          "wet reason": "material and 厚",
+          "wet": "Little wet- this clothes after wash still got little wet， 可能造成其他衣服潮湿发臭",
+          "material": "Cutton thick -  more likely little wet after wash. normally hot when wear at noon 不像chiffon那么透气",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "aiReports": [
         {
           "id": "garment_initial_version",
-          "timestamp": "2026-06-04T00:00:00.000Z",
+          "timestamp": "2026-06-11T00:00:00.000Z",
           "title": "Initial Report",
           "model": "gemini-3.6-flash",
-          "content": "## Overall assessment\n**Observed:** \u201chugo bra new 2\u201d is a side-open bra tied to the chest. It is rated **Beautiful**, relatively thin, and currently dry.  \n**Inference:** It appears visually appealing and usable, but heat and extended unwashed wear reduce comfort and hygiene.\n\n## Comfort and climate\n**Observed:** Noon heat is rated **Middle**. The last comment says it felt moderately hot because it sticks to the body.  \n**Inference:** It may be less comfortable in warm weather or during long wear, despite not being very thick.\n\n## Fit and appearance\n**Observed:** The bra is side-open rather than centered at the chest and is secured by tying. Its appearance is rated **Beautiful**.  \n**Missing:** Strap details, sitting fit, side-breast fit, and the reason for the appearance rating are not provided. Fit security and support therefore cannot be fully assessed.\n\n## Care and wash priority\n**Observed:** Unwashed bra time is **37:00 hours**; general unwashed-clothes time is **0:00**. The bra is currently dry.  \n**Recommendation:** **High wash priority\u2014wash it before the next use**, especially because it has been against the body and caused moderate heat. Follow the care label because the material and washing requirements are missing.\n\n## Usage value\n**Observed:** Multiple wearing reports are listed, including one duplicate/copy entry.  \n**Inference:** The item appears to have received repeated use, suggesting practical value. However, wearing frequency, price, material, and disposal status are missing, so value and durability cannot be judged reliably.\n\n## Recommended next action\n1. Wash the bra now and let it dry fully.\n2. At the next wear, check whether the tied, side-open design stays secure while sitting and moving.\n3. Record material, fit results, wearing frequency, and care instructions.\n4. Do not decide whether to discard it until comfort and fit are reassessed after washing.",
+          "content": "## Overall assessment\n- **Observed:** “blue old bra,” described as an old, center-chest blue bra with a quick/thick material. It is marked **Beautiful**.\n- **Inference:** It remains usable and visually liked, but its thicker, centered construction may limit comfort in warm weather.\n- **Missing:** Material composition, price, wearing frequency, and disposal status.\n\n## Comfort and climate\n- **Observed:** Rated **Hot at noon**. The last comment attributes this to the thick material and center-chest coverage; nighttime comfort depends on the weather and is usually not a problem.\n- **Inference:** Better suited to evenings, cooler days, or air-conditioned settings than hot midday conditions.\n\n## Fit and appearance\n- **Observed:** The bra is considered beautiful and has center-chest coverage.\n- **Missing:** Reason for its appearance rating, strap details, seated breast fit, and side-breast fit.\n- **Assessment:** Fit quality cannot be confirmed without the missing fit data.\n\n## Care and wash priority\n- **Observed:** Unwashed clothing time and unwashed bra time are both **0:00**. Drying result is **dry**.\n- **Inference:** There is no current wash-priority indication based on the recorded timers.\n- **Missing:** Washing history, drying method, and explanation for the drying result.\n\n## Usage value\n- **Observed:** Seven bra-wearing report timestamps are listed between **2026-06-11 and 2026-06-25**, but their report contents are unavailable.\n- **Inference:** The repeated records suggest active use during that period, though actual wearing frequency and satisfaction cannot be established from timestamps alone.\n\n## Recommended next action\nUse it mainly during cooler periods or at night, and avoid hot midday wear when possible. At the next use, record seated fit, side fit, strap comfort, and fabric composition. No immediate washing or disposal action is indicated by the available data.",
           "isPrimary": true
         }
       ],
-      "name": "hugo bra new 2\n",
+      "name": "blue old bra",
       "clothesType": "bra",
-      "materialProp": "Chiffon",
-      "side breast ok: with \u805a\u62e2 bra": "side breast shape ok",
-      "side breast ok: with side out bra": "side breast out",
-      "sit breast ok: With \u805a\u62e2bra": "sit breast shape ok",
+      "materialProp": "cotton",
+      "fieldExplanations": {
+        "thick clothes": "quick thick material bra - more likely little wet not fully dry after wash. and normally hot when wear at noon",
+        "Hot at noon": "中午穿，感觉热，流少多因为厚加聚拢胸。",
+        "side breast ok": "When look for side , the breast shape beautifully",
+        "diao dai": "Bra diao dai normal - is another type of diao dai. Normally not pain at shoulder, but new or tight adjust bra diao dai will pain at shoulder.",
+        "center chest": "yes center chest bra - 聚拢 bra设计 - 聚拢设计 bra,适合想一些不能聚拢胸型的服装搭配组合，聚拢也集中闷热， 一些胸部紧压的服装比如pink吊带，green吊带dress会变得胸部非常紧。当紧时，会紧贴胸膛，变成闷热。side out bra可减轻。但是一些衣服变成sit breast shape not ok。",
+        "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）bra，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+        "long dress": "Not related - it is bra, not dress, so not related.",
+        "wet reason": "material and 厚",
+        "wet": "Little wet- this clothes after wash still got little wet， 可能造成其他衣服潮湿发臭",
+        "material": "Cutton thick -  more likely little wet after wash. normally hot when wear at noon 不像chiffon那么透气",
+        "side breast ok: with 聚拢 bra": "side breast shape ok",
+        "sit breast ok: With 聚拢bra": "sit breast shape ok"
+      },
+      "sit breast ok: With 聚拢bra": "sit breast shape ok",
       "sit breast ok: with side out bra": "sit breast shape ok",
+      "side breast ok: with 聚拢 bra": "side breast shape ok",
+      "side breast ok: with side out bra": "side breast out",
       "when with aircond: hot feeling": "",
       "when with aircond: leg feeling": "",
-      "when without aircond: hot feeling": "",
+      "when without aircond: hot feeling": "hot",
       "when without aircond: leg feeling": "",
       "when sleep under fan: hot feeling": "",
       "when sleep under fan: leg feeling": "",
-      "fieldExplanations": {}
+      "sideBreastGatherBra": "side breast shape ok",
+      "sideBreastSideOutBra": "side breast out",
+      "stand breast": "yes center chest bra",
+      "sitBreastGatherBra": "sit breast shape ok",
+      "sitBreastSideOutBra": "sit breast shape ok",
+      "_fieldExplanations": {
+        "thick clothes": "quick thick material bra - more likely little wet not fully dry after wash. and normally hot when wear at noon",
+        "Hot at noon": "中午穿，感觉热，流少多因为厚加聚拢胸。",
+        "side breast ok": "When look for side , the breast shape beautifully",
+        "diao dai": "Bra diao dai normal - is another type of diao dai. Normally not pain at shoulder, but new or tight adjust bra diao dai will pain at shoulder.",
+        "center chest": "yes center chest bra - 聚拢 bra设计 - 聚拢设计 bra,适合想一些不能聚拢胸型的服装搭配组合，聚拢也集中闷热， 一些胸部紧压的服装比如pink吊带，green吊带dress会变得胸部非常紧。当紧时，会紧贴胸膛，变成闷热。side out bra可减轻。但是一些衣服变成sit breast shape not ok。",
+        "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）bra，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+        "long dress": "Not related - it is bra, not dress, so not related.",
+        "wet reason": "material and 厚",
+        "wet": "Little wet- this clothes after wash still got little wet， 可能造成其他衣服潮湿发臭"
+      },
+      "stand breast ok": "yes center chest bra",
+      "standBreast": "yes center chest bra",
+      "standBreastOk": "yes center chest bra"
     },
     {
-      "id": "recw9ywvJO4xioV4nw5",
-      "Name": "Blue french dress",
+      "id": "recefNyeYJhyjpzEXZ0",
+      "Name": "white heavy new",
       "Clothes Type": "Dress",
-      "material": "thick chiffon",
-      "thick clothes": "03 thick clothes",
-      "Hot at noon": "Hot",
+      "material": "soft chiffon",
+      "thick clothes": "01 not thick dress",
+      "Hot at noon": "Not hot",
       "diao dai": "not diao dai",
       "side breast ok": "side breast shape ok",
-      "sit breast ok": "?",
-      "center chest": "no center chest",
-      "beautiful": "Middle beautiful",
-      "beatiful reason": "middle beautiful due to waist design not so beautiful, but sit breast or sleep breast is still ok.",
-      "wet": "little wet",
-      "wet reason": "little wet\n",
-      "Descriptions": "quick hot suitable for night sleep , end skirt go up easily,",
-      "Descriptions 2": "waist is loose not so beautiful",
-      "price": 65.55,
-      "wearing frequency(how many times legacy washed)": 45,
-      "Tracked App Washes": 4,
-      "Total Washed Count": 49,
-      "Last Washed": "2026-09-03T00:00:00.000Z",
-      "AI Clothes Analysis": "## Overall assessment\n**Observed:** Blue French thick-chiffon long dress priced at **$65.55**, with a recorded wearing frequency of **45.0**. It is rated **\u201cMiddle beautiful.\u201d** Four related clothing-wear reports are listed.  \n**Inference:** It appears usable and frequently worn, but heat, loose-waist styling, and skirt movement reduce its overall practicality.\n\n## Comfort and climate\n**Observed:** The dress becomes hot quickly and is rated **Hot at noon**. The material is **thick chiffon**, with thickness recorded as **\u201c03 thick clothes.\u201d** It is described as suitable for nighttime sleep.  \n**Inference:** Better for nighttime or cooler conditions than warm midday wear.\n\n## Fit and appearance\n**Observed:** The waist is loose and considered less attractive. The long skirt reportedly rides up easily. It is not a strap dress and has no center-chest feature.  \n**Data conflict/missing:** The appearance reason says the breast fit while sitting or sleeping is \u201cstill ok,\u201d but the structured sitting-fit field is **\u201c?\u201d** Side-fit data is missing.\n\n## Care and wash priority\n**Observed:** The dress has been unwashed for **19:00 hours**. Drying status is **\u201clittle wet.\u201d** Unwashed bra time is **0:00**.  \n**Recommendation:** Wash the dress now, then dry it fully before storing or wearing. Follow the garment\u2019s care label because no washing instructions are provided.\n\n## Usage value\n**Observed:** Price is **$65.55**, and wearing frequency is **45.0**, though the meaning or unit of that number is not given.  \n**Inference:** If 45 represents actual wears, the approximate cost per wear is **$1.46**, suggesting good usage value. This cannot be confirmed without knowing the frequency unit.\n\n## Recommended next action\n1. **Wash and fully dry** the dress.\n2. Reserve it mainly for **nighttime or cooler weather**.\n3. On the next wear, verify the **sitting and side fit** and whether the skirt still rides up.\n4. Consider a simple **waist adjustment or belt** only after confirming that the loose waist is the main appearance issue.\n5. No discard decision can be made because **\u201cMay throw\u201d** and **last action** data are missing. Related bra-wearing reports are also missing.",
+      "sit breast ok": "sit breast shape ok",
+      "center chest": "half center chest",
+      "beautiful": "Beautiful",
+      "beatiful reason": "聚拢设计美胸，腰型也很美 ，soft chiffon syle，quite beautiful with this fabric,very light and soft feel, very femiline dress ",
+      "wet": "dry",
+      "wet reason": "dry due to chiffon",
+      "Descriptions": "quite beautiful with this fabric,very light and soft feel, good breast and waist cutting design, very femiline dress ",
+      "Descriptions 2": "",
+      "price": 53,
+      "wearing frequency(how many times legacy washed)": 39,
+      "Tracked App Washes": 3,
+      "Total Washed Count": 42,
+      "Last Washed": "2026-07-23T00:00:00.000Z",
+      "AI Clothes Analysis": "### Overall assessment\n**Observed:** A short dress made from soft chiffon, described as light, soft, feminine, and beautifully cut. It is marked “Beautiful” and costs **$53.00**.  \n**Inference:** The item appears suitable for regular warm-weather wear and remains a strong wardrobe piece.\n\n### Comfort and climate\n**Observed:** The dress is not thick, does not feel hot at noon, and dries well because of the chiffon fabric.  \n**Inference:** It should be comfortable in warm conditions and practical when quick drying is useful.\n\n### Fit and appearance\n**Observed:** It is a short, non-strap dress with no center-chest issue. The bust shape remains acceptable while sitting.  \n**Missing data:** Side-bust fit and the specific reason for the “Beautiful” rating were not provided.\n\n### Care and wash priority\n**Observed:** Both unwashed clothing time and unwashed bra time are **0:00**, so there is no recorded wash backlog. The dress is currently marked dry.  \n**Recommendation:** No immediate washing is indicated. Follow chiffon-appropriate gentle-care instructions when cleaning.\n\n### Usage value\n**Observed:** Wearing frequency is **39.0**, with three linked wearing reports dated **2026-07-10** and **2026-07-11**.  \n**Inference:** If 39.0 represents a wear count, the dress has relatively strong usage value; however, the frequency unit is not specified.\n\n### Recommended next action\nKeep the dress and continue wearing it, especially in warm weather. At the next wear, record the **side fit**, detailed appearance reason, and any comfort changes. **Last action, disposal status (“may throw”), additional description, and related bra reports are missing**, so no disposal recommendation can be made from those fields.",
       "Pictures": [
         {
-          "id": "pic_3",
-          "name": "d00b1be5-4341-4512-ab6f-afbe2936bd48.jpeg",
-          "filename": "d00b1be5-4341-4512-ab6f-afbe2936bd48.jpeg",
-          "storagePath": "photos/d00b1be5-4341-4512-ab6f-afbe2936bd48.jpeg"
+          "id": "pic_1789314391619_22gw",
+          "name": "1211ef8a-d29b-49e3-b3c4-059b3f762723.jpeg",
+          "filename": "1211ef8a-d29b-49e3-b3c4-059b3f762723.jpeg",
+          "mimetype": "image/jpeg",
+          "size": 40207
         }
       ],
       "may throw": "",
       "last comment or action": "",
       "tags": [
-        "#clothes"
+        "#clothes",
+        "#Settle"
       ],
-      "created": "2026-05-29T00:00:00.000Z",
-      "long dress": "long dress",
-      "unwash time rollup": 0,
-      "wash stated (from Full Wearing Report (new design) clothes list (linked))": [],
+      "created": "2026-06-11T00:00:00.000Z",
+      "long dress": "short dress",
+      "unwash time rollup": 27000,
+      "wash stated (from Full Wearing Report (new design) clothes list (linked))": [
+        "need wash"
+      ],
       "customFields": {
-        "_fieldExplanations": {}
+        "_deletedCustomFields": [
+          "Wearing report 1",
+          "wearing report 2"
+        ],
+        "_fieldExplanations": {
+          "material": "Chiffon, more likely dry after wash. \nAnd normally no hot when wear at noon",
+          "thick clothes": "Not thick dress- more likely dry after wash. \nand normally not hot when wear at noon",
+          "Hot at noon": "中午穿，不热，流汗少，因为soft chiffon",
+          "diao dai": "not 吊带 will not pain at shoulder.",
+          "side breast ok": "When look for side , the breast shape beautifully",
+          "sit breast ok": "Sit breast shape depend - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸，聚拢效果会恢复一些. 配合聚拢bra就没有胸型问题",
+          "center chest": "half center chest设计 - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸增加聚拢。 配合聚拢bra就肯定没有胸型问题",
+          "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+          "long dress": "白天不闷热集汗， 夜晚风扇下因为布料有点薄和短冷脚",
+          "when with aircond: hot feeling": "due to not diao dai and wear bra",
+          "when with aircond: leg feeling": "due to short dress, soft chiffon material, thin clothes.",
+          "when without aircond: hot feeling": "due to soft chiffon material, not thick clothes, short dress",
+          "when without aircond: leg feeling": "due to short dress, soft chiffon material, not thick clothes. ",
+          "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+          "when sleep under fan: leg feeling": "due to short dress, inner thin, easy fold up裙底",
+          "aircondHotFeeling": "Become cold leg due to short dress",
+          "aircondLegFeeling": "Become cold leg due to short dress",
+          "fanSleepHotFeeling": "Become cold due to short dress",
+          "fanSleepLegFeeling": "Become cold due to short dress",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "extraAttributes": {
-        "_fieldExplanations": {}
+        "_deletedCustomFields": [
+          "Wearing report 1",
+          "wearing report 2"
+        ],
+        "_fieldExplanations": {
+          "material": "Chiffon, more likely dry after wash. \nAnd normally no hot when wear at noon",
+          "thick clothes": "Not thick dress- more likely dry after wash. \nand normally not hot when wear at noon",
+          "Hot at noon": "中午穿，不热，流汗少，因为soft chiffon",
+          "diao dai": "not 吊带 will not pain at shoulder.",
+          "side breast ok": "When look for side , the breast shape beautifully",
+          "sit breast ok": "Sit breast shape depend - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸，聚拢效果会恢复一些. 配合聚拢bra就没有胸型问题",
+          "center chest": "half center chest设计 - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸增加聚拢。 配合聚拢bra就肯定没有胸型问题",
+          "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+          "long dress": "白天不闷热集汗， 夜晚风扇下因为布料有点薄和短冷脚",
+          "when with aircond: hot feeling": "due to not diao dai and wear bra",
+          "when with aircond: leg feeling": "due to short dress, soft chiffon material, thin clothes.",
+          "when without aircond: hot feeling": "due to soft chiffon material, not thick clothes, short dress",
+          "when without aircond: leg feeling": "due to short dress, soft chiffon material, not thick clothes. ",
+          "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+          "when sleep under fan: leg feeling": "due to short dress, inner thin, easy fold up裙底",
+          "aircondHotFeeling": "Become cold leg due to short dress",
+          "aircondLegFeeling": "Become cold leg due to short dress",
+          "fanSleepHotFeeling": "Become cold due to short dress",
+          "fanSleepLegFeeling": "Become cold due to short dress",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "aiReports": [
         {
+          "id": "garment_ai_1791814992640_6kkr",
+          "timestamp": "2026-10-12T14:23:12.640Z",
+          "title": "Report #3",
+          "model": "gemini-3.1-flash-lite",
+          "content": "这是一份基于您提供的 Teable AI 诊断系统数据，对 **blue dress** 进行的深度人体工学与 wardrobe 诊断报告。\n\n---\n\n### 综合评估：事实记录与人体工学推断\n**blue dress** 是一款定位为“轻量化、高美观度”的雪纺连衣裙。其核心人体工学优势在于 `not diao dai`（非吊带）设计，彻底规避了斜方肌压迫。面料 `soft chiffon` 赋予了其极佳的透气性与轻盈感，但在 `half center chest`（半聚拢）版型下，对内衣的依赖度极高。单价 $53，结合 42 次洗护记录，该单品已进入高利用率的成熟期，是典型的“轻薄外衣+功能性内衣”组合单品。\n\n---\n\n### 用户详述与深度穿搭复盘（融会 Descriptions 与 Descriptions 2）\n用户在 **Descriptions** 中明确指出：“quite beautiful with this fabric, very light and soft feel, good breast and waist cutting design, very femiline dress”。\n- **核心复盘**：用户对该裙装的“女性化剪裁”与“面料触感”给予了极高评价。\n- **历史协同**：用户在长篇详述中多次提及该裙装的“半聚拢”特性，即在搭配侧开（side out）内衣时，胸型呈现不稳定状态，必须通过 `ji xiong`（拨胸）动作来维持中心聚拢。这表明该裙装的胸部剪裁并非完全的“自支撑”结构，而是需要内衣提供强力承托的“辅助型”设计。\n- **Descriptions 2**：当前尚未登记长篇穿搭详述 2。\n\n---\n\n### 关联穿搭实测报告深度复盘（全部 4 篇实测报告）\n\n1. **【穿搭实测报告 1】(2026-08-27)**：搭配 Hugo bra new 3。记录显示 7.5 小时穿着中，肩部无压迫。针对 `side out` 设计的内衣，用户明确记录了需要 `ji xiong` 以获得中心效果。夜间在风扇环境下有“冷脚”感，证明雪纺材质在静止状态下保温性极弱。\n2. **【穿搭实测报告 2】(2026-07-10)**：搭配 Hugo bra。记录显示午后高温下，内衣与裙装的组合在风扇辅助下散热尚可。用户再次强调了 `manual ji xiong` 的必要性，说明该裙装对内衣的聚拢性能要求是持续性的。\n3. **【穿搭实测报告 3】(2026-07-09)**：搭配 Pink old bra。这是典型的“厚内衣+薄外衣”组合。用户反馈胸部中心因厚棉内衣产生 `swear`（出汗），而裙身区域保持干爽。这证实了该裙装的 `soft chiffon` 面料在排汗与散热上的优异表现。\n4. **【穿搭实测报告 4】(2026-07-09)**：搭配 Hugo bra。记录了 2.5 小时的短时穿着。再次确认了在风扇环境下，该组合的散热表现良好，但 `manual ji xiong` 依然是维持胸型的关键动作。\n\n---\n\n### 最新行动与自定义属性分析\n*   **Color（用户登记真实取值：blue dress）：** 仅为单品名称，非颜色描述，严禁脑补为蓝色。\n*   **Stretch（用户登记真实取值：not diao dai）：** 强调了非吊带结构，对斜方肌友好。\n*   **material_explain（用户登记真实取值：soft chiffon）：** 决定了其易干、透气、轻盈的物理属性。\n*   **thick clothes_explain（用户登记真实取值：01 not thick dress）：** 证实了其作为夏季单品的定位，不具备保暖功能。\n*   **Weather（用户登记真实取值：hot / not hot）：** 随环境波动，在无空调环境下表现出良好的散热性。\n*   **Last Action（用户登记真实取值：(暂无最新行动或评论)）：** 建议后续补充该裙装在久坐后的褶皱（zhouwhen）反馈。\n\n---\n\n### 舒适度与气候适应\n*   **❄️ when with aircond**：由于 `not diao dai` 和 `short dress` 设计，在空调房内，腿部会有明显的 `cold`（冷感），建议搭配薄款长袜或披肩。\n*   **☀️ when without aircond**：得益于 `soft chiffon`，即使在中午高温下，身体躯干部分 `not hot`，排汗表现良好。\n*   **🌀 when sleep under fan**：风扇环境下，虽然身体不热，但由于 `short dress` 且内衬薄，容易出现 `cold leg`（冷脚）和裙底翻卷现象。\n\n---\n\n### 版型贴合与外观体感\n*   **配合聚拢bra**：此时 `sit breast shape ok`，无需额外拨胸，胸型挺拔，完美发挥了裙装的 `waist cutting` 优势。\n*   **配合侧开/非聚拢bra**：此时 `sit breast shape depend`，胸部会向两侧散开，必须通过 `manual ji xiong` 才能恢复聚拢。\n*   **肩带与久坐**：`not diao dai` 设计彻底消除了肩部酸痛。久坐时，裙装的 `half center chest` 结构对底围无额外压迫，但需注意内衣底围是否会因久坐上移。\n\n---\n\n### 洗护与保洁优先级\n*   **洗护状态**：累计洗护 42 次，建议检查雪纺面料是否有勾丝。\n*   **洗涤指引**：由于 `dry`（易干），建议手洗或放入洗衣袋轻柔机洗，避免高温烘干导致雪纺纤维脆化。\n\n---\n\n### 单次穿着成本与利用率\n*   **单次成本**：$53 ÷ 42 次 ≈ $1.26/次。该单品已实现极高的性价比，属于衣橱中的“高频主力”。\n\n---\n\n### 缺失数据与盲区\n*   **褶皱记录**：目前尚无关于 `zhouwhen`（久坐后褶皱程度）的详细记录。\n*   **裙摆透光度**：尚无关于在强光下裙摆是否存在 `shadow`（透光阴影）影响美观的反馈。\n\n---\n\n### 下次穿着建议关注的体感\n1. **久坐褶皱**：记录在连续久坐 3 小时后，雪纺面料的平整度表现。\n2. **裙摆防走光**：在户外强光环境下，观察裙摆的遮蔽性与透光度。\n3. **内衣磨合**：在长期穿着后，观察 Hugo bra 的肩带弹力是否出现松弛，从而影响裙装整体的胸型支撑力。",
+          "isPrimary": false
+        },
+        {
+          "id": "garment_ai_1791597392897_jhkr",
+          "timestamp": "2026-10-10T01:56:32.897Z",
+          "title": "Report #2",
+          "model": "gemini-3.1-flash-lite",
+          "content": "基于您提供的详尽数据，以下是对这件 **Blue Dress (Chiffon)** 的专业衣橱诊断与人体工学分析：\n\n### 综合评估：事实记录与人体工学推断\n这件售价 $53 的雪纺（Chiffon）连衣裙在您的衣橱中属于“高频高舒适度”单品。经过 42 次洗涤验证，它展现了极佳的材质稳定性与物理维护便捷性。其核心优势在于轻盈与亲肤，属于典型的“无负担”夏日通勤或居家单品。它不是一件需要“强迫穿戴”的衣物，其版型设计对女性化线条的塑造非常友好，属于衣橱中性价比稳步上升的投资。\n\n### 舒适度与气候适应（特别是中午炎热度 Hot at noon）\n- **温控表现**：得益于雪纺材质，它在中午炎热环境下具有极高的舒适度，不闷热、出汗量少。\n- **材质体感**：面料轻薄（Thickness: 01），避免了厚重织物在高温下的湿粘感。\n- **气候局限**：虽在白日炎热环境下表现出色，但由于面料偏薄且长度设计，在空调环境下（尤其夜晚）若无毯子辅助，会有明显的“冷脚”感。建议将其定义为“夏日日间主力、夜间室内恒温搭配”的款式。\n\n### 版型贴合与外观体感（肩带 diao dai 与久坐胸部 sit breast）\n- **肩部工学**：该款式非吊带设计，完全规避了细肩带对斜方肌产生的机械压迫与红印问题，穿着舒适度极高。\n- **胸部结构（核心关注点）**：\n    - **半聚拢设计**：该单品为“半聚拢”构造，这直接决定了其对内衣的依赖性。若搭配侧收功能较弱的文胸，胸型容易向两侧散开。\n    - **行动建议**：如果追求极致的胸部形态，必须配合专业的“聚拢型文胸”。如果不搭配特定文胸，可以手动调整胸部填充感，以维持视觉上的优雅。从侧面看，其剪裁能很好地修饰曲线，外观评分属于“Beautiful”。\n\n### 洗护与保洁优先级\n- **易理化**：洗涤次数高达 42 次，且洗后易干，不会产生异味或导致周围衣物受潮，这是其极大的维护优势。\n- **耐用性**：鉴于已清洗 42 次且未显示损坏，雪纺材质虽薄但结构坚韧。建议继续保持自然晾干即可。\n\n### 单次穿着成本与利用率 ($/wear)\n- **经济核算**：$53 / 42 次 = **$1.26 / 次**。\n- **结论**：该单品的单次穿着成本已降至非常低的水平，且因其“不热、不累、易洗”的特性，利用率极高，是衣橱中极其成功的高性价比单品。\n\n### 缺失数据与盲区\n- **留弃倾向（May Throw/Retain）**：目前该字段缺失。鉴于其优秀的舒适度和洗护表现，推测该字段应为“Retain（保留）”。\n- **裙摆深度/透光细节**：虽然记录中提到裙摆侧面有阴影或透光考量，但针对“透光是否会导致社交尴尬”这一维度的数据略显模糊，建议在下次穿戴时留意在阳光直射下的视觉表现。\n\n### 下次穿着建议关注的体感\n1. **胸部稳定性监测**：下次穿着时，请测试在该单品“手动聚拢”后，配合日常文胸进行 4 小时以上久坐，观察胸部是否有明显的散开位移。\n2. **裙长与空间感知**：记录在空调房间久坐时，裙长是否能够通过改变坐姿（如叠腿）达到“防冷”的最佳临界点。\n3. **补充记录**：在“May Throw / Retain”字段补入结论，正式将其确认为“长期留用”单品。",
+          "isPrimary": false
+        },
+        {
           "id": "garment_initial_version",
-          "timestamp": "2026-05-29T00:00:00.000Z",
+          "timestamp": "2026-06-11T00:00:00.000Z",
           "title": "Initial Report",
           "model": "gemini-3.6-flash",
-          "content": "## Overall assessment\n**Observed:** Blue French thick-chiffon long dress priced at **$65.55**, with a recorded wearing frequency of **45.0**. It is rated **\u201cMiddle beautiful.\u201d** Four related clothing-wear reports are listed.  \n**Inference:** It appears usable and frequently worn, but heat, loose-waist styling, and skirt movement reduce its overall practicality.\n\n## Comfort and climate\n**Observed:** The dress becomes hot quickly and is rated **Hot at noon**. The material is **thick chiffon**, with thickness recorded as **\u201c03 thick clothes.\u201d** It is described as suitable for nighttime sleep.  \n**Inference:** Better for nighttime or cooler conditions than warm midday wear.\n\n## Fit and appearance\n**Observed:** The waist is loose and considered less attractive. The long skirt reportedly rides up easily. It is not a strap dress and has no center-chest feature.  \n**Data conflict/missing:** The appearance reason says the breast fit while sitting or sleeping is \u201cstill ok,\u201d but the structured sitting-fit field is **\u201c?\u201d** Side-fit data is missing.\n\n## Care and wash priority\n**Observed:** The dress has been unwashed for **19:00 hours**. Drying status is **\u201clittle wet.\u201d** Unwashed bra time is **0:00**.  \n**Recommendation:** Wash the dress now, then dry it fully before storing or wearing. Follow the garment\u2019s care label because no washing instructions are provided.\n\n## Usage value\n**Observed:** Price is **$65.55**, and wearing frequency is **45.0**, though the meaning or unit of that number is not given.  \n**Inference:** If 45 represents actual wears, the approximate cost per wear is **$1.46**, suggesting good usage value. This cannot be confirmed without knowing the frequency unit.\n\n## Recommended next action\n1. **Wash and fully dry** the dress.\n2. Reserve it mainly for **nighttime or cooler weather**.\n3. On the next wear, verify the **sitting and side fit** and whether the skirt still rides up.\n4. Consider a simple **waist adjustment or belt** only after confirming that the loose waist is the main appearance issue.\n5. No discard decision can be made because **\u201cMay throw\u201d** and **last action** data are missing. Related bra-wearing reports are also missing.",
+          "content": "### Overall assessment\n**Observed:** A short dress made from soft chiffon, described as light, soft, feminine, and beautifully cut. It is marked “Beautiful” and costs **$53.00**.  \n**Inference:** The item appears suitable for regular warm-weather wear and remains a strong wardrobe piece.\n\n### Comfort and climate\n**Observed:** The dress is not thick, does not feel hot at noon, and dries well because of the chiffon fabric.  \n**Inference:** It should be comfortable in warm conditions and practical when quick drying is useful.\n\n### Fit and appearance\n**Observed:** It is a short, non-strap dress with no center-chest issue. The bust shape remains acceptable while sitting.  \n**Missing data:** Side-bust fit and the specific reason for the “Beautiful” rating were not provided.\n\n### Care and wash priority\n**Observed:** Both unwashed clothing time and unwashed bra time are **0:00**, so there is no recorded wash backlog. The dress is currently marked dry.  \n**Recommendation:** No immediate washing is indicated. Follow chiffon-appropriate gentle-care instructions when cleaning.\n\n### Usage value\n**Observed:** Wearing frequency is **39.0**, with three linked wearing reports dated **2026-07-10** and **2026-07-11**.  \n**Inference:** If 39.0 represents a wear count, the dress has relatively strong usage value; however, the frequency unit is not specified.\n\n### Recommended next action\nKeep the dress and continue wearing it, especially in warm weather. At the next wear, record the **side fit**, detailed appearance reason, and any comfort changes. **Last action, disposal status (“may throw”), additional description, and related bra reports are missing**, so no disposal recommendation can be made from those fields.",
           "isPrimary": true
         }
       ],
-      "name": "Blue french dress",
+      "name": "white heavy new",
       "clothesType": "Dress",
-      "materialProp": "thick chiffon",
-      "side breast ok: with \u805a\u62e2 bra": "side breast shape ok",
-      "side breast ok: with side out bra": "side breast out",
-      "sit breast ok: With \u805a\u62e2bra": "?",
-      "sit breast ok: with side out bra": "?",
-      "when with aircond: hot feeling": "",
-      "when with aircond: leg feeling": "",
-      "when without aircond: hot feeling": "",
-      "when without aircond: leg feeling": "",
-      "when sleep under fan: hot feeling": "",
-      "when sleep under fan: leg feeling": "",
-      "fieldExplanations": {}
+      "materialProp": "soft chiffon",
+      "fieldExplanations": {
+        "material": "Chiffon, more likely dry after wash. \nAnd normally no hot when wear at noon",
+        "thick clothes": "Not thick dress- more likely dry after wash. \nand normally not hot when wear at noon",
+        "Hot at noon": "中午穿，不热，流汗少，因为soft chiffon",
+        "diao dai": "not 吊带 will not pain at shoulder.",
+        "side breast ok": "When look for side , the breast shape beautifully",
+        "sit breast ok": "Sit breast shape depend - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸，聚拢效果会恢复一些. 配合聚拢bra就没有胸型问题",
+        "center chest": "half center chest设计 - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸增加聚拢。 配合聚拢bra就肯定没有胸型问题",
+        "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+        "long dress": "白天不闷热集汗， 夜晚风扇下因为布料有点薄和短冷脚",
+        "when with aircond: hot feeling": "due to not diao dai and wear bra",
+        "when with aircond: leg feeling": "due to short dress, soft chiffon material, thin clothes.",
+        "when without aircond: hot feeling": "due to soft chiffon material, not thick clothes, short dress",
+        "when without aircond: leg feeling": "due to short dress, soft chiffon material, not thick clothes. ",
+        "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+        "when sleep under fan: leg feeling": "due to short dress, inner thin, easy fold up裙底",
+        "aircondHotFeeling": "Become cold leg due to short dress",
+        "aircondLegFeeling": "Become cold leg due to short dress",
+        "fanSleepHotFeeling": "Become cold due to short dress",
+        "fanSleepLegFeeling": "Become cold due to short dress",
+        "side breast ok: with 聚拢 bra": "side breast shape ok",
+        "sit breast ok: With 聚拢bra": "sit breast shape ok"
+      },
+      "sit breast ok: With 聚拢bra": "sit breast shape ok",
+      "sit breast ok: with side out bra": "sit breast shape ok, can 挤胸",
+      "side breast ok: with 聚拢 bra": "side breast shape ok",
+      "side breast ok: with side out bra": "side breast shape ok",
+      "when with aircond: hot feeling": "Become cold leg due to short dress",
+      "when with aircond: leg feeling": "Become cold leg due to short dress",
+      "when without aircond: hot feeling": "not hot",
+      "when without aircond: leg feeling": "not hot",
+      "when sleep under fan: hot feeling": "Become cold due to short dress",
+      "when sleep under fan: leg feeling": "Become cold due to short dress",
+      "noAircondHotFeeling": "not hot",
+      "noAircondLegFeeling": "not hot",
+      "aircondHotFeeling": "Become cold leg due to short dress",
+      "aircondLegFeeling": "Become cold leg due to short dress",
+      "fanSleepHotFeeling": "Become cold due to short dress",
+      "fanSleepLegFeeling": "Become cold due to short dress",
+      "sideBreastGatherBra": "side breast shape ok",
+      "sideBreastSideOutBra": "side breast shape ok",
+      "stand breast": "half center chest",
+      "sitBreastGatherBra": "sit breast shape ok",
+      "sitBreastSideOutBra": "sit breast shape ok, can 挤胸",
+      "_fieldExplanations": {
+        "material": "Chiffon, more likely dry after wash. \nAnd normally no hot when wear at noon",
+        "thick clothes": "Not thick dress- more likely dry after wash. \nand normally not hot when wear at noon",
+        "Hot at noon": "中午穿，不热，流汗少，因为soft chiffon",
+        "diao dai": "not 吊带 will not pain at shoulder.",
+        "side breast ok": "When look for side , the breast shape beautifully",
+        "sit breast ok": "Sit breast shape depend - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸，聚拢效果会恢复一些. 配合聚拢bra就没有胸型问题",
+        "center chest": "half center chest设计 - because this dress is 半聚拢， when pair with side open design bra, it not 聚拢at mid, may make breast shape not center or too small because side out散开设计. But can manual挤一挤胸增加聚拢。 配合聚拢bra就肯定没有胸型问题",
+        "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+        "long dress": "白天不闷热集汗， 夜晚风扇下因为布料有点薄和短冷脚",
+        "when with aircond: hot feeling": "due to not diao dai and wear bra",
+        "when with aircond: leg feeling": "due to short dress, soft chiffon material, thin clothes.",
+        "when without aircond: hot feeling": "due to soft chiffon material, not thick clothes, short dress",
+        "when without aircond: leg feeling": "due to short dress, soft chiffon material, not thick clothes. ",
+        "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+        "when sleep under fan: leg feeling": "due to short dress, inner thin, easy fold up裙底"
+      },
+      "_deletedCustomFields": [
+        "Wearing report 1",
+        "wearing report 2"
+      ],
+      "stand breast ok": "half center chest",
+      "standBreast": "half center chest",
+      "standBreastOk": "half center chest"
     },
     {
       "id": "recxEOHFMuwdAUj7HtS",
@@ -156,179 +334,331 @@
       "sit breast ok": "sit breast shape ok",
       "center chest": "center chest",
       "beautiful": "Beautiful",
-      "beatiful reason": "",
+      "beatiful reason": "聚拢设计美胸，腰型也很美，衣服lace style ，middle long dress. suitable for aircond or cold day. ",
       "wet": "dry",
-      "wet reason": "",
-      "Descriptions": "a affordable center chest , and hot thick dress",
+      "wet reason": "thick clothes but dry due to lace material,or this one special",
+      "Descriptions": "a affordable center chest beautiful ，beautiful waist design，middle long dress. Hot at noon , suitable for warm at cold night or aircond 环境\n",
       "Descriptions 2": "",
       "price": 44,
       "wearing frequency(how many times legacy washed)": 160,
-      "Tracked App Washes": 9,
-      "Total Washed Count": 169,
-      "Last Washed": "2026-08-20T00:00:00.000Z",
-      "AI Clothes Analysis": "### 1. Overall assessment\nThis \"white marry old\" dress is a delicate and visually appealing garment crafted from lace, highly rated for its beauty. The name suggests a romantic, possibly vintage or bridal-inspired style, making it suitable for special occasions where elegance and a classic aesthetic are desired. The $44 price point indicates it offers an accessible option for a lace dress.\n\n### 2. Comfort and climate\n*   **Sensory:** Lace generally offers a lightweight and airy feel against the skin. Depending on the quality, it can range from very soft and smooth to slightly textured. The intricate patterns of the lace contribute to a rich visual and tactile experience.\n*   **Climate:** Due to its open weave, lace is exceptionally breathable, making this dress ideal for warm weather, summer events, or indoor settings. It provides minimal insulation, rendering it unsuitable for cold climates without significant layering.\n*   **Ergonomics:** The inherent lightness of lace allows for unrestricted movement. Potential ergonomic considerations might include the finish of seams or the softness of the lace against sensitive skin, but generally, it should feel comfortable and airy.\n\n### 3. Fit and appearance\n*   **Appearance:** As a \"Beautiful\" white lace dress, it likely projects an elegant, romantic, and perhaps ethereal aesthetic. The \"marry old\" moniker implies a timeless or classic silhouette, possibly with vintage-inspired details, which can be flattering and sophisticated. White lace traditionally conveys purity, grace, and femininity.\n*   **Fit:** While specific fit details are undefined, lace often drapes gracefully, contributing to an elegant silhouette. The fit will depend on the garment's cut (e.g., A-line, sheath). Due to the potential sheerness of lace, a lining or a slip is often incorporated to maintain modesty and enhance comfort.\n\n### 4. Care and wearing tips\n*   **Care:** Lace is delicate and requires gentle care to maintain its beauty. Hand washing in cool water with a mild detergent is highly recommended to prevent snagging or stretching. If machine washing, use a mesh laundry bag on a delicate cycle. Air dry flat or hang carefully to preserve its shape and texture. Avoid harsh chemicals or excessive wringing.\n*   **Wearing:** This dress is best suited for special events, celebrations, or romantic occasions. Pair it with seamless, nude-colored undergarments to ensure a smooth, elegant appearance, especially if the lace is sheer. Be mindful of jewelry, rough surfaces, and bag straps that could snag the delicate lace. A slip might be beneficial for added comfort and coverage.",
+      "Tracked App Washes": 12,
+      "Total Washed Count": 172,
+      "Last Washed": "2026-10-22T00:00:00.000Z",
+      "AI Clothes Analysis": "### 综合评估：事实记录与人体工学推断\n“white marry old” 是一款定位于“聚拢型蕾丝长裙”的单品，定价 $44。其核心工学优势在于利用蕾丝面料（Lace）的物理特性，尽管属于“03 thick clothes”厚度级别，却表现出极佳的“dry（干燥）”属性，在洗后极易干燥。在衣橱中，它是一款依靠强力聚拢（Center Chest）设计来塑造饱满胸型的功能性连衣裙。虽然其面料厚重导致中午环境下有明显的聚热效应，但通过内搭选择及风扇辅助，其综合美观度与修身效果极佳，属于衣橱中高频穿搭的保留款。\n\n### 用户详述与深度穿搭复盘（融会 Descriptions 与 Descriptions 2）\n- **核心体感与环境适配**：用户在描述中明确该裙装拥有“beautiful waist design（优美腰线）”与“affordable center chest（聚拢效果）”。用户反馈该裙在“冷夜或空调房”表现极佳，但在中午强热环境下，厚面料与强聚拢结构的叠加会导致闷热。\n- **历史穿搭复盘（2026-09-21）**：在搭配“Hugo bra new 3”时，出现了 20 小时的全天候佩戴测试。用户指出，虽然非吊带设计有效避免了对斜方肌的刺激，但新内衣（New/Tight）带来的物理压迫导致肩部产生疼痛。此外，夜间睡眠时因 Hugo bra 的“side out”侧散设计，出现轻微的胸部侧移，这与裙装自身的“center chest”功能形成了有趣的力学抗衡。\n- **其他细节**：用户观察到蕾丝裙摆内衬较短薄，导致凌晨或夜间存在“冷脚”现象。对于这一现象，用户在复盘中曾计划测试增加打底裤的协同体感。\n\n### 关联穿着报告实测深度复盘\n- **内衣协同效应**：\n    - **Hugo Bra系列**：在【报告 1、3、4、5、6、7、8、9】中，多次记录了其与 Hugo Bra 的兼容性。Hugo 的“side out”设计与本裙的“center chest”产生互补：白天裙装强化聚拢；夜间睡眠时，若内衣支撑力不足，会有“side out”现象。\n    - **Tight Bra（Blue）**：在【报告 10】中，搭配紧身蓝色内衣时，胸型呈现极佳的视觉效果（如 D/E cup），但闷热感也随之成倍增加。\n- **肩部与体感细节**：所有报告均证实该裙的“not diao dai”设计对斜方肌非常友好（No irrate/pain）。\n- **环境温控**：无论天气如何，用户总结出“under fan（风扇下）”是关键变量。在【报告 11】中确认，即便在风扇下，高温时依然会有热感，说明面料厚度是主要热源。\n\n### 最新行动与自定义属性分析（Last Action & Custom Attributes）\n- **最新评语**：用户测试了“small bra”的聚拢效果，确认该裙自带的聚拢设计已足以支撑胸型，内衣的侧散结构能微量减轻胸部积热。\n- **自定义属性深度分析**：\n    - **Color**：虽然未指明色号，但蕾丝材质配合“white”色调，在光线下极易展现高级感，建议搭配浅色系内衣以防透色。\n    - **Thick/Lace**：该属性（厚蕾丝）是一把双刃剑，即保证了挺括的裙型，也造成了中午“Hot at noon”的闷热，属于必须根据温差进行策略性穿搭的单品。\n\n### 舒适度与气候适应（特别是中午炎热度与透气排汗）\n- **散热逻辑**：由于“Center Chest”的强聚拢设计会将热量集中在胸部中心，叠加“03 thick clothes”的厚度，该裙装不适合在无遮挡的户外烈日下长时间活动。\n- **吸湿排汗**：其“Dry”表现主要归功于蕾丝纤维的孔隙结构，只要不是长时间闷汗，汗液蒸发速度极快，不会产生异味。\n\n### 版型贴合与外观体感（肩带、久坐、裙长）\n- **工学表现**：非吊带式宽肩/有袖设计极大地提升了长时间穿着的舒适度。\n- **久坐体感**：在办公环境下，聚拢结构能保持胸型饱满，无滑脱风险，底围无明显压迫感。\n- **裙长与活动**：裙长在中长范围，活动性较好，但在【报告 12】中提及睡眠易折叠卷起，符合长裙在非固定场景下的物理规律。\n\n### 洗护与保洁优先级\n- **状态维护**：累计清洗 161 次，属于成熟面料状态。因其“Dry”属性，洗涤脱水过程较为容易，建议装入洗衣袋以保护精细蕾丝纤维。\n\n### 单次穿着成本与利用率 ($/wear)\n- **性价比分析**：买入价 $44，若按 161 次洗护粗略估算，单次穿着成本已降至 **$0.27/次** 以下，具有极高的衣橱利用率。\n\n### 缺失数据与盲区\n- **盲区声明**：所有关键物理特征（面料、厚度、胸型聚拢度、肩带舒适度、环境温控策略）均已有完整记录。目前仅缺失该蕾丝面料在“高频水洗”后的**纤维弹性衰减的具体数据（即长期洗涤后的结构形变情况）**。\n\n### 下次穿着建议关注的体感\n1. **对比测试**：下次尝试在搭配“Tight bra”与“Small bra”时，专门记录在“无风环境”下胸部中心区域的汗液积聚时长。\n2. **防寒优化**：下次穿搭时，尝试增加薄款丝袜或legging，对比验证是否能在消除“冷脚”现象的同时，保持腰部与整体的散热平衡。\n3. **磨合监测**：继续追踪“Hugo bra”洗涤后的松紧度变化，确认是否能在达到舒适阈值后，彻底消除肩部疼痛感。",
       "Pictures": [
         {
-          "id": "pic_1",
+          "id": "pic_1789983379703_g1nbs",
           "name": "856448cf-5563-427d-a050-5f8746931799.jpeg",
           "filename": "856448cf-5563-427d-a050-5f8746931799.jpeg",
-          "storagePath": "photos/856448cf-5563-427d-a050-5f8746931799.jpeg"
+          "url": "/uploads/garments/recxEOHFMuwdAUj7HtS/photos/1789983379703_856448cf-5563-427d-a050-5f8746931799.jpeg",
+          "storagePath": "garments/recxEOHFMuwdAUj7HtS/photos/1789983379703_856448cf-5563-427d-a050-5f8746931799.jpeg",
+          "mimetype": "image/jpeg",
+          "size": 297908
         }
       ],
       "may throw": "test",
-      "last comment or action": "test",
+      "last comment or action": "test with small bra 聚拢effect,tested still can 聚拢，bra布料可以减少一点热，但是由于dress很好的聚拢效果和ldress‘s lace布料中午还是闷热。",
       "tags": [
         "#clothes",
-        "#test"
+        "#Settle"
       ],
       "created": "2026-06-01T00:00:00.000Z",
       "long dress": "long dress",
       "unwash time rollup": 0,
       "wash stated (from Full Wearing Report (new design) clothes list (linked))": [],
       "customFields": {
-        "_fieldExplanations": {}
+        "Color": "Fffggg",
+        "Purchase Store": "All it",
+        "_fieldExplanations": {
+          "material": "Lace, more likely dry after wash. And normally hot when wear at noon",
+          "thick clothes": "thick dress- more likely wet after wash but due to material lace , this one is special, it dry. and normally hot when wear at noon",
+          "Hot at noon": "中午穿，感觉热，汗流多因为布料厚加聚拢胸设计。",
+          "diao dai": "not 吊带 will not pain at shoulder.",
+          "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）dress，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+          "center chest": "white marry old，center chest dress - 聚拢 dress设计 - 聚拢设计 dress,非常容易得到满意胸型，但要注意闷热，聚拢也集中闷热， side out bra可减轻因为布料。但是这款衣服因为聚拢效果特好，还是聚拢堆积热。",
+          "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+          "wet reason": " 厚但是干因为lace",
+          "long dress": "白天可能闷热集汗， 夜晚风扇下因为中长裙所以不是太冷， 但是因为内层布料有点短薄还是有点冷脚",
+          "side breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+          "sit breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+          "when with aircond: leg feeling": "due to inner clothes is thin",
+          "when without aircond: leg feeling": "middle long， and thick lace material",
+          "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+          "when sleep under fan: leg feeling": "due to middle dress 会卷起来，inner也不是很厚",
+          "when without aircond: hot feeling": "hot",
+          "aircondHotFeeling": "Become not so hot",
+          "aircondLegFeeling": "Middle cold",
+          "fanSleepHotFeeling": "Become not so hot",
+          "fanSleepLegFeeling": "middle cold",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "extraAttributes": {
-        "_fieldExplanations": {}
+        "Color": "Fffggg",
+        "Purchase Store": "All it",
+        "_fieldExplanations": {
+          "material": "Lace, more likely dry after wash. And normally hot when wear at noon",
+          "thick clothes": "thick dress- more likely wet after wash but due to material lace , this one is special, it dry. and normally hot when wear at noon",
+          "Hot at noon": "中午穿，感觉热，汗流多因为布料厚加聚拢胸设计。",
+          "diao dai": "not 吊带 will not pain at shoulder.",
+          "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）dress，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+          "center chest": "white marry old，center chest dress - 聚拢 dress设计 - 聚拢设计 dress,非常容易得到满意胸型，但要注意闷热，聚拢也集中闷热， side out bra可减轻因为布料。但是这款衣服因为聚拢效果特好，还是聚拢堆积热。",
+          "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+          "wet reason": " 厚但是干因为lace",
+          "long dress": "白天可能闷热集汗， 夜晚风扇下因为中长裙所以不是太冷， 但是因为内层布料有点短薄还是有点冷脚",
+          "side breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+          "sit breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+          "when with aircond: leg feeling": "due to inner clothes is thin",
+          "when without aircond: leg feeling": "middle long， and thick lace material",
+          "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+          "when sleep under fan: leg feeling": "due to middle dress 会卷起来，inner也不是很厚",
+          "when without aircond: hot feeling": "hot",
+          "aircondHotFeeling": "Become not so hot",
+          "aircondLegFeeling": "Middle cold",
+          "fanSleepHotFeeling": "Become not so hot",
+          "fanSleepLegFeeling": "middle cold",
+          "side breast ok: with 聚拢 bra": "side breast shape ok",
+          "sit breast ok: With 聚拢bra": "sit breast shape ok"
+        }
       },
       "aiReports": [
+        {
+          "id": "garment_ai_1791694690253_1mp9",
+          "timestamp": "2026-10-11T04:58:10.253Z",
+          "title": "Report #4",
+          "model": "gemini-3.1-flash-lite",
+          "content": "这是一份基于系统记录的 **White Marry Old** 连衣裙深度诊断报告。\n\n---\n\n### 综合评估：事实记录与人体工学推断\n本单品为一款蕾丝（Lace）材质的中长款连衣裙，厚度等级评定为 03（厚款）。其在衣橱中的核心价值在于“极佳的聚拢剪裁”与“蕾丝材质的特殊干爽表现”。尽管面料较厚，但由于蕾丝纤维的物理特性，洗后易干且不易存留异味。单价 $44，结合已累计的 161 次高频洗护，证明该单品在您的日常穿搭体系中属于“高频高利用率”单品，具有极高的性价比。\n\n### 用户详述与深度穿搭复盘（融会 Descriptions 与 Descriptions 2）\n用户在多次详述中明确了该裙装的“强聚拢”属性：\n*   **协同效应**：裙装自带的 Center Chest（中位聚拢）设计是其核心优势，能够有效中和 Hugo Bra 系列内衣（如 Hugo Bra New 2、New 3）常见的“Side out”（侧散）现象。\n*   **温度与环境**：用户明确指出，这款裙装是“冷天防寒”与“空调房利器”，但在高温晴天（Hot at noon）下表现出明显的“聚热”特征。即使搭配轻薄内衣，由于裙装本身的厚度与聚拢结构，午后体感往往伴随闷热（Middle hot）。\n*   **穿着策略**：夜间睡眠时，用户反馈需配合电风扇使用以调节体温，蕾丝虽厚但干爽，未出现湿冷不适。\n\n### 关联穿着报告实测深度复盘（Wearing Report 1, 2 与内衣/环境协同）\n*   **内衣兼容性**：\n    *   **Hugo Bra 系列**：在【穿搭实测 1、4、5、6、7、8、9】中，该裙装多次与 Hugo Bra 搭配。蕾丝裙能有效拉回 Hugo Bra 的侧散感，实现饱满的胸型，但内衣本身的紧致度（Tight）常导致肩部酸痛。\n    *   **Blue Big Bra**：在【穿搭实测 10】中，搭配紧身蓝款大码内衣，胸型视觉被放大至 D/E 杯，效果极佳，但会大幅加重闷热与出汗感。\n*   **环境体感**：\n    *   **凌晨温控**：报告一致反馈“Long dress, cold leg”（长裙腿部冷），原因在于裙身外层虽有质感，但内衬设计偏薄，无法完全隔绝凌晨寒气。\n    *   **出汗与散热**：实测表明，该裙装对风扇依赖度高（Night sweat: Still ok under fan），且“Lace”材质在排汗干爽表现上确实优于棉质厚面料。\n\n### 最新行动与自定义属性分析（Last Action & Custom Attributes）\n*   **Last Action**：用户通过尝试“Small Bra”与本款裙装进行聚拢测试，验证了即便在内衣支撑力较弱的情况下，裙装优秀的剪裁仍能提供满意的聚拢效果。\n*   **自定义属性剖析**：\n    *   **Hot at noon (Hot)**：该属性与厚面料（Thick clothes）和聚拢设计直接挂钩，提示该单品在 12:00-15:00 户外或无空调场景下具有强烈的热负荷，应避免长时间暴晒。\n    *   **Not Diao Dai**：此属性被多次强调，它是缓解用户“斜方肌 irrate”的关键设计。相比吊带裙，该款式对长期肩部劳损的用户极为友好。\n    *   **Wet/Dry**：虽然被归类为“Thick clothes”，但得益于 Lace 材质，该单品具有优秀的干爽特性，不会产生汗垢发臭的二次污染。\n\n### 舒适度与气候适应（特别是中午炎热度与透气排汗）\n该单品的舒适度呈现“两极分化”：\n*   **优势**：在室内、空调房或清晨/夜晚表现极佳，提供温润的包裹感，且洗涤后干燥迅速。\n*   **劣势**：中午炎热时，聚拢结构导致的“热量堆积”与“汗液聚拢”是主要痛点。建议在极端高温日避开此款，或内搭吸湿导汗性能更佳的极轻薄内衣。\n\n### 版型贴合与外观体感（肩带、久坐胸部与裙长）\n*   **肩带/斜方肌**：非吊带（Not Diao Dai）设计完美规避了切割痛感。\n*   **久坐体感**：Sit breast shape ok 是该裙装最稳健的评价，无论搭配何种内衣，其 Center Chest 设计都能在久坐时保持胸部饱满。\n*   **冷脚问题**：这是一个反复出现的物理痛点，建议在凌晨时段或寒冷环境下增加长袜，以弥补裙摆内衬覆盖不足带来的温差感。\n\n### 洗护与保洁优先级\n*   **状态**：最后洗涤于 2026-08-20，累计洗护 161 次。\n*   **指引**：考虑到蕾丝面料（Lace）的脆弱性与高频穿着（含全天 20 小时记录），建议在未来的洗护中严格执行“洗衣袋”模式，防止蕾丝钩挂，同时由于其厚度，脱水后务必平铺晾晒，防止裙摆变形。\n\n### 单次穿着成本与利用率 ($/wear)\n*   计算：$44 ÷ 161 次 = **$0.27 / 次**。\n*   评价：属于衣橱中顶级的投资回报率单品，接近于“平摊成本零消耗”状态。\n\n### 缺失数据与盲区\n*   **缺失记录**：目前暂无关于该裙装在“雨季潮湿环境下”的干爽记录（目前仅有晴天与室内数据）。\n*   **注意**：关于面料厚度、内衣兼容性及温度适应性的反馈非常详尽，本报告中提到的所有信息均为系统内事实。\n\n### 下次穿着建议关注的体感\n1.  **内衣磨合对照**：下次穿着时，专门记录 Hugo Bra 在经历过新一轮清洗后，肩带对斜方肌的压迫感是否有量化减轻。\n2.  **叠穿温控**：尝试内搭轻薄打底裤或过膝长袜，测试在解决“冷脚”问题的同时，是否会引发中午“更热（More hot）”的负面效应，以寻找该单品的全天候温控平衡点。\n3.  **裙摆起皱/变形**：由于洗护次数较多，需观察裙摆处蕾丝花边是否有纤维断裂或松弛，这可能影响聚拢以外的视觉美观度。",
+          "isPrimary": false
+        },
+        {
+          "id": "garment_ai_1791694477474_jcn3",
+          "timestamp": "2026-10-11T04:54:37.474Z",
+          "title": "Report #3",
+          "model": "gemini-3.1-flash-lite",
+          "content": "### 综合评估：事实记录与人体工学推断\n“white marry old” 是一款定位于“聚拢型蕾丝长裙”的单品，定价 $44。其核心工学优势在于利用蕾丝面料（Lace）的物理特性，尽管属于“03 thick clothes”厚度级别，却表现出极佳的“dry（干燥）”属性，在洗后极易干燥。在衣橱中，它是一款依靠强力聚拢（Center Chest）设计来塑造饱满胸型的功能性连衣裙。虽然其面料厚重导致中午环境下有明显的聚热效应，但通过内搭选择及风扇辅助，其综合美观度与修身效果极佳，属于衣橱中高频穿搭的保留款。\n\n### 用户详述与深度穿搭复盘（融会 Descriptions 与 Descriptions 2）\n- **核心体感与环境适配**：用户在描述中明确该裙装拥有“beautiful waist design（优美腰线）”与“affordable center chest（聚拢效果）”。用户反馈该裙在“冷夜或空调房”表现极佳，但在中午强热环境下，厚面料与强聚拢结构的叠加会导致闷热。\n- **历史穿搭复盘（2026-09-21）**：在搭配“Hugo bra new 3”时，出现了 20 小时的全天候佩戴测试。用户指出，虽然非吊带设计有效避免了对斜方肌的刺激，但新内衣（New/Tight）带来的物理压迫导致肩部产生疼痛。此外，夜间睡眠时因 Hugo bra 的“side out”侧散设计，出现轻微的胸部侧移，这与裙装自身的“center chest”功能形成了有趣的力学抗衡。\n- **其他细节**：用户观察到蕾丝裙摆内衬较短薄，导致凌晨或夜间存在“冷脚”现象。对于这一现象，用户在复盘中曾计划测试增加打底裤的协同体感。\n\n### 关联穿着报告实测深度复盘\n- **内衣协同效应**：\n    - **Hugo Bra系列**：在【报告 1、3、4、5、6、7、8、9】中，多次记录了其与 Hugo Bra 的兼容性。Hugo 的“side out”设计与本裙的“center chest”产生互补：白天裙装强化聚拢；夜间睡眠时，若内衣支撑力不足，会有“side out”现象。\n    - **Tight Bra（Blue）**：在【报告 10】中，搭配紧身蓝色内衣时，胸型呈现极佳的视觉效果（如 D/E cup），但闷热感也随之成倍增加。\n- **肩部与体感细节**：所有报告均证实该裙的“not diao dai”设计对斜方肌非常友好（No irrate/pain）。\n- **环境温控**：无论天气如何，用户总结出“under fan（风扇下）”是关键变量。在【报告 11】中确认，即便在风扇下，高温时依然会有热感，说明面料厚度是主要热源。\n\n### 最新行动与自定义属性分析（Last Action & Custom Attributes）\n- **最新评语**：用户测试了“small bra”的聚拢效果，确认该裙自带的聚拢设计已足以支撑胸型，内衣的侧散结构能微量减轻胸部积热。\n- **自定义属性深度分析**：\n    - **Color**：虽然未指明色号，但蕾丝材质配合“white”色调，在光线下极易展现高级感，建议搭配浅色系内衣以防透色。\n    - **Thick/Lace**：该属性（厚蕾丝）是一把双刃剑，即保证了挺括的裙型，也造成了中午“Hot at noon”的闷热，属于必须根据温差进行策略性穿搭的单品。\n\n### 舒适度与气候适应（特别是中午炎热度与透气排汗）\n- **散热逻辑**：由于“Center Chest”的强聚拢设计会将热量集中在胸部中心，叠加“03 thick clothes”的厚度，该裙装不适合在无遮挡的户外烈日下长时间活动。\n- **吸湿排汗**：其“Dry”表现主要归功于蕾丝纤维的孔隙结构，只要不是长时间闷汗，汗液蒸发速度极快，不会产生异味。\n\n### 版型贴合与外观体感（肩带、久坐、裙长）\n- **工学表现**：非吊带式宽肩/有袖设计极大地提升了长时间穿着的舒适度。\n- **久坐体感**：在办公环境下，聚拢结构能保持胸型饱满，无滑脱风险，底围无明显压迫感。\n- **裙长与活动**：裙长在中长范围，活动性较好，但在【报告 12】中提及睡眠易折叠卷起，符合长裙在非固定场景下的物理规律。\n\n### 洗护与保洁优先级\n- **状态维护**：累计清洗 161 次，属于成熟面料状态。因其“Dry”属性，洗涤脱水过程较为容易，建议装入洗衣袋以保护精细蕾丝纤维。\n\n### 单次穿着成本与利用率 ($/wear)\n- **性价比分析**：买入价 $44，若按 161 次洗护粗略估算，单次穿着成本已降至 **$0.27/次** 以下，具有极高的衣橱利用率。\n\n### 缺失数据与盲区\n- **盲区声明**：所有关键物理特征（面料、厚度、胸型聚拢度、肩带舒适度、环境温控策略）均已有完整记录。目前仅缺失该蕾丝面料在“高频水洗”后的**纤维弹性衰减的具体数据（即长期洗涤后的结构形变情况）**。\n\n### 下次穿着建议关注的体感\n1. **对比测试**：下次尝试在搭配“Tight bra”与“Small bra”时，专门记录在“无风环境”下胸部中心区域的汗液积聚时长。\n2. **防寒优化**：下次穿搭时，尝试增加薄款丝袜或legging，对比验证是否能在消除“冷脚”现象的同时，保持腰部与整体的散热平衡。\n3. **磨合监测**：继续追踪“Hugo bra”洗涤后的松紧度变化，确认是否能在达到舒适阈值后，彻底消除肩部疼痛感。",
+          "isPrimary": true
+        },
+        {
+          "id": "garment_ai_1791693792200_8wtu",
+          "timestamp": "2026-10-11T04:43:12.200Z",
+          "title": "Report #2",
+          "model": "gemini-3.1-flash-lite",
+          "content": "这份报告针对您的“white marry old”蕾丝连衣裙进行了详尽的人体工学与穿着体验复盘。该单品在衣橱中表现为一款极高利用率的视觉系功能单品，具有鲜明的温控与胸型塑造特征。\n\n---\n\n### 综合评估：事实记录与人体工学推断\n“white marry old” 是一款蕾丝材质的重工（Thickness: 03）长裙，单价 $44，洗护次数高达 161 次，折合单次穿着成本约 $0.27。该裙装在衣橱中定位为“视觉塑形型”。其核心卖点在于通过强力聚拢（Center Chest）剪裁实现优美的胸部线条，而非全天候透气型服装。虽然面料较厚，但蕾丝材质的特性使其在洗涤后具备良好的干燥性能，有效避免了长裙类单品易产生异味的痛点。\n\n### 用户详述与深度穿搭复盘（融会 Descriptions 与 Descriptions 2）\n用户在 Descriptions 中明确指出了该单品的矛盾特性：其腰部剪裁与聚拢设计造就了极高的美观度，但厚实的布料在中午炎热环境下会导致明显的闷热感。\n*   **温控建议：** 用户通过实践得出结论，该裙装不适用于全天候炎热室外，最理想的应用场景为“空调房内”或“冷风下的睡眠环境”。\n*   **备注：** Descriptions 2 虽含有大量字母符号，但结合系统逻辑来看，该单品的使用频率与稳定性极高，已成为您穿搭库中的基石款。\n\n### 关联穿着报告实测深度复盘（Wearing Report 1-12）\n通过对 12 份实测报告的汇总分析，发现以下关键模式：\n*   **胸型与内衣协同：**\n    *   **聚拢效果：** 无论搭配 Big Bra（如蓝色紧身款）还是 Small Bra，该裙装的 Center Chest 设计均能稳定维持胸部饱满感（实测报告 10 甚至提到产生 D-E Cup 的视觉效果）。\n    *   **内衣选择：** Hugo Bra 与该裙装配合默契，但在睡眠等特殊姿态下，若内衣支撑力不足，可能出现位移（Side out）。\n*   **肩部负担：** 由于其“Not Diao Dai”（非吊带）设计，极大缓解了斜方肌压力。多份报告提到，由于该裙装自身版型对肩部的友好度，即使在文胸过紧的情况下，整体肩部痛感也较吊带裙大幅降低。\n*   **下肢与环境：** 报告频繁提到“冷脚”或“凌晨防寒”现象，这与内衬过短、裙摆面料薄厚分布不均有关，建议在温差较大的凌晨配合过膝袜。\n\n### 最新行动与自定义属性分析\n*   **最新行动（Last Action）：** 您进行了“Small Bra + 聚拢”组合测试。结论表明，尽管内衣布料减少了热感，但 Dress 本身的蕾丝厚度与强聚拢结构的“热量堆积”效应依然存在。\n*   **自定义属性剖析：**\n    *   **Color（White）：** 浅色系在视觉上具有膨胀感，增强了蕾丝材质的立体纹理。\n    *   **Dry（出汗/干爽）：** 这是该单品的特殊属性，尽管属于 Thick Clothes，但蕾丝结构提供了超越常规厚面料的排湿效率，这也是该裙被保留 161 次的重要原因。\n\n### 舒适度与气候适应（特别是中午炎热度与透气排汗）\n*   **中午耐受力：** 属于“低耐受”。中午穿着时，汗流较多，核心原因在于“厚度+聚拢剪裁”导致的散热面积受限。\n*   **干爽表现：** 该裙装利用了蕾丝的空隙，虽然厚，但不易积水，洗后干爽（No wet/No臭）。\n\n### 版型贴合与外观体感\n*   **胸部：** 聚拢效果极佳，即便久坐（Sit breast ok）也能维持胸部饱满，无需频繁调整。\n*   **肩部：** 非吊带设计带来的舒适性提升，是该裙装在长时间穿着中胜出的关键。\n*   **裙长：** 中长裙设计（Long dress）在室内活动时具有极佳的仪式感，但需注意在睡眠时容易卷起。\n\n### 洗护与保洁优先级\n*   **建议：** 由于累计洗护已达 161 次，蕾丝面料可能出现局部纤维磨损。建议放入洗衣袋并在通风处自然阴干，避免高温烘干以保护聚拢结构的弹性。\n\n### 单次穿着成本与利用率\n*   **成本计算：** $44 / 161次 ≈ $0.27/次。\n*   **评价：** 极高性价比。该单品已处于“超额完成使命”的折旧阶段，目前的保留意义在于其对身材的优化效果。\n\n### 缺失数据与盲区\n*   **无盲区：** 经过对系统记录与实测报告的交叉比对，目前该单品的材质性能、温控反馈、内衣兼容性及洗护数据均已完备，不存在未知的物理体感盲区。\n\n### 下次穿着建议关注的体感\n1.  **内衣协同性：** 下次尝试“低侧翼、强聚拢”内衣，观察是否能在减少侧边束缚的同时，依然保持该裙装特有的 Center Chest 美感。\n2.  **温差管理：** 记录在 25°C 空调房内与 30°C 无风环境下的排汗量差异，确定该裙装的“舒适温区”临界点。\n3.  **内衬测试：** 若凌晨觉得腿部过冷，建议尝试叠穿薄款打底裤，观察是否会影响整体 Waist Design 的线条感。",
+          "isPrimary": false
+        },
         {
           "id": "garment_initial_version",
           "timestamp": "2026-06-01T00:00:00.000Z",
           "title": "Initial Report",
           "model": "gemini-3.6-flash",
           "content": "### 1. Overall assessment\nThis \"white marry old\" dress is a delicate and visually appealing garment crafted from lace, highly rated for its beauty. The name suggests a romantic, possibly vintage or bridal-inspired style, making it suitable for special occasions where elegance and a classic aesthetic are desired. The $44 price point indicates it offers an accessible option for a lace dress.\n\n### 2. Comfort and climate\n*   **Sensory:** Lace generally offers a lightweight and airy feel against the skin. Depending on the quality, it can range from very soft and smooth to slightly textured. The intricate patterns of the lace contribute to a rich visual and tactile experience.\n*   **Climate:** Due to its open weave, lace is exceptionally breathable, making this dress ideal for warm weather, summer events, or indoor settings. It provides minimal insulation, rendering it unsuitable for cold climates without significant layering.\n*   **Ergonomics:** The inherent lightness of lace allows for unrestricted movement. Potential ergonomic considerations might include the finish of seams or the softness of the lace against sensitive skin, but generally, it should feel comfortable and airy.\n\n### 3. Fit and appearance\n*   **Appearance:** As a \"Beautiful\" white lace dress, it likely projects an elegant, romantic, and perhaps ethereal aesthetic. The \"marry old\" moniker implies a timeless or classic silhouette, possibly with vintage-inspired details, which can be flattering and sophisticated. White lace traditionally conveys purity, grace, and femininity.\n*   **Fit:** While specific fit details are undefined, lace often drapes gracefully, contributing to an elegant silhouette. The fit will depend on the garment's cut (e.g., A-line, sheath). Due to the potential sheerness of lace, a lining or a slip is often incorporated to maintain modesty and enhance comfort.\n\n### 4. Care and wearing tips\n*   **Care:** Lace is delicate and requires gentle care to maintain its beauty. Hand washing in cool water with a mild detergent is highly recommended to prevent snagging or stretching. If machine washing, use a mesh laundry bag on a delicate cycle. Air dry flat or hang carefully to preserve its shape and texture. Avoid harsh chemicals or excessive wringing.\n*   **Wearing:** This dress is best suited for special events, celebrations, or romantic occasions. Pair it with seamless, nude-colored undergarments to ensure a smooth, elegant appearance, especially if the lace is sheer. Be mindful of jewelry, rough surfaces, and bag straps that could snag the delicate lace. A slip might be beneficial for added comfort and coverage.",
-          "isPrimary": true
+          "isPrimary": false
         }
       ],
       "name": "white marry old",
       "clothesType": "Dress",
       "materialProp": "lace",
-      "side breast ok: with \u805a\u62e2 bra": "side breast shape ok",
-      "side breast ok: with side out bra": "side breast out",
-      "sit breast ok: With \u805a\u62e2bra": "sit breast shape ok",
+      "fieldExplanations": {
+        "material": "Lace, more likely dry after wash. And normally hot when wear at noon",
+        "thick clothes": "thick dress- more likely wet after wash but due to material lace , this one is special, it dry. and normally hot when wear at noon",
+        "Hot at noon": "中午穿，感觉热，汗流多因为布料厚加聚拢胸设计。",
+        "diao dai": "not 吊带 will not pain at shoulder.",
+        "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）dress，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+        "center chest": "white marry old，center chest dress - 聚拢 dress设计 - 聚拢设计 dress,非常容易得到满意胸型，但要注意闷热，聚拢也集中闷热， side out bra可减轻因为布料。但是这款衣服因为聚拢效果特好，还是聚拢堆积热。",
+        "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+        "wet reason": " 厚但是干因为lace",
+        "long dress": "白天可能闷热集汗， 夜晚风扇下因为中长裙所以不是太冷， 但是因为内层布料有点短薄还是有点冷脚",
+        "side breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+        "sit breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+        "when with aircond: leg feeling": "due to inner clothes is thin",
+        "when without aircond: leg feeling": "middle long， and thick lace material",
+        "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+        "when sleep under fan: leg feeling": "due to middle dress 会卷起来，inner也不是很厚",
+        "when without aircond: hot feeling": "hot",
+        "aircondHotFeeling": "Become not so hot",
+        "aircondLegFeeling": "Middle cold",
+        "fanSleepHotFeeling": "Become not so hot",
+        "fanSleepLegFeeling": "middle cold",
+        "side breast ok: with 聚拢 bra": "side breast shape ok",
+        "sit breast ok: With 聚拢bra": "sit breast shape ok"
+      },
+      "sit breast ok: With 聚拢bra": "sit breast shape ok",
       "sit breast ok: with side out bra": "sit breast shape ok",
-      "when with aircond: hot feeling": "",
-      "when with aircond: leg feeling": "",
-      "when without aircond: hot feeling": "",
-      "when without aircond: leg feeling": "",
-      "when sleep under fan: hot feeling": "",
-      "when sleep under fan: leg feeling": "",
-      "fieldExplanations": {}
+      "side breast ok: with 聚拢 bra": "side breast shape ok",
+      "side breast ok: with side out bra": "side breast shape ok",
+      "when with aircond: hot feeling": "Become not so hot",
+      "when with aircond: leg feeling": "Middle cold",
+      "when without aircond: hot feeling": "hot",
+      "when without aircond: leg feeling": "Hot",
+      "when sleep under fan: hot feeling": "Become not so hot",
+      "when sleep under fan: leg feeling": "middle cold",
+      "noAircondHotFeeling": "hot",
+      "noAircondLegFeeling": "Hot",
+      "aircondHotFeeling": "Become not so hot",
+      "aircondLegFeeling": "Middle cold",
+      "fanSleepHotFeeling": "Become not so hot",
+      "fanSleepLegFeeling": "middle cold",
+      "sideBreastGatherBra": "side breast shape ok",
+      "sideBreastSideOutBra": "side breast shape ok",
+      "stand breast": "center chest",
+      "sitBreastGatherBra": "sit breast shape ok",
+      "sitBreastSideOutBra": "sit breast shape ok",
+      "_fieldExplanations": {
+        "material": "Lace, more likely dry after wash. And normally hot when wear at noon",
+        "thick clothes": "thick dress- more likely wet after wash but due to material lace , this one is special, it dry. and normally hot when wear at noon",
+        "Hot at noon": "中午穿，感觉热，汗流多因为布料厚加聚拢胸设计。",
+        "diao dai": "not 吊带 will not pain at shoulder.",
+        "sit breast ok": "sit breast shape ok - because this is 聚拢（center chest）dress，聚拢at mid， make the dress breast shape full ，不管你穿哪一间通常都聚拢胸型",
+        "center chest": "white marry old，center chest dress - 聚拢 dress设计 - 聚拢设计 dress,非常容易得到满意胸型，但要注意闷热，聚拢也集中闷热， side out bra可减轻因为布料。但是这款衣服因为聚拢效果特好，还是聚拢堆积热。",
+        "wet": "Dry - this clothes after wash is easily dry. No wet. 不会造成其他衣物潮湿和发臭",
+        "wet reason": " 厚但是干因为lace",
+        "long dress": "白天可能闷热集汗， 夜晚风扇下因为中长裙所以不是太冷， 但是因为内层布料有点短薄还是有点冷脚",
+        "side breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+        "sit breast ok: with side out bra": "side breast shape ok,因为强聚拢",
+        "when with aircond: leg feeling": "due to inner clothes is thin",
+        "when without aircond: leg feeling": "middle long， and thick lace material",
+        "when sleep under fan: hot feeling": "under fan wind bigger and cold bed help reduce feeling of hot",
+        "when sleep under fan: leg feeling": "due to middle dress 会卷起来，inner也不是很厚"
+      },
+      "stand breast ok": "center chest",
+      "standBreast": "center chest",
+      "standBreastOk": "center chest",
+      "_deletedCustomFields": [],
+      "Color": "Fffggg",
+      "Purchase Store": "All it"
     }
   ],
   "reports": [
     {
-      "id": "rec_report_1789866029302",
-      "Name": "2026 09 19 wearing report",
-      "wear date": "2026-09-19T00:00:00.000Z",
-      "created": "2026-09-20T01:00:29.302Z",
-      "categories": [
-        "[[Notes]]",
-        "[[Wearing Report]]"
-      ],
+      "Name": "2026-10-30 1007 wearing report",
+      "wear date": "2026-10-28T00:00:00.000Z",
+      "shoulder feel": "",
+      "mid breast": "",
+      "night mid breast": "Big bra quite full, after hour wear feel heavy",
+      "sweat": "",
+      "night sweat": "",
+      "leg feel": "",
+      "night leg feel": "Thin so cool",
+      "report detail": "2.20 - 9.40 -7.20hour, this breast feel girl and want sex, thin skirt confirm when sleep need blanket. But daylight is hot.",
       "tags": [
         "#journal"
       ],
-      "shoulder feel": "the not diao dai make the shoulder no so irrate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.",
-      "mid breast": "",
-      "night mid breast": "With hugo bra , quite small breast. It is too side. Normally the white marry will center it. Because sleep style?",
-      "sweat": "",
-      "night sweat": "Still ok under fans, not so sweat, no under fans, little sweat",
-      "leg feel": "",
-      "night leg feel": "Long dress, cold  leg, dont know why the skirt feel thin now",
-      "report detail": "1 to 6 am",
-      "AI Wearing Analysis": "",
-      "Pictures": [
-        {
-          "id": "pic_1789865712133_kyq8o",
-          "name": "IMG_9528.jpeg",
-          "filename": "IMG_9528.jpeg",
-          "url": "/uploads/reports/new_report_1789865712133/photos/1789865712133_IMG_9528.jpeg",
-          "storagePath": "reports/new_report_1789865712133/photos/1789865712133_IMG_9528.jpeg",
-          "mimetype": "image/jpeg",
-          "size": 2560002
-        }
-      ],
-      "aiReports": [],
+      "Pictures": [],
+      "fieldExplanations": {},
       "customFields": {
+        "Name": "2026-10-30 1007 wearing report",
+        "tags": [
+          "#journal"
+        ],
+        "created": "2026-10-30T02:10:58.367Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "name": "2026-10-30 1007 wearing report",
         "_fieldExplanations": {}
       },
       "extraAttributes": {
+        "Name": "2026-10-30 1007 wearing report",
+        "tags": [
+          "#journal"
+        ],
+        "created": "2026-10-30T02:10:58.367Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "name": "2026-10-30 1007 wearing report",
         "_fieldExplanations": {}
       },
-      "name": "2026 09 19 wearing report",
-      "wearDate": "2026-09-19T00:00:00.000Z",
-      "reportDetail": "1 to 6 am",
-      "shoulderFeel": "the not diao dai make the shoulder no so irrate and pain. But the bra is small size or new. Quite tight to shoulder. Little pain.",
-      "midBreast": "",
-      "nightMidBreast": "With hugo bra , quite small breast. It is too side. Normally the white marry will center it. Because sleep style?",
-      "sweatProp": "",
-      "nightSweat": "Still ok under fans, not so sweat, no under fans, little sweat",
-      "legFeel": "",
-      "nightLegFeel": "Long dress, cold  leg, dont know why the skirt feel thin now",
-      "aiWearingAnalysis": "",
-      "fieldExplanations": {}
-    },
-    {
-      "id": "recUPOPtIqmN192k5xS",
-      "Name": "2026-08-15 0848 wearing report copy",
-      "wear date": "2026-08-14T00:00:00.000Z",
-      "created": "2026-08-13T00:00:00.000Z",
+      "id": "rec_report_1793326258366",
+      "created": "2026-10-30T02:10:58.367Z",
       "categories": [
         "[[Notes]]",
         "[[Wearing Report]]"
       ],
-      "tags": [
-        "#journal",
-        "#notes",
-        "#wearingreport",
-        "#episodes"
-      ],
-      "shoulder feel": "",
+      "AI Wearing Analysis": "",
+      "aiReports": [],
+      "name": "2026-10-30 1007 wearing report",
+      "wearDate": "2026-10-28T00:00:00.000Z",
+      "reportDetail": "2.20 - 9.40 -7.20hour, this breast feel girl and want sex, thin skirt confirm when sleep need blanket. But daylight is hot.",
+      "shoulderFeel": "",
+      "midBreast": "",
+      "nightMidBreast": "Big bra quite full, after hour wear feel heavy",
+      "sweatProp": "",
+      "nightSweat": "",
+      "legFeel": "",
+      "nightLegFeel": "Thin so cool",
+      "aiWearingAnalysis": ""
+    },
+    {
+      "Name": "2026-10-25 1739 wearing report",
+      "wear date": "2026-10-24T00:00:00.000Z",
+      "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
       "mid breast": "",
-      "night mid breast": "With hugo bra , is ok size breast, can be bigger",
+      "night mid breast": "With hugo bra ,  breast is side out but still ok the shape",
       "sweat": "",
       "night sweat": "still ok under fan not so sweat",
       "leg feel": "",
-      "night leg feel": "Middle Long dress, no so cold for leg, but at midnight 4am will cold",
-      "report detail": "11.30 to 7",
-      "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-08-15 0848 wearing report copy\n- **Wear date:** 2026-08-14\n- **Outfit:** Blue French dress with Hugo Bra New 2\n- **Duration:** 27,000 seconds (**7.5 hours**)\n- **Reported period:** 11:30 to 7; this matches 7.5 hours if it was an overnight period, but AM/PM was not specified.\n\n## Comfort and fit\n- **Fact:** The bra felt acceptable for the current breast size, though the report notes the breasts \u201ccan be bigger.\u201d\n- **Fact:** The mid-length dress initially kept the legs from feeling too cold.\n- **Fact:** The legs became cold around 4:00 a.m.\n- **Missing data:** Daytime breast comfort, shoulder comfort, and daytime leg comfort were not recorded.\n- **Inference:** The outfit was broadly suitable for most of the night, but did not provide enough leg warmth during the coldest hours.\n\n## Heat and sweat\n- **Fact:** Sweating remained manageable while using a fan.\n- **Missing data:** Daytime heat and sweat observations were not provided.\n- **Inference:** Ventilation from the fan likely helped maintain comfort; comfort without a fan was not tested or reported.\n\n## Wash recommendation\n- **Clothes:** Reported as already washed.\n- **Bra:** Reported as washed.\n- No further washing action is currently indicated.\n\n## Follow-up\n- Consider adding a light leg covering or blanket for use around 4:00 a.m.\n- On the next wear, record shoulder pressure, daytime comfort, and whether the bra remains comfortable if breast size changes.\n- Clarify AM/PM for the wearing period in future reports.",
-      "Pictures": [],
-      "aiReports": [
-        {
-          "id": "initial_version",
-          "timestamp": "2026-08-13T00:00:00.000Z",
-          "title": "Initial Report",
-          "model": "gemini-3.8-flash",
-          "content": "## Wearing summary\n- **Report:** 2026-08-15 0848 wearing report copy\n- **Wear date:** 2026-08-14\n- **Outfit:** Blue French dress with Hugo Bra New 2\n- **Duration:** 27,000 seconds (**7.5 hours**)\n- **Reported period:** 11:30 to 7; this matches 7.5 hours if it was an overnight period, but AM/PM was not specified.\n\n## Comfort and fit\n- **Fact:** The bra felt acceptable for the current breast size, though the report notes the breasts \u201ccan be bigger.\u201d\n- **Fact:** The mid-length dress initially kept the legs from feeling too cold.\n- **Fact:** The legs became cold around 4:00 a.m.\n- **Missing data:** Daytime breast comfort, shoulder comfort, and daytime leg comfort were not recorded.\n- **Inference:** The outfit was broadly suitable for most of the night, but did not provide enough leg warmth during the coldest hours.\n\n## Heat and sweat\n- **Fact:** Sweating remained manageable while using a fan.\n- **Missing data:** Daytime heat and sweat observations were not provided.\n- **Inference:** Ventilation from the fan likely helped maintain comfort; comfort without a fan was not tested or reported.\n\n## Wash recommendation\n- **Clothes:** Reported as already washed.\n- **Bra:** Reported as washed.\n- No further washing action is currently indicated.\n\n## Follow-up\n- Consider adding a light leg covering or blanket for use around 4:00 a.m.\n- On the next wear, record shoulder pressure, daytime comfort, and whether the bra remains comfortable if breast size changes.\n- Clarify AM/PM for the wearing period in future reports.",
-          "isPrimary": true
-        }
+      "night leg feel": "Long dress, cold  leg maybe due to 裙底薄",
+      "report detail": "2 -7.30 , 普通穿， 但是胸型会让你不由自主的想到女孩。",
+      "tags": [
+        "#journal"
       ],
+      "Pictures": [],
+      "fieldExplanations": {},
       "customFields": {
+        "Name": "2026-10-25 1739 wearing report",
+        "tags": [
+          "#journal"
+        ],
+        "created": "2026-10-25T09:46:19.475Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "name": "2026-10-25 1739 wearing report",
         "_fieldExplanations": {}
       },
       "extraAttributes": {
+        "Name": "2026-10-25 1739 wearing report",
+        "tags": [
+          "#journal"
+        ],
+        "created": "2026-10-25T09:46:19.475Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "name": "2026-10-25 1739 wearing report",
         "_fieldExplanations": {}
       },
-      "name": "2026-08-15 0848 wearing report copy",
-      "wearDate": "2026-08-14T00:00:00.000Z",
-      "reportDetail": "11.30 to 7",
-      "shoulderFeel": "",
+      "id": "rec_report_1792921579475",
+      "created": "2026-10-25T09:46:19.475Z",
+      "categories": [
+        "[[Notes]]",
+        "[[Wearing Report]]"
+      ],
+      "AI Wearing Analysis": "",
+      "aiReports": [],
+      "name": "2026-10-25 1739 wearing report",
+      "wearDate": "2026-10-24T00:00:00.000Z",
+      "reportDetail": "2 -7.30 , 普通穿， 但是胸型会让你不由自主的想到女孩。",
+      "shoulderFeel": "the not diao dai make the shoulder no so irrate and pain.",
       "midBreast": "",
-      "nightMidBreast": "With hugo bra , is ok size breast, can be bigger",
+      "nightMidBreast": "With hugo bra ,  breast is side out but still ok the shape",
       "sweatProp": "",
       "nightSweat": "still ok under fan not so sweat",
       "legFeel": "",
-      "nightLegFeel": "Middle Long dress, no so cold for leg, but at midnight 4am will cold",
-      "aiWearingAnalysis": "## Wearing summary\n- **Report:** 2026-08-15 0848 wearing report copy\n- **Wear date:** 2026-08-14\n- **Outfit:** Blue French dress with Hugo Bra New 2\n- **Duration:** 27,000 seconds (**7.5 hours**)\n- **Reported period:** 11:30 to 7; this matches 7.5 hours if it was an overnight period, but AM/PM was not specified.\n\n## Comfort and fit\n- **Fact:** The bra felt acceptable for the current breast size, though the report notes the breasts \u201ccan be bigger.\u201d\n- **Fact:** The mid-length dress initially kept the legs from feeling too cold.\n- **Fact:** The legs became cold around 4:00 a.m.\n- **Missing data:** Daytime breast comfort, shoulder comfort, and daytime leg comfort were not recorded.\n- **Inference:** The outfit was broadly suitable for most of the night, but did not provide enough leg warmth during the coldest hours.\n\n## Heat and sweat\n- **Fact:** Sweating remained manageable while using a fan.\n- **Missing data:** Daytime heat and sweat observations were not provided.\n- **Inference:** Ventilation from the fan likely helped maintain comfort; comfort without a fan was not tested or reported.\n\n## Wash recommendation\n- **Clothes:** Reported as already washed.\n- **Bra:** Reported as washed.\n- No further washing action is currently indicated.\n\n## Follow-up\n- Consider adding a light leg covering or blanket for use around 4:00 a.m.\n- On the next wear, record shoulder pressure, daytime comfort, and whether the bra remains comfortable if breast size changes.\n- Clarify AM/PM for the wearing period in future reports.",
-      "fieldExplanations": {}
+      "nightLegFeel": "Long dress, cold  leg maybe due to 裙底薄",
+      "aiWearingAnalysis": ""
     },
     {
-      "id": "recfFDhbZfCotDePl2Q",
-      "Name": "2026-08-13 2148 wearing report copy",
-      "wear date": "2026-08-13T00:00:00.000Z",
-      "created": "2026-06-25T00:00:00.000Z",
+      "id": "rec54lBtvRMCnKbnxW7",
+      "Name": "2026-07-15 1230 wearing report",
+      "wear date": "2026-07-15T00:00:00.000Z",
+      "created": "2026-07-15T00:00:00.000Z",
       "categories": [
         "[[Notes]]",
         "[[Wearing Report]]"
@@ -336,419 +666,260 @@
       "tags": [
         "#journal",
         "#notes",
-        "#clothes",
         "#wearingreport"
       ],
-      "shoulder feel": "the diao dai make the shoulder irrate and pain. But not hot at noon",
-      "mid breast": "The small bra due to this tight mid design become smaller and stick to the chest, hot at noon",
-      "night mid breast": "",
-      "sweat": "middle clothes, mid center stick to chest design also make more hot and swear, but skirt is thin and not so hot at noon",
-      "night sweat": "",
-      "leg feel": "like dress not pant, short dress, chiffon, thin, not hot at noon",
-      "night leg feel": "",
-      "report detail": "start 4.30pm - 6.30pm",
-      "AI Wearing Analysis": "## Wearing summary\n- **Fact:** Worn on **2026-08-13**, from **4:30 PM to 6:30 PM**.\n- **Fact:** Recorded duration is **7,200 seconds (2 hours)**, matching the stated time range.\n- **Fact:** Outfit: **pink diao dai chiffon** with **hugo bra new 2**.\n- **Note:** References to \u201chot at noon\u201d do not match the reported afternoon wear period, so the timing of those observations is unclear.\n\n## Comfort and fit\n- **Fact:** The bra/center chest area felt small or tight and stuck to the chest.\n- **Fact:** The shoulder straps caused irritation and pain.\n- **Fact:** The short, thin chiffon dress felt cooler around the legs than pants would.\n- **Inference:** The bra fit and tight center design may need adjustment or a less restrictive alternative.\n\n## Heat and sweat\n- **Fact:** The center chest area felt hot and produced more sweat because the fabric/design stuck to the chest.\n- **Fact:** The skirt area was thin and reportedly not very hot.\n- **Fact:** The shoulder area was not reported as hot.\n- **Missing data:** Night mid-breast, night leg, and night sweat observations were not provided.\n\n## Wash recommendation\n- **Fact:** Both the clothes and bra are marked as already washed.\n- No further immediate washing is indicated. Follow their care labels, especially for chiffon and bra materials.\n\n## Follow-up\n- Check whether a larger or less tightly centered bra improves chest comfort and airflow.\n- Consider softer, wider, or adjusted straps if shoulder irritation continues.\n- Clarify whether the heat observations occurred at noon or during the recorded **4:30\u20136:30 PM** wear period.\n- Record night observations during a future wear if nighttime comfort needs evaluation.",
+      "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+      "mid breast": "The big bra is tight to chest , may hot in noon",
+      "night mid breast": "not related",
+      "sweat": "plain Middle thick clothes at big bra also more hot  and sweat at noon 不像chiffon那么透气, 加上长裙",
+      "night sweat": "not related",
+      "leg feel": "Skirt quite long， stick to leg make more swear at noon",
+      "night leg feel": "not related",
+      "report detail": "6.30 - 9",
+      "AI Wearing Analysis": "## Wearing summary\n- **Report:** 2026-07-15 1230 wearing report\n- **Wear date:** 2026-07-15\n- **Clothes:** Apricot French RM30\n- **Bra:** Pink old bra\n- **Duration:** 9,000 seconds (**2 hours 30 minutes**), consistent with the reported **6:30–9:00** period. AM/PM is not specified.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** The bra felt tight against the mid-breast/chest.\n- **Fact:** The strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was long and thin, but its inner layer stuck to the legs.\n- **Inference:** The bra may become uncomfortable during longer or hotter wear. The skirt lining may benefit from an anti-static or less-clinging layer.\n\n## Heat and sweat\n- **Fact:** The thicker middle section of the clothing felt hotter and caused more sweating around noon.\n- **Concern noted by wearer:** The tight bra may also feel hot at noon.\n- **Uncertain:** The report suggests the skirt lining might stick more when sweating, but this was not confirmed.\n- **Missing:** Night mid-breast, leg comfort, and sweat observations.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional washing action is currently needed.\n\n## Follow-up\n- Recheck the bra’s tightness during a longer or hotter wearing period.\n- Test whether the skirt lining consistently clings when sweating.\n- Record the exact time as AM/PM and add night observations if relevant.",
       "Pictures": [],
       "aiReports": [
         {
+          "id": "ai_ver_1791683502328_xcv6",
+          "timestamp": "2026-10-11T01:51:42.328Z",
+          "title": "Report #2",
+          "model": "gemini-3.1-flash-lite",
+          "content": "## 穿戴概要\n- **记录日期：** 2026年7月15日\n- **穿戴单品：**\n    - **外搭：** apricot french rm30（连衣裙）\n    - **内衣：** pink old bra（内衣）\n- **穿着时长：** 约 2.5 小时（9000秒）\n- **场合环境：** 中午（Noon）时段的穿着记录。本次组合由于裙装面料与内衣的双重聚拢设计，在中午环境下产生了明显的闷热与流汗感。\n\n## 舒适度与人体工学（肩膀与胸部）\n- **肩部表现：** 由于本次外搭属于 **\"not diao dai\"**（非细肩带/宽肩设计），有效分散了压力，肩部未出现刺激或疼痛感。\n- **胸部体感：** \n    - **白天体感：** 由于连衣裙为“center chest（聚拢）”设计，叠加“pink old bra”的强聚拢属性，胸部处于极度紧致状态（tight to chest）。虽然达成了 **\"ji xiong\"** 后胸型好看的视觉需求，但中部的聚拢效应显著增加了局部闷热感。\n- **腿部温感：** 该连衣裙面料为“plain middle thick”，裙摆较长且贴腿，在中午气温下散热不佳，导致了腿部额外的 **\"swear\"**（出汗）现象。\n\n## 炎热与排汗表现\n- **排汗情况：** \n    - **中午表现：** 该组合在中午表现为典型的“more hot and swear”。因为面料厚度为“middle thick”且不如 chiffon 透气，加之双重聚拢结构导致的透气通道受阻，排汗负担较重。\n    - **散热逻辑：** 您记录了“under fan still ok not so sweat”，证实该组合在空气流动（电风扇）环境下能够缓解汗积，但在静止且高温的中午时段，闷热感无法自我调节。\n\n## 洗护判断与状态核实\n- **pink old bra：** 该内衣目前标记为“need wash”，且由于其“quick thick material”易吸汗且难以完全干透（Little wet），建议在清洗后务必在通风处彻底晾干，避免长期潮湿导致异味产生。\n- **apricot french rm30：** 该裙装面料在洗涤后虽然干得较快（Dry），但存在 **\"zhouwhen\"**（起皱/褶皱）问题。鉴于其“middle thick”的材质，建议手洗以减少纤维磨损，且收纳时避免过度折叠。\n\n## 追踪建议与缺失体感记录\n- **缺失字段提示：**\n    - **起皱详细度：** 本次未记录具体活动后的 **\"zhouwhen\"** 程度，下次建议观察：该裙装在久坐（Sit）后，胸部聚拢线处与裙摆面料是否出现了影响美观的褶皱。\n    - **夜间体感对比：** 本次报告缺失夜间（Night）反馈。鉴于您提到该裙装夜晚可能有“冷感”，建议下次记录在该款内衣组合下，夜间是否因为面料厚度带来的温差调节不适。\n- **下次重点观察：**\n    1.  **聚拢平衡点：** 尝试更换一款承托力适中（非强聚拢）的内衣，观察在“apricot french rm30”下是否能减小“tight to chest”的不适感，同时对比胸型是否仍能满足美学要求。\n    2.  **腿部透气性：** 留意行走时裙摆贴腿的部位是否为特定材质摩擦引起。\n    3.  **侧边情况：** 留意在高强度聚拢时，是否有 **\"side out\"**（副乳侧溢）现象，以确认该内衣的包裹范围是否与该连衣裙完美适配。",
+          "isPrimary": false
+        },
+        {
           "id": "initial_version",
-          "timestamp": "2026-06-25T00:00:00.000Z",
+          "timestamp": "2026-07-15T00:00:00.000Z",
           "title": "Initial Report",
           "model": "gemini-3.8-flash",
-          "content": "## Wearing summary\n- **Fact:** Worn on **2026-08-13**, from **4:30 PM to 6:30 PM**.\n- **Fact:** Recorded duration is **7,200 seconds (2 hours)**, matching the stated time range.\n- **Fact:** Outfit: **pink diao dai chiffon** with **hugo bra new 2**.\n- **Note:** References to \u201chot at noon\u201d do not match the reported afternoon wear period, so the timing of those observations is unclear.\n\n## Comfort and fit\n- **Fact:** The bra/center chest area felt small or tight and stuck to the chest.\n- **Fact:** The shoulder straps caused irritation and pain.\n- **Fact:** The short, thin chiffon dress felt cooler around the legs than pants would.\n- **Inference:** The bra fit and tight center design may need adjustment or a less restrictive alternative.\n\n## Heat and sweat\n- **Fact:** The center chest area felt hot and produced more sweat because the fabric/design stuck to the chest.\n- **Fact:** The skirt area was thin and reportedly not very hot.\n- **Fact:** The shoulder area was not reported as hot.\n- **Missing data:** Night mid-breast, night leg, and night sweat observations were not provided.\n\n## Wash recommendation\n- **Fact:** Both the clothes and bra are marked as already washed.\n- No further immediate washing is indicated. Follow their care labels, especially for chiffon and bra materials.\n\n## Follow-up\n- Check whether a larger or less tightly centered bra improves chest comfort and airflow.\n- Consider softer, wider, or adjusted straps if shoulder irritation continues.\n- Clarify whether the heat observations occurred at noon or during the recorded **4:30\u20136:30 PM** wear period.\n- Record night observations during a future wear if nighttime comfort needs evaluation.",
+          "content": "## Wearing summary\n- **Report:** 2026-07-15 1230 wearing report\n- **Wear date:** 2026-07-15\n- **Clothes:** Apricot French RM30\n- **Bra:** Pink old bra\n- **Duration:** 9,000 seconds (**2 hours 30 minutes**), consistent with the reported **6:30–9:00** period. AM/PM is not specified.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** The bra felt tight against the mid-breast/chest.\n- **Fact:** The strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was long and thin, but its inner layer stuck to the legs.\n- **Inference:** The bra may become uncomfortable during longer or hotter wear. The skirt lining may benefit from an anti-static or less-clinging layer.\n\n## Heat and sweat\n- **Fact:** The thicker middle section of the clothing felt hotter and caused more sweating around noon.\n- **Concern noted by wearer:** The tight bra may also feel hot at noon.\n- **Uncertain:** The report suggests the skirt lining might stick more when sweating, but this was not confirmed.\n- **Missing:** Night mid-breast, leg comfort, and sweat observations.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional washing action is currently needed.\n\n## Follow-up\n- Recheck the bra’s tightness during a longer or hotter wearing period.\n- Test whether the skirt lining consistently clings when sweating.\n- Record the exact time as AM/PM and add night observations if relevant.",
           "isPrimary": true
         }
       ],
       "customFields": {
-        "_fieldExplanations": {}
+        "Name": "2026-07-15 1230 wearing report",
+        "created": "2026-07-15T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "aiReports": [
+          {
+            "id": "ai_ver_1791683502328_xcv6",
+            "timestamp": "2026-10-11T01:51:42.328Z",
+            "title": "Report #2",
+            "model": "gemini-3.1-flash-lite",
+            "content": "## 穿戴概要\n- **记录日期：** 2026年7月15日\n- **穿戴单品：**\n    - **外搭：** apricot french rm30（连衣裙）\n    - **内衣：** pink old bra（内衣）\n- **穿着时长：** 约 2.5 小时（9000秒）\n- **场合环境：** 中午（Noon）时段的穿着记录。本次组合由于裙装面料与内衣的双重聚拢设计，在中午环境下产生了明显的闷热与流汗感。\n\n## 舒适度与人体工学（肩膀与胸部）\n- **肩部表现：** 由于本次外搭属于 **\"not diao dai\"**（非细肩带/宽肩设计），有效分散了压力，肩部未出现刺激或疼痛感。\n- **胸部体感：** \n    - **白天体感：** 由于连衣裙为“center chest（聚拢）”设计，叠加“pink old bra”的强聚拢属性，胸部处于极度紧致状态（tight to chest）。虽然达成了 **\"ji xiong\"** 后胸型好看的视觉需求，但中部的聚拢效应显著增加了局部闷热感。\n- **腿部温感：** 该连衣裙面料为“plain middle thick”，裙摆较长且贴腿，在中午气温下散热不佳，导致了腿部额外的 **\"swear\"**（出汗）现象。\n\n## 炎热与排汗表现\n- **排汗情况：** \n    - **中午表现：** 该组合在中午表现为典型的“more hot and swear”。因为面料厚度为“middle thick”且不如 chiffon 透气，加之双重聚拢结构导致的透气通道受阻，排汗负担较重。\n    - **散热逻辑：** 您记录了“under fan still ok not so sweat”，证实该组合在空气流动（电风扇）环境下能够缓解汗积，但在静止且高温的中午时段，闷热感无法自我调节。\n\n## 洗护判断与状态核实\n- **pink old bra：** 该内衣目前标记为“need wash”，且由于其“quick thick material”易吸汗且难以完全干透（Little wet），建议在清洗后务必在通风处彻底晾干，避免长期潮湿导致异味产生。\n- **apricot french rm30：** 该裙装面料在洗涤后虽然干得较快（Dry），但存在 **\"zhouwhen\"**（起皱/褶皱）问题。鉴于其“middle thick”的材质，建议手洗以减少纤维磨损，且收纳时避免过度折叠。\n\n## 追踪建议与缺失体感记录\n- **缺失字段提示：**\n    - **起皱详细度：** 本次未记录具体活动后的 **\"zhouwhen\"** 程度，下次建议观察：该裙装在久坐（Sit）后，胸部聚拢线处与裙摆面料是否出现了影响美观的褶皱。\n    - **夜间体感对比：** 本次报告缺失夜间（Night）反馈。鉴于您提到该裙装夜晚可能有“冷感”，建议下次记录在该款内衣组合下，夜间是否因为面料厚度带来的温差调节不适。\n- **下次重点观察：**\n    1.  **聚拢平衡点：** 尝试更换一款承托力适中（非强聚拢）的内衣，观察在“apricot french rm30”下是否能减小“tight to chest”的不适感，同时对比胸型是否仍能满足美学要求。\n    2.  **腿部透气性：** 留意行走时裙摆贴腿的部位是否为特定材质摩擦引起。\n    3.  **侧边情况：** 留意在高强度聚拢时，是否有 **\"side out\"**（副乳侧溢）现象，以确认该内衣的包裹范围是否与该连衣裙完美适配。",
+            "isPrimary": false
+          },
+          {
+            "id": "initial_version",
+            "timestamp": "2026-07-15T00:00:00.000Z",
+            "title": "Initial Report",
+            "model": "gemini-3.8-flash",
+            "content": "## Wearing summary\n- **Report:** 2026-07-15 1230 wearing report\n- **Wear date:** 2026-07-15\n- **Clothes:** Apricot French RM30\n- **Bra:** Pink old bra\n- **Duration:** 9,000 seconds (**2 hours 30 minutes**), consistent with the reported **6:30–9:00** period. AM/PM is not specified.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** The bra felt tight against the mid-breast/chest.\n- **Fact:** The strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was long and thin, but its inner layer stuck to the legs.\n- **Inference:** The bra may become uncomfortable during longer or hotter wear. The skirt lining may benefit from an anti-static or less-clinging layer.\n\n## Heat and sweat\n- **Fact:** The thicker middle section of the clothing felt hotter and caused more sweating around noon.\n- **Concern noted by wearer:** The tight bra may also feel hot at noon.\n- **Uncertain:** The report suggests the skirt lining might stick more when sweating, but this was not confirmed.\n- **Missing:** Night mid-breast, leg comfort, and sweat observations.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional washing action is currently needed.\n\n## Follow-up\n- Recheck the bra’s tightness during a longer or hotter wearing period.\n- Test whether the skirt lining consistently clings when sweating.\n- Record the exact time as AM/PM and add night observations if relevant.",
+            "isPrimary": true
+          }
+        ],
+        "name": "2026-07-15 1230 wearing report",
+        "_fieldExplanations": {
+          "mid breast": "白天mid breast体感- 聚拢设计衣服加聚拢内衣，这款衣服胸前变成紧，中午聚热， 但是还是胸型好看因为聚拢center chest\n",
+          "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+          "night mid breast": "晚上mid breast体感-\n",
+          "night sweat": "晚上流汗程度-",
+          "leg feel": "白天腿感-，由于plain middle thick布料长，贴腿，所以汗多\n晚上not related",
+          "sweat": "白天流汗程度- 这款聚拢dress， 加聚拢bra，所以白天闷热流汗多"
+        }
       },
       "extraAttributes": {
-        "_fieldExplanations": {}
+        "Name": "2026-07-15 1230 wearing report",
+        "created": "2026-07-15T00:00:00.000Z",
+        "categories": [
+          "[[Notes]]",
+          "[[Wearing Report]]"
+        ],
+        "tags": [
+          "#journal",
+          "#notes",
+          "#wearingreport"
+        ],
+        "aiReports": [
+          {
+            "id": "ai_ver_1791683502328_xcv6",
+            "timestamp": "2026-10-11T01:51:42.328Z",
+            "title": "Report #2",
+            "model": "gemini-3.1-flash-lite",
+            "content": "## 穿戴概要\n- **记录日期：** 2026年7月15日\n- **穿戴单品：**\n    - **外搭：** apricot french rm30（连衣裙）\n    - **内衣：** pink old bra（内衣）\n- **穿着时长：** 约 2.5 小时（9000秒）\n- **场合环境：** 中午（Noon）时段的穿着记录。本次组合由于裙装面料与内衣的双重聚拢设计，在中午环境下产生了明显的闷热与流汗感。\n\n## 舒适度与人体工学（肩膀与胸部）\n- **肩部表现：** 由于本次外搭属于 **\"not diao dai\"**（非细肩带/宽肩设计），有效分散了压力，肩部未出现刺激或疼痛感。\n- **胸部体感：** \n    - **白天体感：** 由于连衣裙为“center chest（聚拢）”设计，叠加“pink old bra”的强聚拢属性，胸部处于极度紧致状态（tight to chest）。虽然达成了 **\"ji xiong\"** 后胸型好看的视觉需求，但中部的聚拢效应显著增加了局部闷热感。\n- **腿部温感：** 该连衣裙面料为“plain middle thick”，裙摆较长且贴腿，在中午气温下散热不佳，导致了腿部额外的 **\"swear\"**（出汗）现象。\n\n## 炎热与排汗表现\n- **排汗情况：** \n    - **中午表现：** 该组合在中午表现为典型的“more hot and swear”。因为面料厚度为“middle thick”且不如 chiffon 透气，加之双重聚拢结构导致的透气通道受阻，排汗负担较重。\n    - **散热逻辑：** 您记录了“under fan still ok not so sweat”，证实该组合在空气流动（电风扇）环境下能够缓解汗积，但在静止且高温的中午时段，闷热感无法自我调节。\n\n## 洗护判断与状态核实\n- **pink old bra：** 该内衣目前标记为“need wash”，且由于其“quick thick material”易吸汗且难以完全干透（Little wet），建议在清洗后务必在通风处彻底晾干，避免长期潮湿导致异味产生。\n- **apricot french rm30：** 该裙装面料在洗涤后虽然干得较快（Dry），但存在 **\"zhouwhen\"**（起皱/褶皱）问题。鉴于其“middle thick”的材质，建议手洗以减少纤维磨损，且收纳时避免过度折叠。\n\n## 追踪建议与缺失体感记录\n- **缺失字段提示：**\n    - **起皱详细度：** 本次未记录具体活动后的 **\"zhouwhen\"** 程度，下次建议观察：该裙装在久坐（Sit）后，胸部聚拢线处与裙摆面料是否出现了影响美观的褶皱。\n    - **夜间体感对比：** 本次报告缺失夜间（Night）反馈。鉴于您提到该裙装夜晚可能有“冷感”，建议下次记录在该款内衣组合下，夜间是否因为面料厚度带来的温差调节不适。\n- **下次重点观察：**\n    1.  **聚拢平衡点：** 尝试更换一款承托力适中（非强聚拢）的内衣，观察在“apricot french rm30”下是否能减小“tight to chest”的不适感，同时对比胸型是否仍能满足美学要求。\n    2.  **腿部透气性：** 留意行走时裙摆贴腿的部位是否为特定材质摩擦引起。\n    3.  **侧边情况：** 留意在高强度聚拢时，是否有 **\"side out\"**（副乳侧溢）现象，以确认该内衣的包裹范围是否与该连衣裙完美适配。",
+            "isPrimary": false
+          },
+          {
+            "id": "initial_version",
+            "timestamp": "2026-07-15T00:00:00.000Z",
+            "title": "Initial Report",
+            "model": "gemini-3.8-flash",
+            "content": "## Wearing summary\n- **Report:** 2026-07-15 1230 wearing report\n- **Wear date:** 2026-07-15\n- **Clothes:** Apricot French RM30\n- **Bra:** Pink old bra\n- **Duration:** 9,000 seconds (**2 hours 30 minutes**), consistent with the reported **6:30–9:00** period. AM/PM is not specified.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** The bra felt tight against the mid-breast/chest.\n- **Fact:** The strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was long and thin, but its inner layer stuck to the legs.\n- **Inference:** The bra may become uncomfortable during longer or hotter wear. The skirt lining may benefit from an anti-static or less-clinging layer.\n\n## Heat and sweat\n- **Fact:** The thicker middle section of the clothing felt hotter and caused more sweating around noon.\n- **Concern noted by wearer:** The tight bra may also feel hot at noon.\n- **Uncertain:** The report suggests the skirt lining might stick more when sweating, but this was not confirmed.\n- **Missing:** Night mid-breast, leg comfort, and sweat observations.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional washing action is currently needed.\n\n## Follow-up\n- Recheck the bra’s tightness during a longer or hotter wearing period.\n- Test whether the skirt lining consistently clings when sweating.\n- Record the exact time as AM/PM and add night observations if relevant.",
+            "isPrimary": true
+          }
+        ],
+        "name": "2026-07-15 1230 wearing report",
+        "_fieldExplanations": {
+          "mid breast": "白天mid breast体感- 聚拢设计衣服加聚拢内衣，这款衣服胸前变成紧，中午聚热， 但是还是胸型好看因为聚拢center chest\n",
+          "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+          "night mid breast": "晚上mid breast体感-\n",
+          "night sweat": "晚上流汗程度-",
+          "leg feel": "白天腿感-，由于plain middle thick布料长，贴腿，所以汗多\n晚上not related",
+          "sweat": "白天流汗程度- 这款聚拢dress， 加聚拢bra，所以白天闷热流汗多"
+        }
       },
-      "name": "2026-08-13 2148 wearing report copy",
-      "wearDate": "2026-08-13T00:00:00.000Z",
-      "reportDetail": "start 4.30pm - 6.30pm",
-      "shoulderFeel": "the diao dai make the shoulder irrate and pain. But not hot at noon",
-      "midBreast": "The small bra due to this tight mid design become smaller and stick to the chest, hot at noon",
-      "nightMidBreast": "",
-      "sweatProp": "middle clothes, mid center stick to chest design also make more hot and swear, but skirt is thin and not so hot at noon",
-      "nightSweat": "",
-      "legFeel": "like dress not pant, short dress, chiffon, thin, not hot at noon",
-      "nightLegFeel": "",
-      "aiWearingAnalysis": "## Wearing summary\n- **Fact:** Worn on **2026-08-13**, from **4:30 PM to 6:30 PM**.\n- **Fact:** Recorded duration is **7,200 seconds (2 hours)**, matching the stated time range.\n- **Fact:** Outfit: **pink diao dai chiffon** with **hugo bra new 2**.\n- **Note:** References to \u201chot at noon\u201d do not match the reported afternoon wear period, so the timing of those observations is unclear.\n\n## Comfort and fit\n- **Fact:** The bra/center chest area felt small or tight and stuck to the chest.\n- **Fact:** The shoulder straps caused irritation and pain.\n- **Fact:** The short, thin chiffon dress felt cooler around the legs than pants would.\n- **Inference:** The bra fit and tight center design may need adjustment or a less restrictive alternative.\n\n## Heat and sweat\n- **Fact:** The center chest area felt hot and produced more sweat because the fabric/design stuck to the chest.\n- **Fact:** The skirt area was thin and reportedly not very hot.\n- **Fact:** The shoulder area was not reported as hot.\n- **Missing data:** Night mid-breast, night leg, and night sweat observations were not provided.\n\n## Wash recommendation\n- **Fact:** Both the clothes and bra are marked as already washed.\n- No further immediate washing is indicated. Follow their care labels, especially for chiffon and bra materials.\n\n## Follow-up\n- Check whether a larger or less tightly centered bra improves chest comfort and airflow.\n- Consider softer, wider, or adjusted straps if shoulder irritation continues.\n- Clarify whether the heat observations occurred at noon or during the recorded **4:30\u20136:30 PM** wear period.\n- Record night observations during a future wear if nighttime comfort needs evaluation.",
-      "fieldExplanations": {}
+      "name": "2026-07-15 1230 wearing report",
+      "wearDate": "2026-07-15T00:00:00.000Z",
+      "reportDetail": "6.30 - 9",
+      "shoulderFeel": "the not diao dai make the shoulder no so irrate and pain.",
+      "midBreast": "The big bra is tight to chest , may hot in noon",
+      "nightMidBreast": "not related",
+      "sweatProp": "plain Middle thick clothes at big bra also more hot  and sweat at noon 不像chiffon那么透气, 加上长裙",
+      "nightSweat": "not related",
+      "legFeel": "Skirt quite long， stick to leg make more swear at noon",
+      "nightLegFeel": "not related",
+      "aiWearingAnalysis": "## Wearing summary\n- **Report:** 2026-07-15 1230 wearing report\n- **Wear date:** 2026-07-15\n- **Clothes:** Apricot French RM30\n- **Bra:** Pink old bra\n- **Duration:** 9,000 seconds (**2 hours 30 minutes**), consistent with the reported **6:30–9:00** period. AM/PM is not specified.\n- **Categories/Tags:** Notes, Wearing Report; #journal, #notes, #wearingreport\n\n## Comfort and fit\n- **Fact:** The bra felt tight against the mid-breast/chest.\n- **Fact:** The strap design caused less shoulder irritation and pain.\n- **Fact:** The skirt was long and thin, but its inner layer stuck to the legs.\n- **Inference:** The bra may become uncomfortable during longer or hotter wear. The skirt lining may benefit from an anti-static or less-clinging layer.\n\n## Heat and sweat\n- **Fact:** The thicker middle section of the clothing felt hotter and caused more sweating around noon.\n- **Concern noted by wearer:** The tight bra may also feel hot at noon.\n- **Uncertain:** The report suggests the skirt lining might stick more when sweating, but this was not confirmed.\n- **Missing:** Night mid-breast, leg comfort, and sweat observations.\n\n## Wash recommendation\n- **Clothes:** Already washed.\n- **Bra:** Washed.\n- No additional washing action is currently needed.\n\n## Follow-up\n- Recheck the bra’s tightness during a longer or hotter wearing period.\n- Test whether the skirt lining consistently clings when sweating.\n- Record the exact time as AM/PM and add night observations if relevant.",
+      "fieldExplanations": {
+        "mid breast": "白天mid breast体感- 聚拢设计衣服加聚拢内衣，这款衣服胸前变成紧，中午聚热， 但是还是胸型好看因为聚拢center chest\n",
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "night mid breast": "晚上mid breast体感-\n",
+        "night sweat": "晚上流汗程度-",
+        "leg feel": "白天腿感-，由于plain middle thick布料长，贴腿，所以汗多\n晚上not related",
+        "sweat": "白天流汗程度- 这款聚拢dress， 加聚拢bra，所以白天闷热流汗多"
+      },
+      "_fieldExplanations": {
+        "mid breast": "白天mid breast体感- 聚拢设计衣服加聚拢内衣，这款衣服胸前变成紧，中午聚热， 但是还是胸型好看因为聚拢center chest\n",
+        "shoulder feel": "the not diao dai make the shoulder no so irrate and pain.",
+        "night mid breast": "晚上mid breast体感-\n",
+        "night sweat": "晚上流汗程度-",
+        "leg feel": "白天腿感-，由于plain middle thick布料长，贴腿，所以汗多\n晚上not related",
+        "sweat": "白天流汗程度- 这款聚拢dress， 加聚拢bra，所以白天闷热流汗多"
+      }
     }
   ],
   "junctions": [
     {
-      "id": "j_hugo_report1",
-      "name": 1,
-      "wearingReportId": "recUPOPtIqmN192k5xS",
-      "clothesId": "receYRXEMznrbePfA7g",
-      "clothesTitle": "hugo bra new 2",
-      "wearingReportTitle": "2026-08-15 0848 wearing report copy",
-      "durationVal": 27000,
-      "washStated": "wash",
-      "wearDate": "2026-08-14",
-      "washDate": "2026-09-03",
-      "washedDate": "2026-09-03"
+      "id": "rec_junction_1793326258367_0",
+      "name": 131,
+      "wearing report id": {
+        "id": "rec_report_1793326258366",
+        "title": "2026-10-30 1007 wearing report"
+      },
+      "clothes(new)": {
+        "id": "recefNyeYJhyjpzEXZ0",
+        "title": "white heavy new"
+      },
+      "duration": 26400,
+      "wash stated": "need wash",
+      "Clothes Type (from clothes(new))": "Dress",
+      "wear date": "2026-10-28",
+      "clothesId": "recefNyeYJhyjpzEXZ0",
+      "clothesTitle": "white heavy new",
+      "wearingReportId": "rec_report_1793326258366",
+      "wearingReportTitle": "2026-10-30 1007 wearing report",
+      "washStated": "need wash",
+      "durationVal": 26400,
+      "wearDate": "2026-10-28"
     },
     {
-      "id": "j_blue_report1",
-      "name": 2,
-      "wearingReportId": "recUPOPtIqmN192k5xS",
-      "clothesId": "recw9ywvJO4xioV4nw5",
-      "clothesTitle": "Blue french dress",
-      "wearingReportTitle": "2026-08-15 0848 wearing report copy",
-      "durationVal": 27000,
-      "washStated": "wash",
-      "wearDate": "2026-08-14",
-      "washDate": "2026-09-03",
-      "washedDate": "2026-09-03"
+      "id": "rec_junction_1793326258367_1",
+      "name": 132,
+      "wearing report id": {
+        "id": "rec_report_1793326258366",
+        "title": "2026-10-30 1007 wearing report"
+      },
+      "clothes(new)": {
+        "id": "recMeuJu7wtgRlK5yQp",
+        "title": "blue old bra"
+      },
+      "duration": 26400,
+      "wash stated": "need wash",
+      "Clothes Type (from clothes(new))": "bra",
+      "wear date": "2026-10-28",
+      "clothesId": "recMeuJu7wtgRlK5yQp",
+      "clothesTitle": "blue old bra",
+      "wearingReportId": "rec_report_1793326258366",
+      "wearingReportTitle": "2026-10-30 1007 wearing report",
+      "washStated": "need wash",
+      "durationVal": 26400,
+      "wearDate": "2026-10-28"
     },
     {
-      "id": "j_hugo_report2",
-      "name": 3,
-      "wearingReportId": "recfFDhbZfCotDePl2Q",
-      "clothesId": "receYRXEMznrbePfA7g",
-      "clothesTitle": "hugo bra new 2",
-      "wearingReportTitle": "2026-08-13 2148 wearing report copy",
-      "durationVal": 7200,
-      "washStated": "wash",
-      "wearDate": "2026-08-13",
-      "washDate": "2026-09-03",
-      "washedDate": "2026-09-03"
-    },
-    {
-      "id": "j_blue_report2",
-      "name": 4,
-      "wearingReportId": "recfFDhbZfCotDePl2Q",
-      "clothesId": "recw9ywvJO4xioV4nw5",
-      "clothesTitle": "Blue french dress",
-      "wearingReportTitle": "2026-08-13 2148 wearing report copy",
+      "id": "rec_junction_1792921579475_0",
+      "name": 127,
+      "wearing report id": {
+        "id": "rec_report_1792921579475",
+        "title": "2026-10-25 1739 wearing report"
+      },
+      "clothes(new)": {
+        "id": "recefNyeYJhyjpzEXZ0",
+        "title": "white heavy new"
+      },
+      "duration": 19800,
+      "wash stated": "need wash",
+      "Clothes Type (from clothes(new))": "Dress",
+      "wear date": "2026-10-24",
+      "clothesId": "recefNyeYJhyjpzEXZ0",
+      "clothesTitle": "white heavy new",
+      "wearingReportId": "rec_report_1792921579475",
+      "wearingReportTitle": "2026-10-25 1739 wearing report",
+      "washStated": "need wash",
       "durationVal": 19800,
-      "washStated": "wash",
-      "wearDate": "2026-08-13",
-      "washDate": "2026-09-03",
-      "washedDate": "2026-09-03"
+      "wearDate": "2026-10-24"
     },
     {
-      "id": "j_white_report3",
-      "name": 5,
-      "wearingReportId": "rec_report_1789866029302",
+      "id": "rec_junction_1791683502328_0",
+      "name": 115,
+      "wearing report id": {
+        "id": "rec54lBtvRMCnKbnxW7",
+        "title": "2026-07-15 1230 wearing report"
+      },
+      "clothes(new)": {
+        "id": "recxEOHFMuwdAUj7HtS",
+        "title": "white marry old"
+      },
+      "duration": 9000,
+      "wash stated": "washed",
+      "Clothes Type (from clothes(new))": "Dress",
+      "wear date": "2026-07-15",
       "clothesId": "recxEOHFMuwdAUj7HtS",
       "clothesTitle": "white marry old",
-      "wearingReportTitle": "2026 09 19 wearing report",
-      "durationVal": 18000,
-      "washStated": "need wash",
-      "wearDate": "2026-09-19",
-      "washDate": null,
-      "washedDate": null
-    }
-  ],
-  "drilldownPresets": [
-    {
-      "id": "preset-aircond-hot",
-      "name": "Aircond Suitable: Upper Body (not cold / hot)",
-      "description": "Tier 1: when with aircond: hot feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-      "groupTiers": [
-        "Clothes Type",
-        "wet",
-        "when with aircond: hot feeling",
-        "when with aircond: leg feeling",
-        "beautiful",
-        "beatiful reason"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when with aircond: hot feeling",
-        "when with aircond: leg feeling",
-        "material",
-        "thick clothes"
-      ],
-      "updatedAt": "2026-10-17T00:23:57.742Z"
+      "wearingReportId": "rec54lBtvRMCnKbnxW7",
+      "wearingReportTitle": "2026-07-15 1230 wearing report",
+      "washStated": "washed",
+      "durationVal": 9000,
+      "wearDate": "2026-07-15"
     },
     {
-      "id": "preset-aircond-leg",
-      "name": "Aircond Suitable: Leg Feeling (not cold leg)",
-      "description": "Tier 1: when with aircond: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
-      "groupTiers": [
-        "when with aircond: leg feeling",
-        "Clothes Type"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when with aircond: leg feeling",
-        "when with aircond: hot feeling",
-        "material",
-        "long dress"
-      ]
-    },
-    {
-      "id": "preset-without-aircond-hot",
-      "name": "Normal / No Aircond: Upper Body (hot feeling)",
-      "description": "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-      "groupTiers": [
-        "Clothes Type",
-        "wet",
-        "when without aircond: hot feeling",
-        "when without aircond: leg feeling",
-        "beautiful",
-        "beatiful reason"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when without aircond: hot feeling",
-        "when without aircond: leg feeling",
-        "material",
-        "thick clothes"
-      ],
-      "updatedAt": "2026-10-17T00:23:04.546Z"
-    },
-    {
-      "id": "preset-without-aircond-leg",
-      "name": "Normal / No Aircond: Leg Feeling (not cold leg)",
-      "description": "Tier 1: when without aircond: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
-      "groupTiers": [
-        "when without aircond: leg feeling",
-        "Clothes Type"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when without aircond: leg feeling",
-        "when without aircond: hot feeling",
-        "material",
-        "thick clothes"
-      ]
-    },
-    {
-      "id": "preset-sleep-fan-hot",
-      "name": "Sleep Under Fan: Upper Body (hot feeling)",
-      "description": "Tier 1: when sleep under fan: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type.",
-      "groupTiers": [
-        "Clothes Type",
-        "wet",
-        "when sleep under fan: hot feeling",
-        "when sleep under fan: leg feeling",
-        "beautiful",
-        "beatiful reason"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when sleep under fan: hot feeling",
-        "when sleep under fan: leg feeling",
-        "material",
-        "long dress"
-      ],
-      "updatedAt": "2026-10-17T00:20:34.408Z"
-    },
-    {
-      "id": "preset-sleep-fan-leg",
-      "name": "Sleep Under Fan: Leg Feeling (not cold leg)",
-      "description": "Tier 1: when sleep under fan: leg feeling (not cold, not so cold, hot, undefined). Tier 2: Clothes Type.",
-      "groupTiers": [
-        "when sleep under fan: leg feeling",
-        "Clothes Type"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "when sleep under fan: leg feeling",
-        "when sleep under fan: hot feeling",
-        "material",
-        "long dress"
-      ]
-    },
-    {
-      "id": "preset-wet-performance",
-      "name": "Clothes Wet / Dry Performance",
-      "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
-      "groupTiers": [
-        "Clothes Type",
-        "wet"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "wet",
-        "wet reason",
-        "material",
-        "Hot at noon"
-      ]
-    },
-    {
-      "id": "preset-breast-gather-bra",
-      "name": "Breast Fit: With \u805a\u62e2bra",
-      "description": "Tier 1: Clothes Type (dress/bra). Tier 2: sit breast ok: With \u805a\u62e2bra.",
-      "groupTiers": [
-        "Clothes Type",
-        "sit breast ok: With \u805a\u62e2bra"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "sit breast ok: With \u805a\u62e2bra",
-        "side breast ok: with \u805a\u62e2 bra",
-        "beautiful",
-        "diao dai"
-      ],
-      "updatedAt": "2026-10-13T08:36:28.775Z"
-    },
-    {
-      "id": "preset-thickness-climate",
-      "name": "Thickness & Climate",
-      "description": "Hierarchical drill by clothing category, noon thermal feel, and fabric thickness.",
-      "groupTiers": [
-        "Clothes Type",
-        "Hot at noon",
-        "thick clothes"
-      ],
-      "sortField": "wearing frequency(how many times legacy washed)",
-      "sortOrder": "desc",
-      "visibleFields": [
-        "Clothes Type",
-        "material",
-        "thick clothes",
-        "Hot at noon",
-        "beautiful",
-        "wearing frequency(how many times legacy washed)",
-        "wash stated"
-      ]
-    },
-    {
-      "id": "preset-aesthetic-fit",
-      "name": "Aesthetic & Fit Ratings",
-      "description": "Drill down by category, aesthetic score, and strap/chest silhouette.",
-      "groupTiers": [
-        "Clothes Type",
-        "beautiful",
-        "diao dai"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "beautiful",
-        "diao dai",
-        "side breast ok",
-        "material",
-        "price"
-      ]
-    },
-    {
-      "id": "preset-wash-care",
-      "name": "Wash Care & Laundry Priority",
-      "description": "Exclusive drill by wash backlog state, clothing category, and fabric material.",
-      "groupTiers": [
-        "wash stated",
-        "Clothes Type",
-        "material"
-      ],
-      "sortField": "wearing frequency(how many times legacy washed)",
-      "sortOrder": "desc",
-      "visibleFields": [
-        "wash stated",
-        "Clothes Type",
-        "material",
-        "Tracked App Washes",
-        "Total Washed Count",
-        "Last Washed"
-      ]
-    },
-    {
-      "id": "preset-sensory-heat",
-      "name": "Sensory Heat & Moisture",
-      "description": "Drill by midday heat sensitivity, moisture performance, and thickness.",
-      "groupTiers": [
-        "Hot at noon",
-        "wet",
-        "thick clothes"
-      ],
-      "sortField": "wearing frequency(how many times legacy washed)",
-      "sortOrder": "desc",
-      "visibleFields": [
-        "Clothes Type",
-        "Hot at noon",
-        "wet",
-        "thick clothes",
-        "material",
-        "beautiful"
-      ]
-    },
-    {
-      "id": "preset-declutter-audit",
-      "name": "Declutter & Discard Audit",
-      "description": "Audit garments flagged for possible decluttering or disposal by category.",
-      "groupTiers": [
-        "may throw",
-        "Clothes Type",
-        "beautiful"
-      ],
-      "sortField": "wearing frequency(how many times legacy washed)",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "may throw",
-        "Clothes Type",
-        "material",
-        "beautiful",
-        "price",
-        "wearing frequency(how many times legacy washed)"
-      ]
-    },
-    {
-      "id": "custom-preset-1791990087862",
-      "name": "Diao dai (Copy)",
-      "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
-      "isCustom": true,
-      "groupTiers": [
-        "Clothes Type",
-        "diao dai"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "wet",
-        "wet reason",
-        "material",
-        "Hot at noon"
-      ],
-      "updatedAt": "2026-10-14T15:01:56.224Z"
-    },
-    {
-      "id": "custom-preset-1791990140511",
-      "name": "Beautiful (Copy)",
-      "description": "Tier 1: Clothes Type (dress/bra). Tier 2: wet (dry, little wet, wet, undefined).",
-      "isCustom": true,
-      "groupTiers": [
-        "Clothes Type",
-        "beautiful",
-        "wet",
-        "beatiful reason"
-      ],
-      "sortField": "Name",
-      "sortOrder": "asc",
-      "visibleFields": [
-        "Clothes Type",
-        "wet",
-        "wet reason",
-        "material",
-        "Hot at noon"
-      ],
-      "updatedAt": "2026-10-17T13:07:13.648Z"
+      "id": "rec_junction_1791683502328_1",
+      "name": 116,
+      "wearing report id": {
+        "id": "rec54lBtvRMCnKbnxW7",
+        "title": "2026-07-15 1230 wearing report"
+      },
+      "clothes(new)": {
+        "id": "recMeuJu7wtgRlK5yQp",
+        "title": "blue old bra"
+      },
+      "duration": 9000,
+      "wash stated": "washed",
+      "Clothes Type (from clothes(new))": "bra",
+      "wear date": "2026-07-15",
+      "clothesId": "recMeuJu7wtgRlK5yQp",
+      "clothesTitle": "blue old bra",
+      "wearingReportId": "rec54lBtvRMCnKbnxW7",
+      "wearingReportTitle": "2026-07-15 1230 wearing report",
+      "washStated": "washed",
+      "durationVal": 9000,
+      "wearDate": "2026-07-15"
     }
   ]
 }

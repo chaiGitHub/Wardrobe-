@@ -1562,7 +1562,7 @@ fun SyncScreen(
                         color = Slate800
                     )
                     Text(
-                        text = "This will restore the original curated seed database (52 garments, 33 sensory reports, wash statuses, and 111 wear records). Any new items created since then will be replaced.",
+                        text = "This will restore the original curated seed database (3 garments, 3 sensory reports, wash statuses, and 5 wear records). Any new items created since then will be replaced.",
                         fontSize = 12.sp,
                         color = Slate600,
                         lineHeight = 17.sp

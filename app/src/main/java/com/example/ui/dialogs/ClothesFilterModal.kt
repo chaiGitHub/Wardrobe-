@@ -297,109 +297,99 @@ fun ClothesFilterModal(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                            .padding(start = 16.dp, end = 12.dp, top = 14.dp, bottom = 10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            modifier = Modifier.weight(1f, fill = false)
+                        Box(
+                            modifier = Modifier
+                                .size(38.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFF3E8FF)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(38.dp)
-                                    .clip(CircleShape)
-                                    .background(Color(0xFFF3E8FF)),
-                                contentAlignment = Alignment.Center
+                            Icon(
+                                imageVector = Icons.Default.Tune,
+                                contentDescription = null,
+                                tint = BrandPurple,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Tune,
-                                    contentDescription = null,
-                                    tint = BrandPurple,
-                                    modifier = Modifier.size(20.dp)
+                                Text(
+                                    text = "Clothes Filters",
+                                    fontSize = 17.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Slate900,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
-                            }
-                            Column {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    Text(
-                                        text = "Clothes Filters",
-                                        fontSize = 17.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate900,
-                                        maxLines = 1,
-                                        softWrap = false
-                                    )
-                                    if (totalActiveConditions > 0) {
-                                        Surface(
-                                            shape = RoundedCornerShape(12.dp),
-                                            color = Color(0xFF9333EA)
-                                        ) {
-                                            Text(
-                                                text = "$totalActiveConditions active",
-                                                fontSize = 10.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Color.White,
-                                                maxLines = 1,
-                                                softWrap = false,
-                                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
-                                            )
-                                        }
+                                if (totalActiveConditions > 0) {
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFF9333EA)
+                                    ) {
+                                        Text(
+                                            text = "$totalActiveConditions active",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White,
+                                            maxLines = 1,
+                                            softWrap = false,
+                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                                        )
                                     }
                                 }
-                                Text(
-                                    text = "${visibleFieldKeys.size} filter fields visible • Follows your wardrobe data",
-                                    fontSize = 11.sp,
-                                    color = Slate500,
-                                    fontWeight = FontWeight.Normal,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
                             }
+                            Text(
+                                text = "${visibleFieldKeys.size} filter fields visible • Follows your wardrobe data",
+                                fontSize = 11.sp,
+                                color = Slate500,
+                                fontWeight = FontWeight.Normal,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            if (totalActiveConditions > 0) {
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    border = BorderStroke(1.dp, Color(0xFFFECDD3)),
-                                    color = Color.White,
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .clickable { workingFilters.clear() }
-                                        .testTag("clear_all_filters_button")
-                                ) {
-                                    Text(
-                                        text = "Clear all",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = Color(0xFFE11D48),
-                                        maxLines = 1,
-                                        softWrap = false,
-                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
-                                    )
-                                }
-                            }
-                            IconButton(
-                                onClick = {
-                                    onApplyFilters(workingFilters.toMap())
-                                    onClose()
-                                },
-                                modifier = Modifier.size(34.dp)
+                        Spacer(modifier = Modifier.width(6.dp))
+                        if (totalActiveConditions > 0) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, Color(0xFFFECDD3)),
+                                color = Color.White,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { workingFilters.clear() }
+                                    .testTag("clear_all_filters_button")
                             ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = "Close",
-                                    tint = Slate500,
-                                    modifier = Modifier.size(20.dp)
+                                Text(
+                                    text = "Clear all",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = Color(0xFFE11D48),
+                                    maxLines = 1,
+                                    softWrap = false,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
                                 )
                             }
+                            Spacer(modifier = Modifier.width(4.dp))
+                        }
+                        IconButton(
+                            onClick = {
+                                onApplyFilters(workingFilters.toMap())
+                                onClose()
+                            },
+                            modifier = Modifier.size(36.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Close",
+                                tint = Slate500,
+                                modifier = Modifier.size(20.dp)
+                            )
                         }
                     }
 
@@ -751,23 +741,24 @@ fun ClothesFilterModal(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "VISIBLE FIELDS (${visibleFieldKeys.size})",
+                                        text = "SELECT FIELDS TO SHOW AS FILTERS",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Slate500,
-                                        modifier = Modifier.weight(1f),
                                         maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f, fill = false)
                                     )
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
                                         Surface(
-                                            shape = RoundedCornerShape(6.dp),
+                                            shape = RoundedCornerShape(8.dp),
                                             color = Color(0xFFF3E8FF),
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(6.dp))
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .clickable {
                                                     val allKeys = ALL_AVAILABLE_FIELDS.map { it.key }
                                                     visibleFieldKeys = allKeys
@@ -781,15 +772,15 @@ fun ClothesFilterModal(
                                                 color = BrandPurple,
                                                 maxLines = 1,
                                                 softWrap = false,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                             )
                                         }
                                         Surface(
-                                            shape = RoundedCornerShape(6.dp),
+                                            shape = RoundedCornerShape(8.dp),
                                             border = BorderStroke(1.dp, Slate200),
                                             color = Color.White,
                                             modifier = Modifier
-                                                .clip(RoundedCornerShape(6.dp))
+                                                .clip(RoundedCornerShape(8.dp))
                                                 .clickable {
                                                     visibleFieldKeys = DEFAULT_CLOTHES_FILTER_KEYS
                                                     prefs.edit().putStringSet("visible_fields_v1", DEFAULT_CLOTHES_FILTER_KEYS.toSet()).apply()
@@ -802,7 +793,7 @@ fun ClothesFilterModal(
                                                 color = Slate700,
                                                 maxLines = 1,
                                                 softWrap = false,
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                                             )
                                         }
                                     }

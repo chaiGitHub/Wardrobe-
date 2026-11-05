@@ -156,9 +156,9 @@ class ReportPresetService(private val context: Context) {
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
-        const val PREFS_NAME = "wardrobe_drilldown_presets_v5"
-        const val PRESETS_KEY = "custom_presets_json_v5"
-        const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v5"
+        const val PREFS_NAME = "wardrobe_drilldown_presets_v7"
+        const val PRESETS_KEY = "custom_presets_json_v7"
+        const val ACTIVE_PRESET_ID_KEY = "active_preset_id_v7"
     }
 
     private fun loadPresetsFromAsset(): List<DrillPreset> {
@@ -253,11 +253,21 @@ class ReportPresetService(private val context: Context) {
     }
 
     fun getPresets(): List<DrillPreset> {
-        // 1. Try primary v4 SharedPreferences
+        // 1. Try primary SharedPreferences
         val v4Json = prefs.getString(PRESETS_KEY, null)
         if (!v4Json.isNullOrBlank()) {
             val parsed = parsePresetsJson(v4Json)
             if (parsed.isNotEmpty()) {
+                val noAcHot = parsed.find { it.id == "preset-without-aircond-hot" }
+                if (noAcHot != null && noAcHot.groupTiers.size < 6) {
+                    val canonicalList = loadPresetsFromAsset().ifEmpty { DEFAULT_DRILL_PRESETS }
+                    val canonicalNoAc = canonicalList.find { it.id == "preset-without-aircond-hot" }
+                    if (canonicalNoAc != null) {
+                        val fixed = parsed.map { if (it.id == "preset-without-aircond-hot") canonicalNoAc else it }
+                        savePresets(fixed)
+                        return fixed
+                    }
+                }
                 return parsed
             }
         }
@@ -286,6 +296,10 @@ class ReportPresetService(private val context: Context) {
         val parsed = parsePresetsJson(jsonStr)
         if (parsed.isNotEmpty()) {
             savePresets(parsed)
+            try {
+                val f = java.io.File(context.filesDir, "drilldown_presets.json")
+                f.writeText(exportPresetsToJson(), Charsets.UTF_8)
+            } catch (_: Exception) {}
             return parsed
         }
         return getPresets()
@@ -345,14 +359,18 @@ class ReportPresetService(private val context: Context) {
     }
 
     fun resetToDefaults(): List<DrillPreset> {
-        val defaults = DEFAULT_DRILL_PRESETS
+        val fromAsset = loadPresetsFromAsset()
+        val defaults = if (fromAsset.isNotEmpty()) fromAsset else DEFAULT_DRILL_PRESETS
         savePresets(defaults)
         setActivePresetId("preset-without-aircond-hot")
         return defaults
     }
 
     fun restorePreset(presetId: String): List<DrillPreset> {
-        val canonical = DEFAULT_DRILL_PRESETS.find { it.id == presetId } ?: return getPresets()
+        val canonicalList = loadPresetsFromAsset().ifEmpty { DEFAULT_DRILL_PRESETS }
+        val canonical = canonicalList.find { it.id == presetId }
+            ?: DEFAULT_DRILL_PRESETS.find { it.id == presetId }
+            ?: return getPresets()
         val current = getPresets().toMutableList()
         val idx = current.indexOfFirst { it.id == presetId }
         if (idx >= 0) {

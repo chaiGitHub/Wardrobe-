@@ -37,8 +37,8 @@ class WardrobeRepository(private val context: Context) {
         val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
         val seedVersion = prefs.getInt("seed_imported_version", 0)
         val count = dao.getClothesCount()
-        // Only seed on clean initial launch when database is completely empty
-        if (count == 0 && seedVersion < 30) {
+        // Seed on launch when seedVersion < 31 to ensure 3-item curated seed applies
+        if (seedVersion < 31) {
             try {
                 copySeedPhotosToDisk()
                 context.assets.open("initial_seed.json").use { stream ->
@@ -48,10 +48,12 @@ class WardrobeRepository(private val context: Context) {
                 }
                 try {
                     val presetService = com.example.ui.drilldown.ReportPresetService(context)
-                    presetService.resetToDefaults()
+                    if (presetService.getPresets().isEmpty()) {
+                        presetService.resetToDefaults()
+                    }
                     presetService.setActivePresetId("preset-without-aircond-hot")
                 } catch (_: Exception) {}
-                prefs.edit().putInt("seed_imported_version", 30).apply()
+                prefs.edit().putInt("seed_imported_version", 31).apply()
             } catch (e: Exception) {
                 Log.e("WardrobeRepo", "Seed database error: ${e.message}", e)
             }
@@ -113,13 +115,15 @@ class WardrobeRepository(private val context: Context) {
             }
             try {
                 val presetService = com.example.ui.drilldown.ReportPresetService(context)
-                presetService.resetToDefaults()
+                if (presetService.getPresets().isEmpty()) {
+                    presetService.resetToDefaults()
+                }
                 presetService.setActivePresetId("preset-without-aircond-hot")
             } catch (pe: Exception) {
                 Log.w("WardrobeRepo", "Preset reset notice: ${pe.message}")
             }
             val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
-            prefs.edit().putInt("seed_imported_version", 30).apply()
+            prefs.edit().putInt("seed_imported_version", 31).apply()
             Result.success("Database restored to default seed collection (3 garments, 3 reports, 5 wear records).")
         } catch (e: Exception) {
             Log.e("WardrobeRepo", "Reset to seed error: ${e.message}", e)
@@ -435,6 +439,22 @@ class WardrobeRepository(private val context: Context) {
             Triple(clothes, reports, junctions)
         }
 
+        // Check and import embedded field definitions if present
+        if (!jsonStr.trimStart().startsWith("[")) {
+            try {
+                val root = JSONObject(jsonStr)
+                val fieldDefsArr = root.optJSONArray("fieldDefinitions") ?: root.optJSONArray("field_definitions")
+                if (fieldDefsArr != null && fieldDefsArr.length() > 0) {
+                    val service = com.example.ui.dialogs.FieldDictionaryService(context)
+                    val list = service.parseFieldsFromJson(fieldDefsArr.toString())
+                    if (list.isNotEmpty()) {
+                        service.saveFields(list)
+                        Log.i("WardrobeRepo", "Imported ${list.size} field definitions from JSON string!")
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+
         val parsedClothes = mutableListOf<GarmentEntity>()
         for (i in 0 until clothesArray.length()) {
             val rawObj = clothesArray.getJSONObject(i)
@@ -510,11 +530,90 @@ class WardrobeRepository(private val context: Context) {
                 customFieldsObj.remove(k.lowercase(Locale.ROOT))
                 customFieldsObj.remove(k.uppercase(Locale.ROOT))
             }
-            val feObj = obj.optJSONObject("fieldExplanations")
-            if (feObj != null && !customFieldsObj.has("_fieldExplanations")) {
-                customFieldsObj.put("_fieldExplanations", feObj)
+
+            // Consolidate field explanations from all available structures
+            val mergedExplanations = JSONObject()
+            fun mergeJsonObj(source: JSONObject?) {
+                if (source == null) return
+                val keys = source.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    val v = source.optString(k, "")
+                    if (v.isNotBlank()) mergedExplanations.put(k, v)
+                }
             }
-            val deletedFieldsArr = obj.optJSONArray("_deletedCustomFields")
+            mergeJsonObj(customFieldsObj.optJSONObject("_fieldExplanations"))
+            mergeJsonObj(obj.optJSONObject("extraAttributes")?.optJSONObject("_fieldExplanations"))
+            mergeJsonObj(obj.optJSONObject("_fieldExplanations") ?: rawObj.optJSONObject("_fieldExplanations"))
+            mergeJsonObj(obj.optJSONObject("fieldExplanations") ?: rawObj.optJSONObject("fieldExplanations"))
+
+            // Scenario explanations bidirectional sync
+            val effectiveAircondHotExp = aircondHotExp.ifBlank {
+                mergedExplanations.optString("when with aircond: hot feeling",
+                    mergedExplanations.optString("when with aircond: hot explanation",
+                        mergedExplanations.optString("aircondHotExplain",
+                            mergedExplanations.optString("aircondHotFeeling", ""))))
+            }
+            val effectiveAircondLegExp = aircondLegExp.ifBlank {
+                mergedExplanations.optString("when with aircond: leg feeling",
+                    mergedExplanations.optString("when with aircond: leg explanation",
+                        mergedExplanations.optString("aircondLegExplain",
+                            mergedExplanations.optString("aircondLegFeeling", ""))))
+            }
+            val effectiveNoAircondHotExp = noAircondHotExp.ifBlank {
+                mergedExplanations.optString("when without aircond: hot feeling",
+                    mergedExplanations.optString("when without aircond: hot explanation",
+                        mergedExplanations.optString("noAircondHotExplain",
+                            mergedExplanations.optString("noAircondHotFeeling",
+                                mergedExplanations.optString("Hot at noon", "")))))
+            }
+            val effectiveNoAircondLegExp = noAircondLegExp.ifBlank {
+                mergedExplanations.optString("when without aircond: leg feeling",
+                    mergedExplanations.optString("when without aircond: leg explanation",
+                        mergedExplanations.optString("noAircondLegExplain",
+                            mergedExplanations.optString("noAircondLegFeeling", ""))))
+            }
+            val effectiveFanSleepHotExp = fanSleepHotExp.ifBlank {
+                mergedExplanations.optString("when sleep under fan: hot feeling",
+                    mergedExplanations.optString("when sleep under fan: hot explanation",
+                        mergedExplanations.optString("fanSleepHotExplain",
+                            mergedExplanations.optString("fanSleepHotFeeling", ""))))
+            }
+            val effectiveFanSleepLegExp = fanSleepLegExp.ifBlank {
+                mergedExplanations.optString("when sleep under fan: leg feeling",
+                    mergedExplanations.optString("when sleep under fan: leg explanation",
+                        mergedExplanations.optString("fanSleepLegExplain",
+                            mergedExplanations.optString("fanSleepLegFeeling", ""))))
+            }
+
+            if (effectiveAircondHotExp.isNotBlank()) {
+                mergedExplanations.put("when with aircond: hot feeling", effectiveAircondHotExp)
+                mergedExplanations.put("aircondHotExplain", effectiveAircondHotExp)
+            }
+            if (effectiveAircondLegExp.isNotBlank()) {
+                mergedExplanations.put("when with aircond: leg feeling", effectiveAircondLegExp)
+                mergedExplanations.put("aircondLegExplain", effectiveAircondLegExp)
+            }
+            if (effectiveNoAircondHotExp.isNotBlank()) {
+                mergedExplanations.put("when without aircond: hot feeling", effectiveNoAircondHotExp)
+                mergedExplanations.put("noAircondHotExplain", effectiveNoAircondHotExp)
+            }
+            if (effectiveNoAircondLegExp.isNotBlank()) {
+                mergedExplanations.put("when without aircond: leg feeling", effectiveNoAircondLegExp)
+                mergedExplanations.put("noAircondLegExplain", effectiveNoAircondLegExp)
+            }
+            if (effectiveFanSleepHotExp.isNotBlank()) {
+                mergedExplanations.put("when sleep under fan: hot feeling", effectiveFanSleepHotExp)
+                mergedExplanations.put("fanSleepHotExplain", effectiveFanSleepHotExp)
+            }
+            if (effectiveFanSleepLegExp.isNotBlank()) {
+                mergedExplanations.put("when sleep under fan: leg feeling", effectiveFanSleepLegExp)
+                mergedExplanations.put("fanSleepLegExplain", effectiveFanSleepLegExp)
+            }
+
+            customFieldsObj.put("_fieldExplanations", mergedExplanations)
+
+            val deletedFieldsArr = obj.optJSONArray("_deletedCustomFields") ?: rawObj.optJSONArray("_deletedCustomFields")
             if (deletedFieldsArr != null && !customFieldsObj.has("_deletedCustomFields")) {
                 customFieldsObj.put("_deletedCustomFields", deletedFieldsArr)
             }
@@ -533,17 +632,17 @@ class WardrobeRepository(private val context: Context) {
                     sideBreastGatherBra = sideGather,
                     sideBreastSideOutBra = sideSideOut,
                     aircondHotFeeling = aircondHot,
-                    aircondHotExplain = aircondHotExp,
+                    aircondHotExplain = effectiveAircondHotExp,
                     aircondLegFeeling = aircondLeg,
-                    aircondLegExplain = aircondLegExp,
+                    aircondLegExplain = effectiveAircondLegExp,
                     noAircondHotFeeling = noAircondHot,
-                    noAircondHotExplain = noAircondHotExp,
+                    noAircondHotExplain = effectiveNoAircondHotExp,
                     noAircondLegFeeling = noAircondLeg,
-                    noAircondLegExplain = noAircondLegExp,
+                    noAircondLegExplain = effectiveNoAircondLegExp,
                     fanSleepHotFeeling = fanSleepHot,
-                    fanSleepHotExplain = fanSleepHotExp,
+                    fanSleepHotExplain = effectiveFanSleepHotExp,
                     fanSleepLegFeeling = fanSleepLeg,
-                    fanSleepLegExplain = fanSleepLegExp,
+                    fanSleepLegExplain = effectiveFanSleepLegExp,
                     standBreast = standOk,
                     sitBreast = sitOk,
                     sitBreastGatherBra = sitGather,
@@ -605,11 +704,24 @@ class WardrobeRepository(private val context: Context) {
                 customFieldsObj.remove(k.lowercase(Locale.ROOT))
                 customFieldsObj.remove(k.uppercase(Locale.ROOT))
             }
-            val feReportObj = obj.optJSONObject("fieldExplanations")
-            if (feReportObj != null && !customFieldsObj.has("_fieldExplanations")) {
-                customFieldsObj.put("_fieldExplanations", feReportObj)
+
+            val reportMergedExplanations = JSONObject()
+            fun mergeReportJsonObj(source: JSONObject?) {
+                if (source == null) return
+                val keys = source.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    val v = source.optString(k, "")
+                    if (v.isNotBlank()) reportMergedExplanations.put(k, v)
+                }
             }
-            val deletedReportFields = obj.optJSONArray("_deletedCustomFields")
+            mergeReportJsonObj(customFieldsObj.optJSONObject("_fieldExplanations"))
+            mergeReportJsonObj(obj.optJSONObject("extraAttributes")?.optJSONObject("_fieldExplanations"))
+            mergeReportJsonObj(obj.optJSONObject("_fieldExplanations") ?: rawObj.optJSONObject("_fieldExplanations"))
+            mergeReportJsonObj(obj.optJSONObject("fieldExplanations") ?: rawObj.optJSONObject("fieldExplanations"))
+            customFieldsObj.put("_fieldExplanations", reportMergedExplanations)
+
+            val deletedReportFields = obj.optJSONArray("_deletedCustomFields") ?: rawObj.optJSONArray("_deletedCustomFields")
             if (deletedReportFields != null && !customFieldsObj.has("_deletedCustomFields")) {
                 customFieldsObj.put("_deletedCustomFields", deletedReportFields)
             }
@@ -737,6 +849,7 @@ class WardrobeRepository(private val context: Context) {
             if (!photosDir.exists()) photosDir.mkdirs()
 
             var drilldownPresetsZipContent: String? = null
+            var fieldDefinitionsZipContent: String? = null
             var databaseJsonContent: String? = null
             var fallbackJsonContent: String? = null
             var photoCount = 0
@@ -759,7 +872,9 @@ class WardrobeRepository(private val context: Context) {
                             !cleanPath.contains("..")
                         ) {
                             val lowerName = cleanPath.lowercase(Locale.ROOT)
-                            if (lowerName == "drilldown_presets.json" || lowerName.endsWith("/drilldown_presets.json") ||
+                            if (lowerName == "field_definitions.json" || lowerName.endsWith("/field_definitions.json")) {
+                                fieldDefinitionsZipContent = zis.bufferedReader(Charsets.UTF_8).readText()
+                            } else if (lowerName == "drilldown_presets.json" || lowerName.endsWith("/drilldown_presets.json") ||
                                 lowerName == "presets.json" || lowerName.endsWith("/presets.json") ||
                                 lowerName == "report_presets.json" || lowerName.endsWith("/report_presets.json")
                             ) {
@@ -880,6 +995,20 @@ class WardrobeRepository(private val context: Context) {
                 Log.w("WardrobeRepo", "Drilldown presets restore notice: ${e.message}")
             }
 
+            // Restore field dictionary definitions if present in ZIP
+            if (!fieldDefinitionsZipContent.isNullOrBlank()) {
+                try {
+                    val dictService = com.example.ui.dialogs.FieldDictionaryService(context)
+                    val defsList = dictService.parseFieldsFromJson(fieldDefinitionsZipContent)
+                    if (defsList.isNotEmpty()) {
+                        dictService.saveFields(defsList)
+                        Log.i("WardrobeRepo", "Successfully restored ${defsList.size} field definitions from backup ZIP into FieldDictionaryService!")
+                    }
+                } catch (e: Exception) {
+                    Log.w("WardrobeRepo", "Field definitions restore notice: ${e.message}")
+                }
+            }
+
             onProgress("Importing database records & linking $photoCount photos...", 60)
             val counts = importFromJsonString(
                 jsonStr = finalJson,
@@ -935,14 +1064,26 @@ class WardrobeRepository(private val context: Context) {
         root.put("drilldownPresets", presetsArr)
         root.put("presets", presetsArr)
 
+        // Read and embed fieldDefinitions from FieldDictionaryService
+        try {
+            val defsStr = com.example.ui.dialogs.FieldDictionaryService(context).getFieldsAsJsonString()
+            val defsArr = JSONArray(defsStr)
+            root.put("fieldDefinitions", defsArr)
+            root.put("field_definitions", defsArr)
+            root.put("totalFieldDefinitions", defsArr.length())
+        } catch (_: Exception) {}
+
         val clothesArr = JSONArray()
         for (g in clothesList) {
             val obj = JSONObject()
             obj.put("id", g.id)
             obj.put("Name", g.name)
+            obj.put("name", g.name)
             obj.put("Clothes Type", g.clothesType)
+            obj.put("clothesType", g.clothesType)
             obj.put("material", g.material)
             obj.put("thick clothes", g.thickClothes)
+            obj.put("thickClothes", g.thickClothes)
             obj.put("Hot at noon", if (g.noAircondHotFeeling.isNotBlank()) g.noAircondHotFeeling else g.hotAtNoon)
             obj.put("noAircondHotFeeling", g.noAircondHotFeeling)
             obj.put("noAircondHotExplain", g.noAircondHotExplain)
@@ -957,24 +1098,106 @@ class WardrobeRepository(private val context: Context) {
             obj.put("fanSleepLegFeeling", g.fanSleepLegFeeling)
             obj.put("fanSleepLegExplain", g.fanSleepLegExplain)
             obj.put("diao dai", g.diaoDai)
+            obj.put("diaoDai", g.diaoDai)
             obj.put("side breast ok", if (g.sideBreastGatherBra.isNotBlank()) g.sideBreastGatherBra else g.sideBreastOk)
+            obj.put("sideBreastOk", g.sideBreastOk)
             obj.put("sideBreastGatherBra", g.sideBreastGatherBra)
             obj.put("sideBreastSideOutBra", g.sideBreastSideOutBra)
             obj.put("stand breast", g.standBreast)
+            obj.put("standBreast", g.standBreast)
+            obj.put("center chest", g.standBreast)
             obj.put("sit breast ok", if (g.sitBreastGatherBra.isNotBlank()) g.sitBreastGatherBra else g.sitBreast)
+            obj.put("sitBreast", g.sitBreast)
             obj.put("sitBreastGatherBra", g.sitBreastGatherBra)
             obj.put("sitBreastSideOutBra", g.sitBreastSideOutBra)
             obj.put("beautiful", g.beautiful)
+            obj.put("beatiful reason", g.beautifulReason)
+            obj.put("beautifulReason", g.beautifulReason)
             obj.put("wet", g.wet)
+            obj.put("wet reason", g.wetReason)
+            obj.put("wetReason", g.wetReason)
+            obj.put("Descriptions", g.descriptions)
+            obj.put("descriptions", g.descriptions)
+            obj.put("Descriptions 2", g.descriptions2)
+            obj.put("descriptions2", g.descriptions2)
+            obj.put("long dress", g.longDress)
+            obj.put("longDress", g.longDress)
             obj.put("price", g.price)
             obj.put("wearing frequency(how many times legacy washed)", g.wearingFrequency)
             obj.put("Tracked App Washes", g.trackedAppWashes)
+            obj.put("trackedAppWashes", g.trackedAppWashes)
             obj.put("Last Washed", g.lastWashed)
+            obj.put("lastWashed", g.lastWashed)
             obj.put("may throw", g.mayThrow)
+            obj.put("mayThrow", g.mayThrow)
             obj.put("last comment or action", g.lastComment)
-            try { obj.put("Pictures", JSONArray(g.pictures)) } catch (e: Exception) { obj.put("Pictures", JSONArray()) }
-            try { obj.put("tags", JSONArray(g.tags)) } catch (e: Exception) { obj.put("tags", JSONArray()) }
+            obj.put("lastComment", g.lastComment)
+            obj.put("AI Clothes Analysis", g.aiClothesAnalysis)
+            obj.put("aiClothesAnalysis", g.aiClothesAnalysis)
+            try { obj.put("aiReports", JSONArray(g.aiReports)) } catch (_: Exception) { obj.put("aiReports", JSONArray()) }
+            try { obj.put("Pictures", JSONArray(g.pictures)) } catch (_: Exception) { obj.put("Pictures", JSONArray()) }
+            try { obj.put("pictures", JSONArray(g.pictures)) } catch (_: Exception) { obj.put("pictures", JSONArray()) }
+            try { obj.put("tags", JSONArray(g.tags)) } catch (_: Exception) { obj.put("tags", JSONArray()) }
             obj.put("created", g.created)
+
+            // Extract and prepare customFields and all field explanations
+            val cfObj = try {
+                if (g.customFields.isNotBlank()) JSONObject(g.customFields) else JSONObject()
+            } catch (_: Exception) {
+                JSONObject()
+            }
+            val feObj = JSONObject()
+            val existingFe = cfObj.optJSONObject("_fieldExplanations")
+            if (existingFe != null) {
+                val it = existingFe.keys()
+                while (it.hasNext()) {
+                    val k = it.next()
+                    val v = existingFe.optString(k, "")
+                    if (v.isNotBlank()) feObj.put(k, v)
+                }
+            }
+            // Explicit environmental scenario explanations
+            if (g.noAircondHotExplain.isNotBlank()) {
+                feObj.put("when without aircond: hot feeling", g.noAircondHotExplain)
+                feObj.put("noAircondHotFeeling", g.noAircondHotExplain)
+            }
+            if (g.noAircondLegExplain.isNotBlank()) {
+                feObj.put("when without aircond: leg feeling", g.noAircondLegExplain)
+                feObj.put("noAircondLegFeeling", g.noAircondLegExplain)
+            }
+            if (g.aircondHotExplain.isNotBlank()) {
+                feObj.put("when with aircond: hot feeling", g.aircondHotExplain)
+                feObj.put("aircondHotFeeling", g.aircondHotExplain)
+            }
+            if (g.aircondLegExplain.isNotBlank()) {
+                feObj.put("when with aircond: leg feeling", g.aircondLegExplain)
+                feObj.put("aircondLegFeeling", g.aircondLegExplain)
+            }
+            if (g.fanSleepHotExplain.isNotBlank()) {
+                feObj.put("when sleep under fan: hot feeling", g.fanSleepHotExplain)
+                feObj.put("fanSleepHotFeeling", g.fanSleepHotExplain)
+            }
+            if (g.fanSleepLegExplain.isNotBlank()) {
+                feObj.put("when sleep under fan: leg feeling", g.fanSleepLegExplain)
+                feObj.put("fanSleepLegFeeling", g.fanSleepLegExplain)
+            }
+            cfObj.put("_fieldExplanations", feObj)
+
+            // Put both nested objects and root explanations
+            obj.put("customFields", cfObj)
+            obj.put("extraAttributes", cfObj)
+            obj.put("_fieldExplanations", feObj)
+            obj.put("fieldExplanations", feObj)
+
+            // Also copy custom fields onto root object for flat JSON access
+            val cfKeys = cfObj.keys()
+            while (cfKeys.hasNext()) {
+                val k = cfKeys.next()
+                if (k != "_fieldExplanations" && k != "_deletedCustomFields" && !obj.has(k)) {
+                    obj.put(k, cfObj.get(k))
+                }
+            }
+
             clothesArr.put(obj)
         }
         root.put("clothes", clothesArr)
@@ -985,17 +1208,61 @@ class WardrobeRepository(private val context: Context) {
             obj.put("id", r.id)
             obj.put("name", r.name)
             obj.put("wearDate", r.wearDate)
+            obj.put("wear date", r.wearDate)
             obj.put("created", r.created)
+            try { obj.put("categories", JSONArray(r.categories)) } catch (_: Exception) { obj.put("categories", JSONArray()) }
             obj.put("shoulderFeel", r.shoulderFeel)
+            obj.put("shoulder feel", r.shoulderFeel)
             obj.put("midBreast", r.midBreast)
+            obj.put("mid breast", r.midBreast)
             obj.put("nightMidBreast", r.nightMidBreast)
+            obj.put("night mid breast", r.nightMidBreast)
             obj.put("sweat", r.sweat)
+            obj.put("sweatProp", r.sweat)
             obj.put("nightSweat", r.nightSweat)
+            obj.put("night sweat", r.nightSweat)
             obj.put("legFeel", r.legFeel)
+            obj.put("leg feel", r.legFeel)
             obj.put("nightLegFeel", r.nightLegFeel)
+            obj.put("night leg feel", r.nightLegFeel)
             obj.put("reportDetail", r.reportDetail)
-            try { obj.put("Pictures", JSONArray(r.pictures)) } catch (e: Exception) { obj.put("Pictures", JSONArray()) }
-            try { obj.put("tags", JSONArray(r.tags)) } catch (e: Exception) { obj.put("tags", JSONArray()) }
+            obj.put("report detail", r.reportDetail)
+            obj.put("aiWearingAnalysis", r.aiWearingAnalysis)
+            obj.put("AI Wearing Analysis", r.aiWearingAnalysis)
+            try { obj.put("aiReports", JSONArray(r.aiReports)) } catch (_: Exception) { obj.put("aiReports", JSONArray()) }
+            try { obj.put("Pictures", JSONArray(r.pictures)) } catch (_: Exception) { obj.put("Pictures", JSONArray()) }
+            try { obj.put("pictures", JSONArray(r.pictures)) } catch (_: Exception) { obj.put("pictures", JSONArray()) }
+            try { obj.put("tags", JSONArray(r.tags)) } catch (_: Exception) { obj.put("tags", JSONArray()) }
+
+            val cfObj = try {
+                if (r.customFields.isNotBlank()) JSONObject(r.customFields) else JSONObject()
+            } catch (_: Exception) {
+                JSONObject()
+            }
+            val feObj = JSONObject()
+            val existingFe = cfObj.optJSONObject("_fieldExplanations")
+            if (existingFe != null) {
+                val it = existingFe.keys()
+                while (it.hasNext()) {
+                    val k = it.next()
+                    val v = existingFe.optString(k, "")
+                    if (v.isNotBlank()) feObj.put(k, v)
+                }
+            }
+            cfObj.put("_fieldExplanations", feObj)
+            obj.put("customFields", cfObj)
+            obj.put("extraAttributes", cfObj)
+            obj.put("_fieldExplanations", feObj)
+            obj.put("fieldExplanations", feObj)
+
+            val cfKeys = cfObj.keys()
+            while (cfKeys.hasNext()) {
+                val k = cfKeys.next()
+                if (k != "_fieldExplanations" && k != "_deletedCustomFields" && !obj.has(k)) {
+                    obj.put(k, cfObj.get(k))
+                }
+            }
+
             reportsArr.put(obj)
         }
         root.put("reports", reportsArr)
@@ -1060,7 +1327,17 @@ class WardrobeRepository(private val context: Context) {
                         zos.closeEntry()
                     } catch (_: Exception) {}
 
-                    // 3. Pack photos
+                    // 3. Write field_definitions.json at root
+                    try {
+                        val defsStr = com.example.ui.dialogs.FieldDictionaryService(context).getFieldsAsJsonString()
+                        zos.putNextEntry(ZipEntry("field_definitions.json"))
+                        zos.write(defsStr.toByteArray(Charsets.UTF_8))
+                        zos.closeEntry()
+                    } catch (e: Exception) {
+                        Log.w("WardrobeRepo", "Notice writing field_definitions.json into ZIP: ${e.message}")
+                    }
+
+                    // 4. Pack photos
                     val photosDir = File(context.filesDir, "photos")
                     if (photosDir.exists() && photosDir.isDirectory) {
                         photosDir.listFiles()?.forEach { file ->

@@ -326,8 +326,15 @@ val DEFAULT_DRILL_PRESETS: List<DrillPreset> = listOf(
     DrillPreset(
         id = "preset-without-aircond-hot",
         name = "Normal / No Aircond: Upper Body (hot feeling)",
-        description = "Tier 1: when without aircond: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type (dress/bra).",
-        groupTiers = listOf("when without aircond: hot feeling", "Clothes Type"),
+        description = "Tier 1: Clothes Type. Tier 2: wet. Tier 3: when without aircond: hot feeling. Tier 4: leg feeling. Tier 5: beautiful. Tier 6: beatiful reason.",
+        groupTiers = listOf(
+            "Clothes Type",
+            "wet",
+            "when without aircond: hot feeling",
+            "when without aircond: leg feeling",
+            "beautiful",
+            "beatiful reason"
+        ),
         sortField = "Name",
         sortOrder = "asc",
         visibleFields = listOf(
@@ -356,8 +363,15 @@ val DEFAULT_DRILL_PRESETS: List<DrillPreset> = listOf(
     DrillPreset(
         id = "preset-sleep-fan-hot",
         name = "Sleep Under Fan: Upper Body (hot feeling)",
-        description = "Tier 1: when sleep under fan: hot feeling (not cold, hot, undefined). Tier 2: Clothes Type.",
-        groupTiers = listOf("when sleep under fan: hot feeling", "Clothes Type"),
+        description = "Tier 1: Clothes Type. Tier 2: wet. Tier 3: when sleep under fan: hot feeling. Tier 4: leg feeling. Tier 5: beautiful. Tier 6: beatiful reason.",
+        groupTiers = listOf(
+            "Clothes Type",
+            "wet",
+            "when sleep under fan: hot feeling",
+            "when sleep under fan: leg feeling",
+            "beautiful",
+            "beatiful reason"
+        ),
         sortField = "Name",
         sortOrder = "asc",
         visibleFields = listOf(

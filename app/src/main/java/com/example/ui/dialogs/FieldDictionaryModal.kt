@@ -117,11 +117,10 @@ data class DictionaryFieldItem(
     val options: List<String> get() = typicalValues.map { it.valueEn }
 }
 
-class FieldDictionaryService(context: Context) {
+class FieldDictionaryService(private val context: Context) {
     private val prefs = context.getSharedPreferences("wardrobe_field_dictionary_prefs", Context.MODE_PRIVATE)
 
-    fun getFields(): List<DictionaryFieldItem> {
-        val raw = prefs.getString("fields_v3", null) ?: return DEFAULT_DICTIONARY_FIELDS
+    fun parseFieldsFromJson(raw: String): List<DictionaryFieldItem> {
         return try {
             val arr = JSONArray(raw)
             val result = mutableListOf<DictionaryFieldItem>()
@@ -141,7 +140,7 @@ class FieldDictionaryService(context: Context) {
                     )
                 }
                 val rawCat = obj.optString("category", "clothes")
-                val normCat = when (rawCat.lowercase()) {
+                val normCat = when (rawCat.lowercase(Locale.ROOT)) {
                     "wearing_report", "wearingreport", "journal" -> "wearingReport"
                     "junction" -> "junction"
                     else -> "clothes"
@@ -161,6 +160,52 @@ class FieldDictionaryService(context: Context) {
         } catch (e: Exception) {
             DEFAULT_DICTIONARY_FIELDS
         }
+    }
+
+    fun getFields(): List<DictionaryFieldItem> {
+        val raw = prefs.getString("fields_v3", null)
+        if (raw != null) {
+            return parseFieldsFromJson(raw)
+        }
+        try {
+            val assetJson = context.assets.open("field_definitions.json").bufferedReader().use { it.readText() }
+            val list = parseFieldsFromJson(assetJson)
+            if (list.isNotEmpty()) {
+                saveFields(list)
+                return list
+            }
+        } catch (_: Exception) {}
+        return DEFAULT_DICTIONARY_FIELDS
+    }
+
+    fun getFieldsAsJsonString(): String {
+        val list = getFields()
+        val arr = JSONArray()
+        list.forEach { item ->
+            val obj = JSONObject().apply {
+                put("name", item.name)
+                put("fieldNameEn", item.name)
+                put("category", item.category)
+                put("labelCn", item.labelCn)
+                put("fieldNameCn", item.labelCn)
+                put("descriptionCn", item.descriptionCn)
+                put("descriptionEn", item.descriptionEn)
+                val tvArr = JSONArray()
+                item.typicalValues.forEach { tv ->
+                    tvArr.put(
+                        JSONObject().apply {
+                            put("valueEn", tv.valueEn)
+                            put("valueCn", tv.valueCn)
+                            put("meaningEn", tv.meaningEn)
+                            put("meaningCn", tv.meaningCn)
+                        }
+                    )
+                }
+                put("typicalValues", tvArr)
+            }
+            arr.put(obj)
+        }
+        return arr.toString(2)
     }
 
     fun saveFields(fields: List<DictionaryFieldItem>) {

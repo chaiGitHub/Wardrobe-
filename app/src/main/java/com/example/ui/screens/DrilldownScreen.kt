@@ -105,6 +105,8 @@ import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material.icons.filled.Layers
 
@@ -793,34 +795,120 @@ fun DrilldownScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            // Sort Order Button: [ ↑ (ASC) ] / [ ↓ (DESC) ]
-                            Surface(
-                                shape = RoundedCornerShape(8.dp),
-                                color = Slate100,
-                                border = BorderStroke(1.dp, Slate200),
-                                modifier = Modifier.clickable {
-                                    val newOrder = if (currentPreset.sortOrder.equals("asc", ignoreCase = true)) "desc" else "asc"
-                                    val updated = currentPreset.copy(sortOrder = newOrder)
-                                    presets = presetService.savePreset(updated)
-                                }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
-                                Row(
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                // Sort Order Button: [ ↑ (ASC) ] / [ ↓ (DESC) ]
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Slate100,
+                                    border = BorderStroke(1.dp, Slate200),
+                                    modifier = Modifier.clickable {
+                                        val newOrder = if (currentPreset.sortOrder.equals("asc", ignoreCase = true)) "desc" else "asc"
+                                        val updated = currentPreset.copy(sortOrder = newOrder)
+                                        presets = presetService.savePreset(updated)
+                                    }
                                 ) {
-                                    Icon(
-                                        imageVector = if (currentPreset.sortOrder == "asc") Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                                        contentDescription = null,
-                                        tint = BrandEmerald,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                    Text(
-                                        text = "(${currentPreset.sortOrder.uppercase(Locale.US)})",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Slate800
-                                    )
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = if (currentPreset.sortOrder == "asc") Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
+                                            contentDescription = null,
+                                            tint = BrandEmerald,
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                        Text(
+                                            text = "(${currentPreset.sortOrder.uppercase(Locale.US)})",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Slate800
+                                        )
+                                    }
+                                }
+
+                                // Quick Sort Field Dropdown (including Last Washed Date)
+                                var showQuickSortDropdown by remember { mutableStateOf(false) }
+                                Box {
+                                    Surface(
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = Slate100,
+                                        border = BorderStroke(1.dp, Slate200),
+                                        modifier = Modifier.clickable { showQuickSortDropdown = true }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Text(
+                                                text = when {
+                                                    currentPreset.sortField.equals("Last Washed", ignoreCase = true) -> "Last Washed"
+                                                    currentPreset.sortField.equals("Name", ignoreCase = true) -> "Name"
+                                                    currentPreset.sortField.equals("Total Washed Count", ignoreCase = true) -> "Total Washes"
+                                                    currentPreset.sortField.equals("Clothes Type", ignoreCase = true) -> "Type"
+                                                    currentPreset.sortField.equals("price", ignoreCase = true) -> "Price"
+                                                    else -> currentPreset.sortField.take(12)
+                                                },
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Slate800
+                                            )
+                                            Icon(
+                                                imageVector = Icons.Default.ArrowDropDown,
+                                                contentDescription = null,
+                                                tint = Slate500,
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+                                    }
+
+                                    DropdownMenu(
+                                        expanded = showQuickSortDropdown,
+                                        onDismissRequest = { showQuickSortDropdown = false }
+                                    ) {
+                                        val sortOptions = listOf(
+                                            "Last Washed" to "Last Washed (上次清洗日期)",
+                                            "Name" to "Name (名称)",
+                                            "Total Washed Count" to "Total Washed Count (清洗总次数)",
+                                            "Tracked App Washes" to "Tracked App Washes (记录清洗次数)",
+                                            "price" to "Price (购买价格)",
+                                            "Clothes Type" to "Clothes Type (服装类型)",
+                                            "material" to "Material (面料材质)"
+                                        )
+                                        sortOptions.forEach { (fieldKey, fieldLabel) ->
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                                    ) {
+                                                        if (currentPreset.sortField.equals(fieldKey, ignoreCase = true)) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Check,
+                                                                contentDescription = null,
+                                                                tint = BrandEmerald,
+                                                                modifier = Modifier.size(14.dp)
+                                                            )
+                                                        }
+                                                        Text(
+                                                            text = fieldLabel,
+                                                            fontSize = 12.sp,
+                                                            fontWeight = if (currentPreset.sortField.equals(fieldKey, ignoreCase = true)) FontWeight.Bold else FontWeight.Normal
+                                                        )
+                                                    }
+                                                },
+                                                onClick = {
+                                                    val updated = currentPreset.copy(sortField = fieldKey)
+                                                    presets = presetService.savePreset(updated)
+                                                    showQuickSortDropdown = false
+                                                }
+                                            )
+                                        }
+                                    }
                                 }
                             }
 
