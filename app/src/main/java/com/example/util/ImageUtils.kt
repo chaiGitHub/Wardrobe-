@@ -49,9 +49,35 @@ object ImageUtils {
         }
 
         // Direct file://, content://, or data:image/ URI
-        if (trimmed.startsWith("content://") || trimmed.startsWith("data:image/")) {
+        if (trimmed.startsWith("data:image/")) {
             return trimmed
         }
+
+        if (trimmed.startsWith("content://")) {
+            if (context != null) {
+                // Check if the content URI is currently readable
+                try {
+                    val parsedUri = Uri.parse(trimmed)
+                    val pfd = context.contentResolver.openFileDescriptor(parsedUri, "r")
+                    if (pfd != null) {
+                        pfd.close()
+                        // Proactively persist readable content URIs to permanent internal storage!
+                        val permanent = copyUriToInternalStorage(context, parsedUri, "persisted_photo")
+                        if (permanent.startsWith("file://")) {
+                            return permanent
+                        }
+                    }
+                } catch (_: Exception) {
+                    // Content URI permission has been revoked or expired on app restart
+                    // Check if a local copy exists in photos/
+                    val local = findLocalFileUri(trimmed, context)
+                    if (local != null) return local
+                    return null
+                }
+            }
+            return trimmed
+        }
+
         if (trimmed.startsWith("file://")) {
             val pathPart = Uri.parse(trimmed).path
             if (pathPart != null) {
@@ -248,31 +274,121 @@ object ImageUtils {
      * so it persists across app restarts and is included in ZIP backups.
      */
     fun copyUriToInternalStorage(context: Context, uri: Uri, prefix: String = "photo"): String {
+        val uriStr = uri.toString()
+        if (uriStr.startsWith("file://")) {
+            val file = File(uriStr.removePrefix("file://"))
+            if (file.exists() && file.isFile && file.length() > 0) {
+                return uriStr
+            }
+        }
+
         return try {
             val photosDir = File(context.filesDir, "photos")
             if (!photosDir.exists()) photosDir.mkdirs()
 
-            val mimeType = context.contentResolver.getType(uri) ?: "image/jpeg"
+            // Try persistable URI permission if supported
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri,
+                    android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (_: Exception) {}
+
+            val mimeType = try { context.contentResolver.getType(uri) } catch (_: Exception) { null } ?: "image/jpeg"
             val ext = when {
                 mimeType.contains("png", ignoreCase = true) -> "png"
                 mimeType.contains("webp", ignoreCase = true) -> "webp"
                 else -> "jpg"
             }
             val safePrefix = prefix.replace(NORMALIZE_NAME_REGEX, "_").take(24).ifBlank { "photo" }
-            val destFile = File(photosDir, "${System.currentTimeMillis()}_${safePrefix}.$ext")
+            val uniqueSuffix = (1000..9999).random()
+            val destFile = File(photosDir, "${System.currentTimeMillis()}_${uniqueSuffix}_${safePrefix}.$ext")
 
-            context.contentResolver.openInputStream(uri)?.use { input ->
-                FileOutputStream(destFile).use { output ->
-                    input.copyTo(output)
+            var writeSuccess = false
+
+            // Strategy 1: openInputStream
+            try {
+                context.contentResolver.openInputStream(uri)?.use { input ->
+                    FileOutputStream(destFile).use { output ->
+                        val buffer = ByteArray(65536)
+                        var bytesRead: Int
+                        while (input.read(buffer).also { bytesRead = it } != -1) {
+                            output.write(buffer, 0, bytesRead)
+                        }
+                        output.flush()
+                    }
+                }
+                if (destFile.exists() && destFile.length() > 0) {
+                    writeSuccess = true
+                }
+            } catch (e: Exception) {
+                android.util.Log.w("ImageUtils", "Strategy 1 openInputStream failed: ${e.message}")
+            }
+
+            // Strategy 2: openFileDescriptor
+            if (!writeSuccess) {
+                try {
+                    context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                        java.io.FileInputStream(pfd.fileDescriptor).use { input ->
+                            FileOutputStream(destFile).use { output ->
+                                val buffer = ByteArray(65536)
+                                var bytesRead: Int
+                                while (input.read(buffer).also { bytesRead = it } != -1) {
+                                    output.write(buffer, 0, bytesRead)
+                                }
+                                output.flush()
+                            }
+                        }
+                    }
+                    if (destFile.exists() && destFile.length() > 0) {
+                        writeSuccess = true
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("ImageUtils", "Strategy 2 openFileDescriptor failed: ${e.message}")
                 }
             }
-            if (destFile.exists() && destFile.length() > 0) {
+
+            // Strategy 3: Bitmap decode fallback (BitmapFactory / ImageDecoder)
+            if (!writeSuccess) {
+                try {
+                    val bitmap = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                        val src = android.graphics.ImageDecoder.createSource(context.contentResolver, uri)
+                        android.graphics.ImageDecoder.decodeBitmap(src)
+                    } else {
+                        context.contentResolver.openInputStream(uri)?.use {
+                            android.graphics.BitmapFactory.decodeStream(it)
+                        }
+                    }
+                    if (bitmap != null) {
+                        FileOutputStream(destFile).use { out ->
+                            val format = if (ext == "png") android.graphics.Bitmap.CompressFormat.PNG else android.graphics.Bitmap.CompressFormat.JPEG
+                            bitmap.compress(format, 92, out)
+                            out.flush()
+                        }
+                        if (destFile.exists() && destFile.length() > 0) {
+                            writeSuccess = true
+                        }
+                    }
+                } catch (e: Exception) {
+                    android.util.Log.w("ImageUtils", "Strategy 3 Bitmap decode failed: ${e.message}")
+                }
+            }
+
+            if (writeSuccess && destFile.exists() && destFile.length() > 0) {
+                // Also write a copy with prefix as direct lookup key
+                try {
+                    val aliasFile = File(photosDir, "${safePrefix}.$ext")
+                    if (!aliasFile.exists()) {
+                        destFile.copyTo(aliasFile, overwrite = false)
+                    }
+                } catch (_: Exception) {}
+
                 Uri.fromFile(destFile).toString()
             } else {
-                uri.toString()
+                findLocalFileUri(uri.toString(), context) ?: uri.toString()
             }
         } catch (_: Exception) {
-            uri.toString()
+            findLocalFileUri(uri.toString(), context) ?: uri.toString()
         }
     }
 

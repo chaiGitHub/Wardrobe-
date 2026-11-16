@@ -1099,7 +1099,8 @@ fun GarmentStudioCard(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            onUploadPhoto(uri.toString())
+            val permanent = ImageUtils.copyUriToInternalStorage(context, uri, garment.id)
+            onUploadPhoto(permanent)
         }
     }
 
@@ -1572,7 +1573,8 @@ fun GarmentCompactGridCard(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            onUploadPhoto(uri.toString())
+            val permanent = ImageUtils.copyUriToInternalStorage(context, uri, garment.id)
+            onUploadPhoto(permanent)
         }
     }
 

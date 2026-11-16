@@ -35,10 +35,11 @@ class WardrobeRepository(private val context: Context) {
 
     suspend fun checkAndSeedDatabase() = withContext(Dispatchers.IO) {
         val prefs = context.getSharedPreferences("wardrobe_seed_sync_prefs", Context.MODE_PRIVATE)
-        val seedVersion = prefs.getInt("seed_imported_version", 0)
         val count = dao.getClothesCount()
-        // Seed on launch when seedVersion < 31 to ensure 3-item curated seed applies
-        if (seedVersion < 31) {
+
+        // Strictly only seed on initial install when database is completely empty (count == 0)
+        // Never wipe or re-seed if the database already has clothes
+        if (count == 0) {
             try {
                 copySeedPhotosToDisk()
                 context.assets.open("initial_seed.json").use { stream ->
@@ -57,6 +58,105 @@ class WardrobeRepository(private val context: Context) {
             } catch (e: Exception) {
                 Log.e("WardrobeRepo", "Seed database error: ${e.message}", e)
             }
+        } else {
+            // Database already contains garments: do not overwrite user data or restored backups
+            prefs.edit().putInt("seed_imported_version", 31).apply()
+            // Clean up any historical scenario explanations where the feeling value was mistakenly duplicated into the explanation field
+            sanitizeAllScenarioExplanations()
+        }
+    }
+
+    private suspend fun sanitizeAllScenarioExplanations() = withContext(Dispatchers.IO) {
+        try {
+            val clothes = dao.getAllClothesSnapshot()
+            for (g in clothes) {
+                var changed = false
+                var newHotExp = g.aircondHotExplain
+                var newLegExp = g.aircondLegExplain
+                var newNoAirHotExp = g.noAircondHotExplain
+                var newNoAirLegExp = g.noAircondLegExplain
+                var newFanHotExp = g.fanSleepHotExplain
+                var newFanLegExp = g.fanSleepLegExplain
+
+                if (newHotExp.isNotBlank() && newHotExp.trim().equals(g.aircondHotFeeling.trim(), ignoreCase = true)) {
+                    newHotExp = ""
+                    changed = true
+                }
+                if (newLegExp.isNotBlank() && newLegExp.trim().equals(g.aircondLegFeeling.trim(), ignoreCase = true)) {
+                    newLegExp = ""
+                    changed = true
+                }
+                val effNoAirFeeling = g.noAircondHotFeeling.ifBlank { g.hotAtNoon }
+                if (newNoAirHotExp.isNotBlank() && (newNoAirHotExp.trim().equals(effNoAirFeeling.trim(), ignoreCase = true) || newNoAirHotExp.trim().equals(g.hotAtNoon.trim(), ignoreCase = true))) {
+                    newNoAirHotExp = ""
+                    changed = true
+                }
+                if (newNoAirLegExp.isNotBlank() && newNoAirLegExp.trim().equals(g.noAircondLegFeeling.trim(), ignoreCase = true)) {
+                    newNoAirLegExp = ""
+                    changed = true
+                }
+                if (newFanHotExp.isNotBlank() && newFanHotExp.trim().equals(g.fanSleepHotFeeling.trim(), ignoreCase = true)) {
+                    newFanHotExp = ""
+                    changed = true
+                }
+                if (newFanLegExp.isNotBlank() && newFanLegExp.trim().equals(g.fanSleepLegFeeling.trim(), ignoreCase = true)) {
+                    newFanLegExp = ""
+                    changed = true
+                }
+
+                var newCustomFields = g.customFields
+                if (g.customFields.isNotBlank() && g.customFields != "{}") {
+                    try {
+                        val cfObj = JSONObject(g.customFields)
+                        val feObj = cfObj.optJSONObject("_fieldExplanations")
+                        if (feObj != null) {
+                            var feChanged = false
+                            val keysToRemove = mutableListOf<String>()
+                            val it = feObj.keys()
+                            while (it.hasNext()) {
+                                val k = it.next()
+                                val v = feObj.optString(k, "").trim()
+                                if (v.isBlank()) {
+                                    keysToRemove.add(k)
+                                    feChanged = true
+                                } else if (v.equals(g.aircondHotFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.aircondLegFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.noAircondHotFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.noAircondLegFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.fanSleepHotFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.fanSleepLegFeeling.trim(), ignoreCase = true) ||
+                                    v.equals(g.hotAtNoon.trim(), ignoreCase = true)
+                                ) {
+                                    keysToRemove.add(k)
+                                    feChanged = true
+                                }
+                            }
+                            keysToRemove.forEach { feObj.remove(it) }
+                            if (feChanged) {
+                                cfObj.put("_fieldExplanations", feObj)
+                                newCustomFields = cfObj.toString()
+                                changed = true
+                            }
+                        }
+                    } catch (_: Exception) {}
+                }
+
+                if (changed) {
+                    dao.updateGarment(
+                        g.copy(
+                            aircondHotExplain = newHotExp,
+                            aircondLegExplain = newLegExp,
+                            noAircondHotExplain = newNoAirHotExp,
+                            noAircondLegExplain = newNoAirLegExp,
+                            fanSleepHotExplain = newFanHotExp,
+                            fanSleepLegExplain = newFanLegExp,
+                            customFields = newCustomFields
+                        )
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WardrobeRepo", "sanitizeAllScenarioExplanations error: ${e.message}", e)
         }
     }
 
@@ -468,27 +568,68 @@ class WardrobeRepository(private val context: Context) {
             val diaoDai = obj.optString("diao dai", obj.optString("diaoDai", ""))
             val sideOk = obj.optString("side breast ok", obj.optString("side breast shape", obj.optString("sideBreastOk", "")))
             val sideGather = obj.optString("sideBreastGatherBra", obj.optString("side breast ok: with 聚拢 bra", obj.optString("sidebreastgatherbra", sideOk)))
-            val sideSideOut = obj.optString("sideBreastSideOutBra", obj.optString("side breast ok: with side out bra", obj.optString("sidebreastsideoutbra", obj.optString("sidebreastsifeoutbra", ""))))
+            val sideSideOut = obj.optString("side breast ok: with side out bra",
+                obj.optString("sideBreastSideOutBra",
+                    obj.optString("sidebreastsideoutbra",
+                        obj.optString("sidebreastokwithsideoutbra",
+                            obj.optString("sidebreastokwithsideout",
+                                obj.optString("sidebreastsifeoutbra", ""))))))
 
-            val aircondHot = obj.optString("aircondHotFeeling", obj.optString("when with aircond: hot feeling", ""))
-            val aircondHotExp = obj.optString("aircondHotExplain", obj.optString("when with aircond: hot explanation", ""))
-            val aircondLeg = obj.optString("aircondLegFeeling", obj.optString("when with aircond: leg feeling", ""))
-            val aircondLegExp = obj.optString("aircondLegExplain", obj.optString("when with aircond: leg explanation", ""))
+            val aircondHot = obj.optString("when with aircond: hot feeling",
+                obj.optString("aircondHotFeeling",
+                    obj.optString("aircondhot",
+                        obj.optString("whenwithaircondhot", ""))))
+            val aircondHotExp = obj.optString("when with aircond: hot explanation",
+                obj.optString("aircondHotExplain",
+                    obj.optString("when with aircond: hot feeling explain", "")))
+            val aircondLeg = obj.optString("when with aircond: leg feeling",
+                obj.optString("aircondLegFeeling",
+                    obj.optString("aircondleg",
+                        obj.optString("whenwithaircondleg", ""))))
+            val aircondLegExp = obj.optString("when with aircond: leg explanation",
+                obj.optString("aircondLegExplain",
+                    obj.optString("when with aircond: leg feeling explain", "")))
 
-            val noAircondHot = obj.optString("noAircondHotFeeling", obj.optString("when without aircond: hot feeling", hotNoon))
-            val noAircondHotExp = obj.optString("noAircondHotExplain", obj.optString("when without aircond: hot explanation", ""))
-            val noAircondLeg = obj.optString("noAircondLegFeeling", obj.optString("when without aircond: leg feeling", ""))
-            val noAircondLegExp = obj.optString("noAircondLegExplain", obj.optString("when without aircond: leg explanation", ""))
+            val noAircondHot = obj.optString("when without aircond: hot feeling",
+                obj.optString("noAircondHotFeeling",
+                    obj.optString("Hot at noon",
+                        obj.optString("hotAtNoon",
+                            obj.optString("whenwithoutaircondhot",
+                                obj.optString("withoutaircondhot", hotNoon))))))
+            val noAircondHotExp = obj.optString("when without aircond: hot explanation",
+                obj.optString("noAircondHotExplain",
+                    obj.optString("when without aircond: hot feeling explain", "")))
+            val noAircondLeg = obj.optString("when without aircond: leg feeling",
+                obj.optString("noAircondLegFeeling",
+                    obj.optString("whenwithoutaircondleg", "")))
+            val noAircondLegExp = obj.optString("when without aircond: leg explanation",
+                obj.optString("noAircondLegExplain",
+                    obj.optString("when without aircond: leg feeling explain", "")))
 
-            val fanSleepHot = obj.optString("fanSleepHotFeeling", obj.optString("when sleep under fan: hot feeling", ""))
-            val fanSleepHotExp = obj.optString("fanSleepHotExplain", obj.optString("when sleep under fan: hot explanation", ""))
-            val fanSleepLeg = obj.optString("fanSleepLegFeeling", obj.optString("when sleep under fan: leg feeling", ""))
-            val fanSleepLegExp = obj.optString("fanSleepLegExplain", obj.optString("when sleep under fan: leg explanation", ""))
+            val fanSleepHot = obj.optString("when sleep under fan: hot feeling",
+                obj.optString("fanSleepHotFeeling",
+                    obj.optString("fansleephot",
+                        obj.optString("whensleepunderfanhot", ""))))
+            val fanSleepHotExp = obj.optString("when sleep under fan: hot explanation",
+                obj.optString("fanSleepHotExplain",
+                    obj.optString("when sleep under fan: hot feeling explain", "")))
+
+            val fanSleepLeg = obj.optString("when sleep under fan: leg feeling",
+                obj.optString("fanSleepLegFeeling",
+                    obj.optString("fansleepleg",
+                        obj.optString("whensleepunderfanleg", ""))))
+            val fanSleepLegExp = obj.optString("when sleep under fan: leg explanation",
+                obj.optString("fanSleepLegExplain",
+                    obj.optString("when sleep under fan: leg feeling explain", "")))
 
             val standOk = obj.optString("center chest", obj.optString("stand breast", obj.optString("standBreast", obj.optString("stand breast ok", obj.optString("standBreastOk", "")))))
             val sitOk = obj.optString("sit breast ok", obj.optString("sit breast", obj.optString("sitBreast", "")))
             val sitGather = obj.optString("sitBreastGatherBra", obj.optString("sit breast ok: With 聚拢bra", obj.optString("sit breast ok: With 聚拢bra:", obj.optString("sit breast ok: with 聚拢 bra", obj.optString("sitbreastgatherbra", sitOk)))))
-            val sitSideOut = obj.optString("sitBreastSideOutBra", obj.optString("sit breast ok: with side out bra", obj.optString("sitbreastsideoutbra", "")))
+            val sitSideOut = obj.optString("sit breast ok: with side out bra",
+                obj.optString("sitBreastSideOutBra",
+                    obj.optString("sitbreastsideoutbra",
+                        obj.optString("sitbreastokwithsideoutbra",
+                            obj.optString("sitbreastokwithsideout", "")))))
             val beautiful = obj.optString("beautiful", "")
             val beautifulReason = obj.optString("beatiful reason", obj.optString("beautiful reason", obj.optString("beautifulReason", "")))
             val wet = obj.optString("wet", "")
@@ -547,68 +688,118 @@ class WardrobeRepository(private val context: Context) {
             mergeJsonObj(obj.optJSONObject("_fieldExplanations") ?: rawObj.optJSONObject("_fieldExplanations"))
             mergeJsonObj(obj.optJSONObject("fieldExplanations") ?: rawObj.optJSONObject("fieldExplanations"))
 
-            // Scenario explanations bidirectional sync
-            val effectiveAircondHotExp = aircondHotExp.ifBlank {
-                mergedExplanations.optString("when with aircond: hot feeling",
-                    mergedExplanations.optString("when with aircond: hot explanation",
-                        mergedExplanations.optString("aircondHotExplain",
-                            mergedExplanations.optString("aircondHotFeeling", ""))))
-            }
-            val effectiveAircondLegExp = aircondLegExp.ifBlank {
-                mergedExplanations.optString("when with aircond: leg feeling",
-                    mergedExplanations.optString("when with aircond: leg explanation",
-                        mergedExplanations.optString("aircondLegExplain",
-                            mergedExplanations.optString("aircondLegFeeling", ""))))
-            }
-            val effectiveNoAircondHotExp = noAircondHotExp.ifBlank {
-                mergedExplanations.optString("when without aircond: hot feeling",
-                    mergedExplanations.optString("when without aircond: hot explanation",
-                        mergedExplanations.optString("noAircondHotExplain",
-                            mergedExplanations.optString("noAircondHotFeeling",
-                                mergedExplanations.optString("Hot at noon", "")))))
-            }
-            val effectiveNoAircondLegExp = noAircondLegExp.ifBlank {
-                mergedExplanations.optString("when without aircond: leg feeling",
-                    mergedExplanations.optString("when without aircond: leg explanation",
-                        mergedExplanations.optString("noAircondLegExplain",
-                            mergedExplanations.optString("noAircondLegFeeling", ""))))
-            }
-            val effectiveFanSleepHotExp = fanSleepHotExp.ifBlank {
-                mergedExplanations.optString("when sleep under fan: hot feeling",
-                    mergedExplanations.optString("when sleep under fan: hot explanation",
-                        mergedExplanations.optString("fanSleepHotExplain",
-                            mergedExplanations.optString("fanSleepHotFeeling", ""))))
-            }
-            val effectiveFanSleepLegExp = fanSleepLegExp.ifBlank {
-                mergedExplanations.optString("when sleep under fan: leg feeling",
-                    mergedExplanations.optString("when sleep under fan: leg explanation",
-                        mergedExplanations.optString("fanSleepLegExplain",
-                            mergedExplanations.optString("fanSleepLegFeeling", ""))))
+            // Scenario explanations bidirectional sync - strictly separated from feeling values
+            fun extractScenarioExp(explicitExp: String, feelingVal: String, vararg keys: String): String {
+                val trimmedFeel = feelingVal.trim()
+                if (explicitExp.isNotBlank() && !explicitExp.trim().equals(trimmedFeel, ignoreCase = true)) {
+                    return explicitExp.trim()
+                }
+                for (k in keys) {
+                    val cand = mergedExplanations.optString(k, "").trim()
+                    if (cand.isNotBlank() && !cand.equals(trimmedFeel, ignoreCase = true)) {
+                        return cand
+                    }
+                }
+                return ""
             }
 
+            val effectiveAircondHotExp = extractScenarioExp(
+                aircondHotExp, aircondHot,
+                "when with aircond: hot explanation",
+                "when with aircond: hot feeling explain",
+                "aircondHotExplain",
+                "when with aircond: hot feeling"
+            )
+            val effectiveAircondLegExp = extractScenarioExp(
+                aircondLegExp, aircondLeg,
+                "when with aircond: leg explanation",
+                "when with aircond: leg feeling explain",
+                "aircondLegExplain",
+                "when with aircond: leg feeling"
+            )
+            val effectiveNoAircondHotExp = extractScenarioExp(
+                noAircondHotExp, noAircondHot,
+                "when without aircond: hot explanation",
+                "when without aircond: hot feeling explain",
+                "noAircondHotExplain",
+                "when without aircond: hot feeling"
+            )
+            val effectiveNoAircondLegExp = extractScenarioExp(
+                noAircondLegExp, noAircondLeg,
+                "when without aircond: leg explanation",
+                "when without aircond: leg feeling explain",
+                "noAircondLegExplain",
+                "when without aircond: leg feeling"
+            )
+            val effectiveFanSleepHotExp = extractScenarioExp(
+                fanSleepHotExp, fanSleepHot,
+                "when sleep under fan: hot explanation",
+                "when sleep under fan: hot feeling explain",
+                "fanSleepHotExplain",
+                "when sleep under fan: hot feeling"
+            )
+            val effectiveFanSleepLegExp = extractScenarioExp(
+                fanSleepLegExp, fanSleepLeg,
+                "when sleep under fan: leg explanation",
+                "when sleep under fan: leg feeling explain",
+                "fanSleepLegExplain",
+                "when sleep under fan: leg feeling"
+            )
+
+            // Put proper explanation keys into mergedExplanations and remove feeling keys
             if (effectiveAircondHotExp.isNotBlank()) {
-                mergedExplanations.put("when with aircond: hot feeling", effectiveAircondHotExp)
+                mergedExplanations.put("when with aircond: hot explanation", effectiveAircondHotExp)
                 mergedExplanations.put("aircondHotExplain", effectiveAircondHotExp)
             }
+            mergedExplanations.remove("aircondHotFeeling")
+            if (effectiveAircondHotExp.isBlank() || mergedExplanations.optString("when with aircond: hot feeling", "").trim().equals(aircondHot.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when with aircond: hot feeling")
+            }
+
             if (effectiveAircondLegExp.isNotBlank()) {
-                mergedExplanations.put("when with aircond: leg feeling", effectiveAircondLegExp)
+                mergedExplanations.put("when with aircond: leg explanation", effectiveAircondLegExp)
                 mergedExplanations.put("aircondLegExplain", effectiveAircondLegExp)
             }
+            mergedExplanations.remove("aircondLegFeeling")
+            if (effectiveAircondLegExp.isBlank() || mergedExplanations.optString("when with aircond: leg feeling", "").trim().equals(aircondLeg.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when with aircond: leg feeling")
+            }
+
             if (effectiveNoAircondHotExp.isNotBlank()) {
-                mergedExplanations.put("when without aircond: hot feeling", effectiveNoAircondHotExp)
+                mergedExplanations.put("when without aircond: hot explanation", effectiveNoAircondHotExp)
                 mergedExplanations.put("noAircondHotExplain", effectiveNoAircondHotExp)
             }
+            mergedExplanations.remove("noAircondHotFeeling")
+            mergedExplanations.remove("Hot at noon")
+            if (effectiveNoAircondHotExp.isBlank() || mergedExplanations.optString("when without aircond: hot feeling", "").trim().equals(noAircondHot.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when without aircond: hot feeling")
+            }
+
             if (effectiveNoAircondLegExp.isNotBlank()) {
-                mergedExplanations.put("when without aircond: leg feeling", effectiveNoAircondLegExp)
+                mergedExplanations.put("when without aircond: leg explanation", effectiveNoAircondLegExp)
                 mergedExplanations.put("noAircondLegExplain", effectiveNoAircondLegExp)
             }
+            mergedExplanations.remove("noAircondLegFeeling")
+            if (effectiveNoAircondLegExp.isBlank() || mergedExplanations.optString("when without aircond: leg feeling", "").trim().equals(noAircondLeg.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when without aircond: leg feeling")
+            }
+
             if (effectiveFanSleepHotExp.isNotBlank()) {
-                mergedExplanations.put("when sleep under fan: hot feeling", effectiveFanSleepHotExp)
+                mergedExplanations.put("when sleep under fan: hot explanation", effectiveFanSleepHotExp)
                 mergedExplanations.put("fanSleepHotExplain", effectiveFanSleepHotExp)
             }
+            mergedExplanations.remove("fanSleepHotFeeling")
+            if (effectiveFanSleepHotExp.isBlank() || mergedExplanations.optString("when sleep under fan: hot feeling", "").trim().equals(fanSleepHot.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when sleep under fan: hot feeling")
+            }
+
             if (effectiveFanSleepLegExp.isNotBlank()) {
-                mergedExplanations.put("when sleep under fan: leg feeling", effectiveFanSleepLegExp)
+                mergedExplanations.put("when sleep under fan: leg explanation", effectiveFanSleepLegExp)
                 mergedExplanations.put("fanSleepLegExplain", effectiveFanSleepLegExp)
+            }
+            mergedExplanations.remove("fanSleepLegFeeling")
+            if (effectiveFanSleepLegExp.isBlank() || mergedExplanations.optString("when sleep under fan: leg feeling", "").trim().equals(fanSleepLeg.trim(), ignoreCase = true)) {
+                mergedExplanations.remove("when sleep under fan: leg feeling")
             }
 
             customFieldsObj.put("_fieldExplanations", mergedExplanations)
@@ -696,8 +887,8 @@ class WardrobeRepository(private val context: Context) {
             val standardSchemaKeys = listOf(
                 "id", "name", "created", "wearDate", "categories", "tags",
                 "aiReports", "aiWearingAnalysis", "pictures", "photos",
-                "shoulderFeel", "midBreast", "nightMidBreast", "sweat",
-                "nightSweat", "legFeel", "nightLegFeel", "reportDetail"
+                "shoulderFeel", "shoulder feel", "midBreast", "mid breast", "nightMidBreast", "night mid breast", "sweat", "sweatProp",
+                "nightSweat", "night sweat", "legFeel", "leg feel", "nightLegFeel", "night leg feel", "reportDetail", "report detail"
             )
             standardSchemaKeys.forEach { k ->
                 customFieldsObj.remove(k)
@@ -719,6 +910,23 @@ class WardrobeRepository(private val context: Context) {
             mergeReportJsonObj(obj.optJSONObject("extraAttributes")?.optJSONObject("_fieldExplanations"))
             mergeReportJsonObj(obj.optJSONObject("_fieldExplanations") ?: rawObj.optJSONObject("_fieldExplanations"))
             mergeReportJsonObj(obj.optJSONObject("fieldExplanations") ?: rawObj.optJSONObject("fieldExplanations"))
+
+            // Clean loose *_explain keys that leaked into customFieldsObj and move into explanations
+            val looseKeys = mutableListOf<String>()
+            val cfIt = customFieldsObj.keys()
+            while (cfIt.hasNext()) {
+                val k = cfIt.next()
+                if (k.endsWith("_explain")) {
+                    looseKeys.add(k)
+                    val base = k.removeSuffix("_explain")
+                    val v = customFieldsObj.optString(k, "")
+                    if (v.isNotBlank() && !reportMergedExplanations.has(base)) {
+                        reportMergedExplanations.put(base, v)
+                    }
+                }
+            }
+            looseKeys.forEach { customFieldsObj.remove(it) }
+
             customFieldsObj.put("_fieldExplanations", reportMergedExplanations)
 
             val deletedReportFields = obj.optJSONArray("_deletedCustomFields") ?: rawObj.optJSONArray("_deletedCustomFields")
@@ -1084,17 +1292,24 @@ class WardrobeRepository(private val context: Context) {
             obj.put("material", g.material)
             obj.put("thick clothes", g.thickClothes)
             obj.put("thickClothes", g.thickClothes)
-            obj.put("Hot at noon", if (g.noAircondHotFeeling.isNotBlank()) g.noAircondHotFeeling else g.hotAtNoon)
+            val noAircondHotVal = if (g.noAircondHotFeeling.isNotBlank()) g.noAircondHotFeeling else g.hotAtNoon
+            obj.put("when without aircond: hot feeling", noAircondHotVal)
+            obj.put("Hot at noon", noAircondHotVal)
             obj.put("noAircondHotFeeling", g.noAircondHotFeeling)
             obj.put("noAircondHotExplain", g.noAircondHotExplain)
+            obj.put("when without aircond: leg feeling", g.noAircondLegFeeling)
             obj.put("noAircondLegFeeling", g.noAircondLegFeeling)
             obj.put("noAircondLegExplain", g.noAircondLegExplain)
+            obj.put("when with aircond: hot feeling", g.aircondHotFeeling)
             obj.put("aircondHotFeeling", g.aircondHotFeeling)
             obj.put("aircondHotExplain", g.aircondHotExplain)
+            obj.put("when with aircond: leg feeling", g.aircondLegFeeling)
             obj.put("aircondLegFeeling", g.aircondLegFeeling)
             obj.put("aircondLegExplain", g.aircondLegExplain)
+            obj.put("when sleep under fan: hot feeling", g.fanSleepHotFeeling)
             obj.put("fanSleepHotFeeling", g.fanSleepHotFeeling)
             obj.put("fanSleepHotExplain", g.fanSleepHotExplain)
+            obj.put("when sleep under fan: leg feeling", g.fanSleepLegFeeling)
             obj.put("fanSleepLegFeeling", g.fanSleepLegFeeling)
             obj.put("fanSleepLegExplain", g.fanSleepLegExplain)
             obj.put("diao dai", g.diaoDai)
@@ -1102,6 +1317,7 @@ class WardrobeRepository(private val context: Context) {
             obj.put("side breast ok", if (g.sideBreastGatherBra.isNotBlank()) g.sideBreastGatherBra else g.sideBreastOk)
             obj.put("sideBreastOk", g.sideBreastOk)
             obj.put("sideBreastGatherBra", g.sideBreastGatherBra)
+            obj.put("side breast ok: with side out bra", g.sideBreastSideOutBra)
             obj.put("sideBreastSideOutBra", g.sideBreastSideOutBra)
             obj.put("stand breast", g.standBreast)
             obj.put("standBreast", g.standBreast)
@@ -1109,6 +1325,7 @@ class WardrobeRepository(private val context: Context) {
             obj.put("sit breast ok", if (g.sitBreastGatherBra.isNotBlank()) g.sitBreastGatherBra else g.sitBreast)
             obj.put("sitBreast", g.sitBreast)
             obj.put("sitBreastGatherBra", g.sitBreastGatherBra)
+            obj.put("sit breast ok: with side out bra", g.sitBreastSideOutBra)
             obj.put("sitBreastSideOutBra", g.sitBreastSideOutBra)
             obj.put("beautiful", g.beautiful)
             obj.put("beatiful reason", g.beautifulReason)
@@ -1156,37 +1373,49 @@ class WardrobeRepository(private val context: Context) {
                     if (v.isNotBlank()) feObj.put(k, v)
                 }
             }
-            // Explicit environmental scenario explanations
-            if (g.noAircondHotExplain.isNotBlank()) {
-                feObj.put("when without aircond: hot feeling", g.noAircondHotExplain)
-                feObj.put("noAircondHotFeeling", g.noAircondHotExplain)
+            // Explicit environmental scenario explanations (strictly avoid putting explanations into feeling keys)
+            if (g.noAircondHotExplain.isNotBlank() && !g.noAircondHotExplain.trim().equals(g.noAircondHotFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when without aircond: hot explanation", g.noAircondHotExplain)
+                feObj.put("noAircondHotExplain", g.noAircondHotExplain)
             }
-            if (g.noAircondLegExplain.isNotBlank()) {
-                feObj.put("when without aircond: leg feeling", g.noAircondLegExplain)
-                feObj.put("noAircondLegFeeling", g.noAircondLegExplain)
+            if (g.noAircondLegExplain.isNotBlank() && !g.noAircondLegExplain.trim().equals(g.noAircondLegFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when without aircond: leg explanation", g.noAircondLegExplain)
+                feObj.put("noAircondLegExplain", g.noAircondLegExplain)
             }
-            if (g.aircondHotExplain.isNotBlank()) {
-                feObj.put("when with aircond: hot feeling", g.aircondHotExplain)
-                feObj.put("aircondHotFeeling", g.aircondHotExplain)
+            if (g.aircondHotExplain.isNotBlank() && !g.aircondHotExplain.trim().equals(g.aircondHotFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when with aircond: hot explanation", g.aircondHotExplain)
+                feObj.put("aircondHotExplain", g.aircondHotExplain)
             }
-            if (g.aircondLegExplain.isNotBlank()) {
-                feObj.put("when with aircond: leg feeling", g.aircondLegExplain)
-                feObj.put("aircondLegFeeling", g.aircondLegExplain)
+            if (g.aircondLegExplain.isNotBlank() && !g.aircondLegExplain.trim().equals(g.aircondLegFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when with aircond: leg explanation", g.aircondLegExplain)
+                feObj.put("aircondLegExplain", g.aircondLegExplain)
             }
-            if (g.fanSleepHotExplain.isNotBlank()) {
-                feObj.put("when sleep under fan: hot feeling", g.fanSleepHotExplain)
-                feObj.put("fanSleepHotFeeling", g.fanSleepHotExplain)
+            if (g.fanSleepHotExplain.isNotBlank() && !g.fanSleepHotExplain.trim().equals(g.fanSleepHotFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when sleep under fan: hot explanation", g.fanSleepHotExplain)
+                feObj.put("fanSleepHotExplain", g.fanSleepHotExplain)
             }
-            if (g.fanSleepLegExplain.isNotBlank()) {
-                feObj.put("when sleep under fan: leg feeling", g.fanSleepLegExplain)
-                feObj.put("fanSleepLegFeeling", g.fanSleepLegExplain)
+            if (g.fanSleepLegExplain.isNotBlank() && !g.fanSleepLegExplain.trim().equals(g.fanSleepLegFeeling.trim(), ignoreCase = true)) {
+                feObj.put("when sleep under fan: leg explanation", g.fanSleepLegExplain)
+                feObj.put("fanSleepLegExplain", g.fanSleepLegExplain)
             }
-            cfObj.put("_fieldExplanations", feObj)
+            // Strip out feeling keys from feObj so feeling values are never treated as explanations
+            feObj.remove("aircondHotFeeling")
+            feObj.remove("aircondLegFeeling")
+            feObj.remove("noAircondHotFeeling")
+            feObj.remove("noAircondLegFeeling")
+            feObj.remove("fanSleepHotFeeling")
+            feObj.remove("fanSleepLegFeeling")
+            feObj.remove("Hot at noon")
+            feObj.remove("when with aircond: hot feeling")
+            feObj.remove("when with aircond: leg feeling")
+            feObj.remove("when without aircond: hot feeling")
+            feObj.remove("when without aircond: leg feeling")
+            feObj.remove("when sleep under fan: hot feeling")
+            feObj.remove("when sleep under fan: leg feeling")
+            cfObj.remove("_fieldExplanations")
 
-            // Put both nested objects and root explanations
+            // Put clean customFields and root fieldExplanations (omit extraAttributes)
             obj.put("customFields", cfObj)
-            obj.put("extraAttributes", cfObj)
-            obj.put("_fieldExplanations", feObj)
             obj.put("fieldExplanations", feObj)
 
             // Also copy custom fields onto root object for flat JSON access
@@ -1249,19 +1478,34 @@ class WardrobeRepository(private val context: Context) {
                     if (v.isNotBlank()) feObj.put(k, v)
                 }
             }
-            cfObj.put("_fieldExplanations", feObj)
-            obj.put("customFields", cfObj)
-            obj.put("extraAttributes", cfObj)
-            obj.put("_fieldExplanations", feObj)
-            obj.put("fieldExplanations", feObj)
+            cfObj.remove("_fieldExplanations")
 
-            val cfKeys = cfObj.keys()
-            while (cfKeys.hasNext()) {
-                val k = cfKeys.next()
-                if (k != "_fieldExplanations" && k != "_deletedCustomFields" && !obj.has(k)) {
-                    obj.put(k, cfObj.get(k))
+            val standardReportKeys = setOf(
+                "id", "name", "created", "wearDate", "wear date", "categories", "tags",
+                "aiReports", "aiWearingAnalysis", "AI Wearing Analysis", "pictures", "Pictures", "photos",
+                "shoulderFeel", "shoulder feel", "midBreast", "mid breast", "nightMidBreast", "night mid breast", "sweat", "sweatProp",
+                "nightSweat", "night sweat", "legFeel", "leg feel", "nightLegFeel", "night leg feel", "reportDetail", "report detail"
+            )
+            val toRemoveFromReportCf = mutableListOf<String>()
+            val cfKeysIt = cfObj.keys()
+            while (cfKeysIt.hasNext()) {
+                val k = cfKeysIt.next()
+                if (k.endsWith("_explain") || k.endsWith(" explain")) {
+                    val expVal = cfObj.optString(k, "")
+                    val base = k.removeSuffix("_explain").removeSuffix(" explain").trim()
+                    if (expVal.isNotBlank() && base.isNotEmpty() && !feObj.has(base)) {
+                        feObj.put(base, expVal)
+                    }
+                    toRemoveFromReportCf.add(k)
+                } else if (standardReportKeys.contains(k) || standardReportKeys.contains(k.lowercase(Locale.ROOT))) {
+                    toRemoveFromReportCf.add(k)
                 }
             }
+            toRemoveFromReportCf.forEach { cfObj.remove(it) }
+
+            // Dynamic report values are stored strictly in customFields as per web PR #3; extraAttributes is omitted
+            obj.put("customFields", cfObj)
+            obj.put("fieldExplanations", feObj)
 
             reportsArr.put(obj)
         }

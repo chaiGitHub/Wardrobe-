@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -39,8 +41,10 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.LocalLaundryService
 import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -52,6 +56,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -70,6 +76,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -185,13 +192,30 @@ fun WearCalendar(
         }
     }
 
-    var selectedLifecycleGarmentId by remember(clothes) {
-        mutableStateOf(clothes.firstOrNull()?.id ?: "")
+    val sortedLifecycleClothes = remember(clothes) {
+        clothes.sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name.trim() })
     }
-    var garmentDropdownExpanded by remember { mutableStateOf(false) }
 
-    val selectedLifecycleGarment = remember(clothes, selectedLifecycleGarmentId) {
-        clothes.find { it.id == selectedLifecycleGarmentId } ?: clothes.firstOrNull()
+    var selectedLifecycleGarmentId by remember(sortedLifecycleClothes) {
+        mutableStateOf(sortedLifecycleClothes.firstOrNull()?.id ?: "")
+    }
+    var showClothesPickerModal by remember { mutableStateOf(false) }
+    var lifecycleClothesSearchQuery by remember { mutableStateOf("") }
+
+    val filteredLifecycleClothes = remember(sortedLifecycleClothes, lifecycleClothesSearchQuery) {
+        if (lifecycleClothesSearchQuery.isBlank()) {
+            sortedLifecycleClothes
+        } else {
+            val q = lifecycleClothesSearchQuery.trim().lowercase(Locale.ROOT)
+            sortedLifecycleClothes.filter {
+                it.name.lowercase(Locale.ROOT).contains(q) ||
+                it.clothesType.lowercase(Locale.ROOT).contains(q)
+            }
+        }
+    }
+
+    val selectedLifecycleGarment = remember(sortedLifecycleClothes, selectedLifecycleGarmentId) {
+        sortedLifecycleClothes.find { it.id == selectedLifecycleGarmentId } ?: sortedLifecycleClothes.firstOrNull()
     }
 
     val garmentLifecycle = remember(selectedLifecycleGarment, junctions, reports) {
@@ -525,15 +549,15 @@ fun WearCalendar(
                             border = BorderStroke(1.dp, Slate200.copy(alpha = 0.8f)),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Row(
+                            Column(
                                 modifier = Modifier.padding(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                verticalArrangement = Arrangement.spacedBy(10.dp)
                             ) {
+                                // Row 1: SELECT CLOTHES Label + Dropdown Trigger Button (full remaining width)
                                 Row(
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    modifier = Modifier.weight(1f)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(
                                         text = "SELECT CLOTHES:",
@@ -543,81 +567,60 @@ fun WearCalendar(
                                         color = Slate600
                                     )
 
-                                    Box {
-                                        Surface(
-                                            shape = RoundedCornerShape(10.dp),
-                                            color = Color.White,
-                                            border = BorderStroke(1.dp, Slate300),
-                                            modifier = Modifier
-                                                .clip(RoundedCornerShape(10.dp))
-                                                .clickable { garmentDropdownExpanded = true }
-                                                .testTag("lifecycle_garment_select_btn")
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                            ) {
-                                                Text(
-                                                    text = "${selectedLifecycleGarment.name} (${selectedLifecycleGarment.clothesType.ifBlank { "Clothes" }})",
-                                                    fontSize = 12.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = Slate800,
-                                                    maxLines = 1,
-                                                    overflow = TextOverflow.Ellipsis
-                                                )
-                                                Icon(
-                                                    Icons.Default.ArrowDropDown,
-                                                    contentDescription = "Dropdown",
-                                                    tint = Slate600,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color.White,
+                                        border = BorderStroke(1.dp, Slate300),
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clip(RoundedCornerShape(10.dp))
+                                            .clickable {
+                                                lifecycleClothesSearchQuery = ""
+                                                showClothesPickerModal = true
                                             }
-                                        }
-
-                                        DropdownMenu(
-                                            expanded = garmentDropdownExpanded,
-                                            onDismissRequest = { garmentDropdownExpanded = false },
-                                            modifier = Modifier
-                                                .fillMaxWidth(0.85f)
-                                                .height(300.dp)
-                                                .background(Color.White)
+                                            .testTag("lifecycle_garment_select_btn")
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            clothes.forEach { garment ->
-                                                DropdownMenuItem(
-                                                    text = {
-                                                        Text(
-                                                            text = "${garment.name} (${garment.clothesType.ifBlank { "Clothes" }})",
-                                                            fontSize = 12.sp,
-                                                            fontWeight = FontWeight.SemiBold,
-                                                            color = Slate900
-                                                        )
-                                                    },
-                                                    onClick = {
-                                                        selectedLifecycleGarmentId = garment.id
-                                                        garmentDropdownExpanded = false
-                                                        selectedDateStr = null
-                                                    }
-                                                )
-                                            }
+                                            Text(
+                                                text = "${selectedLifecycleGarment.name} (${selectedLifecycleGarment.clothesType.ifBlank { "Clothes" }})",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate800,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Spacer(modifier = Modifier.width(4.dp))
+                                            Icon(
+                                                Icons.Default.ArrowDropDown,
+                                                contentDescription = "Select clothes",
+                                                tint = Slate600,
+                                                modifier = Modifier.size(18.dp)
+                                            )
                                         }
                                     }
                                 }
 
-                                // Status Badge & Wash Now Button
+                                // Row 2: Status Badge & Wash Now Action Button
                                 Row(
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
                                     val isDirty = garmentLifecycle.currentDirtyHours > 0 || garmentLifecycle.currentDirtySessions > 0
                                     if (isDirty) {
                                         Surface(
                                             shape = RoundedCornerShape(10.dp),
                                             color = Color(0xFFFEF3C7),
-                                            border = BorderStroke(1.dp, Color(0xFFFDE68A))
+                                            border = BorderStroke(1.dp, Color(0xFFFDE68A)),
+                                            modifier = Modifier.weight(1f, fill = false)
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -636,10 +639,14 @@ fun WearCalendar(
                                                     text = "Unwashed ($waitingLabel · ${garmentLifecycle.currentDirtyHours}h)",
                                                     fontSize = 11.sp,
                                                     fontWeight = FontWeight.Bold,
-                                                    color = Color(0xFF92400E)
+                                                    color = Color(0xFF92400E),
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
                                                 )
                                             }
                                         }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
 
                                         // [Wash Now] Action Button (Calls WashGuardDialog)
                                         Button(
@@ -648,14 +655,14 @@ fun WearCalendar(
                                             },
                                             shape = RoundedCornerShape(10.dp),
                                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB)),
-                                            contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
-                                            modifier = Modifier.height(30.dp).testTag("lifecycle_wash_now_btn")
+                                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
+                                            modifier = Modifier.height(32.dp).testTag("lifecycle_wash_now_btn")
                                         ) {
                                             Icon(
                                                 Icons.Default.LocalLaundryService,
                                                 contentDescription = null,
                                                 tint = Color.White,
-                                                modifier = Modifier.size(12.dp)
+                                                modifier = Modifier.size(13.dp)
                                             )
                                             Spacer(modifier = Modifier.width(4.dp))
                                             Text(
@@ -672,7 +679,7 @@ fun WearCalendar(
                                             border = BorderStroke(1.dp, Color(0xFFA7F3D0))
                                         ) {
                                             Row(
-                                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                                                 verticalAlignment = Alignment.CenterVertically,
                                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                                             ) {
@@ -693,6 +700,214 @@ fun WearCalendar(
                                     }
                                 }
                             }
+                        }
+
+                        // Dedicated Clothes Selector Dialog with Search and Sorted (A-Z) List
+                        if (showClothesPickerModal) {
+                            AlertDialog(
+                                onDismissRequest = {
+                                    showClothesPickerModal = false
+                                    lifecycleClothesSearchQuery = ""
+                                },
+                                title = {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Checkroom,
+                                                contentDescription = null,
+                                                tint = BrandPurple,
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                            Text(
+                                                text = "Select Clothes",
+                                                fontSize = 17.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Slate900
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                showClothesPickerModal = false
+                                                lifecycleClothesSearchQuery = ""
+                                            },
+                                            modifier = Modifier.size(28.dp)
+                                        ) {
+                                            Icon(
+                                                Icons.Default.Close,
+                                                contentDescription = "Close",
+                                                tint = Slate500,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
+                                    }
+                                },
+                                text = {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                                    ) {
+                                        OutlinedTextField(
+                                            value = lifecycleClothesSearchQuery,
+                                            onValueChange = { lifecycleClothesSearchQuery = it },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .testTag("lifecycle_clothes_search_input"),
+                                            placeholder = {
+                                                Text("Search clothes...", fontSize = 13.sp, color = Slate400)
+                                            },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Default.Search,
+                                                    contentDescription = "Search",
+                                                    tint = BrandPurple,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                            },
+                                            trailingIcon = {
+                                                if (lifecycleClothesSearchQuery.isNotEmpty()) {
+                                                    IconButton(
+                                                        onClick = { lifecycleClothesSearchQuery = "" },
+                                                        modifier = Modifier.size(24.dp)
+                                                    ) {
+                                                        Icon(
+                                                            Icons.Default.Close,
+                                                            contentDescription = "Clear search",
+                                                            tint = Slate500,
+                                                            modifier = Modifier.size(16.dp)
+                                                        )
+                                                    }
+                                                }
+                                            },
+                                            singleLine = true,
+                                            shape = RoundedCornerShape(12.dp),
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                focusedBorderColor = BrandPurple,
+                                                unfocusedBorderColor = Slate300
+                                            )
+                                        )
+
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Text(
+                                                text = "${filteredLifecycleClothes.size} of ${sortedLifecycleClothes.size} items (A–Z)",
+                                                fontSize = 11.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.SemiBold,
+                                                color = Slate500
+                                            )
+                                            Text(
+                                                text = "Sorted ascending",
+                                                fontSize = 10.sp,
+                                                fontStyle = FontStyle.Italic,
+                                                color = Slate400
+                                            )
+                                        }
+
+                                        HorizontalDivider(color = Slate200)
+
+                                        if (filteredLifecycleClothes.isEmpty()) {
+                                            Box(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(140.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = "No clothes matching \"$lifecycleClothesSearchQuery\"",
+                                                    fontSize = 13.sp,
+                                                    color = Slate500,
+                                                    fontStyle = FontStyle.Italic
+                                                )
+                                            }
+                                        } else {
+                                            LazyColumn(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .heightIn(max = 340.dp),
+                                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                                            ) {
+                                                items(filteredLifecycleClothes.size) { idx ->
+                                                    val garment = filteredLifecycleClothes[idx]
+                                                    val isSelected = garment.id == selectedLifecycleGarmentId
+
+                                                    Surface(
+                                                        shape = RoundedCornerShape(10.dp),
+                                                        color = if (isSelected) Color(0xFFF3E8FF) else Color.White,
+                                                        border = BorderStroke(
+                                                            1.dp,
+                                                            if (isSelected) Color(0xFFD8B4FE) else Slate200
+                                                        ),
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .clickable {
+                                                                selectedLifecycleGarmentId = garment.id
+                                                                showClothesPickerModal = false
+                                                                lifecycleClothesSearchQuery = ""
+                                                                selectedDateStr = null
+                                                            }
+                                                    ) {
+                                                        Row(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                                            verticalAlignment = Alignment.CenterVertically
+                                                        ) {
+                                                            Column(modifier = Modifier.weight(1f)) {
+                                                                Text(
+                                                                    text = garment.name,
+                                                                    fontSize = 13.sp,
+                                                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.SemiBold,
+                                                                    color = if (isSelected) BrandPurple else Slate900,
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.Ellipsis
+                                                                )
+                                                                Text(
+                                                                    text = garment.clothesType.ifBlank { "Clothes" },
+                                                                    fontSize = 11.sp,
+                                                                    color = if (isSelected) Color(0xFF7E22CE) else Slate500
+                                                                )
+                                                            }
+                                                            if (isSelected) {
+                                                                Icon(
+                                                                    Icons.Default.Check,
+                                                                    contentDescription = "Selected",
+                                                                    tint = BrandPurple,
+                                                                    modifier = Modifier.size(18.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                },
+                                confirmButton = {},
+                                dismissButton = {
+                                    OutlinedButton(
+                                        onClick = {
+                                            showClothesPickerModal = false
+                                            lifecycleClothesSearchQuery = ""
+                                        },
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text("Cancel", fontSize = 12.sp, color = Slate700)
+                                    }
+                                },
+                                shape = RoundedCornerShape(20.dp),
+                                containerColor = Color.White
+                            )
                         }
                     }
 

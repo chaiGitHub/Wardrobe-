@@ -162,7 +162,8 @@ fun AddGarmentDialog(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
         uris.forEach { uri ->
-            photoUrls.add(uri.toString())
+            val permanent = ImageUtils.copyUriToInternalStorage(context, uri, "garment")
+            photoUrls.add(permanent)
         }
     }
 
@@ -890,7 +891,7 @@ fun AddGarmentDialog(
                                                 }
                                         ) {
                                             AsyncImage(
-                                                model = ImageUtils.resolveImagePath(url, context),
+                                                model = ImageUtils.resolveImageModel(url, context),
                                                 contentDescription = "Clothes photo",
                                                 contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
@@ -988,7 +989,14 @@ fun AddGarmentDialog(
                             val parsedPrice = priceStr.toDoubleOrNull() ?: 0.0
                             val createdDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).format(Date())
 
-                            val photoJson = JSONArray(photoUrls).toString()
+                            val photoJson = JSONArray().apply {
+                                photoUrls.forEach { p ->
+                                    val permanent = if (p.startsWith("content://")) {
+                                        ImageUtils.copyUriToInternalStorage(context, Uri.parse(p), "garment")
+                                    } else p
+                                    put(permanent)
+                                }
+                            }.toString()
 
                             val customFieldsObj = JSONObject()
                             val explainSubObj = JSONObject()
@@ -998,13 +1006,49 @@ fun AddGarmentDialog(
                                     customFieldsObj.put("${k}_explain", v)
                                 }
                             }
-                            // Save environmental scenario explanations
-                            if (aircondHotExplain.isNotBlank()) explainSubObj.put("when with aircond: hot feeling", aircondHotExplain)
-                            if (aircondLegExplain.isNotBlank()) explainSubObj.put("when with aircond: leg feeling", aircondLegExplain)
-                            if (noAircondHotExplain.isNotBlank()) explainSubObj.put("when without aircond: hot feeling", noAircondHotExplain)
-                            if (noAircondLegExplain.isNotBlank()) explainSubObj.put("when without aircond: leg feeling", noAircondLegExplain)
-                            if (fanSleepHotExplain.isNotBlank()) explainSubObj.put("when sleep under fan: hot feeling", fanSleepHotExplain)
-                            if (fanSleepLegExplain.isNotBlank()) explainSubObj.put("when sleep under fan: leg feeling", fanSleepLegExplain)
+                            // Save environmental scenario explanations under proper explanation keys
+                            if (aircondHotExplain.isNotBlank()) {
+                                explainSubObj.put("when with aircond: hot explanation", aircondHotExplain)
+                                explainSubObj.put("aircondHotExplain", aircondHotExplain)
+                            }
+                            explainSubObj.remove("when with aircond: hot feeling")
+                            explainSubObj.remove("aircondHotFeeling")
+
+                            if (aircondLegExplain.isNotBlank()) {
+                                explainSubObj.put("when with aircond: leg explanation", aircondLegExplain)
+                                explainSubObj.put("aircondLegExplain", aircondLegExplain)
+                            }
+                            explainSubObj.remove("when with aircond: leg feeling")
+                            explainSubObj.remove("aircondLegFeeling")
+
+                            if (noAircondHotExplain.isNotBlank()) {
+                                explainSubObj.put("when without aircond: hot explanation", noAircondHotExplain)
+                                explainSubObj.put("noAircondHotExplain", noAircondHotExplain)
+                            }
+                            explainSubObj.remove("when without aircond: hot feeling")
+                            explainSubObj.remove("noAircondHotFeeling")
+                            explainSubObj.remove("Hot at noon")
+
+                            if (noAircondLegExplain.isNotBlank()) {
+                                explainSubObj.put("when without aircond: leg explanation", noAircondLegExplain)
+                                explainSubObj.put("noAircondLegExplain", noAircondLegExplain)
+                            }
+                            explainSubObj.remove("when without aircond: leg feeling")
+                            explainSubObj.remove("noAircondLegFeeling")
+
+                            if (fanSleepHotExplain.isNotBlank()) {
+                                explainSubObj.put("when sleep under fan: hot explanation", fanSleepHotExplain)
+                                explainSubObj.put("fanSleepHotExplain", fanSleepHotExplain)
+                            }
+                            explainSubObj.remove("when sleep under fan: hot feeling")
+                            explainSubObj.remove("fanSleepHotFeeling")
+
+                            if (fanSleepLegExplain.isNotBlank()) {
+                                explainSubObj.put("when sleep under fan: leg explanation", fanSleepLegExplain)
+                                explainSubObj.put("fanSleepLegExplain", fanSleepLegExplain)
+                            }
+                            explainSubObj.remove("when sleep under fan: leg feeling")
+                            explainSubObj.remove("fanSleepLegFeeling")
 
                             if (explainSubObj.length() > 0) {
                                 customFieldsObj.put("_fieldExplanations", explainSubObj)

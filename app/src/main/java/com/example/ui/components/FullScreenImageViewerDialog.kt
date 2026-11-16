@@ -47,6 +47,16 @@ import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
 import com.example.util.ImageUtils
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+
 /**
  * Fullscreen image viewer overlay designed to render directly inside any parent Dialog or Screen Box
  * without creating a separate Android Window, guaranteeing instant z-ordering above dialog contents.
@@ -67,6 +77,10 @@ fun FullScreenImageViewerOverlay(
     }
     val currentPhotoUrl = photos.getOrNull(currentIndex) ?: return
 
+    var scale by remember(currentIndex) { mutableFloatStateOf(1f) }
+    var offsetX by remember(currentIndex) { mutableFloatStateOf(0f) }
+    var offsetY by remember(currentIndex) { mutableFloatStateOf(0f) }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +91,7 @@ fun FullScreenImageViewerOverlay(
                 indication = null
             ) { /* Consume taps */ }
     ) {
-        // Main Zoomable / Fit Image
+        // Main Zoomable / Fit Image with Pinch-to-Zoom and Drag/Pan Gestures
         val imageModel = ImageUtils.resolvePhotoModel(context, currentPhotoUrl)
             ?: ImageUtils.resolveImageModel(currentPhotoUrl, context)
             ?: currentPhotoUrl
@@ -85,7 +99,42 @@ fun FullScreenImageViewerOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(vertical = 60.dp, horizontal = 12.dp),
+                .padding(vertical = 60.dp, horizontal = 12.dp)
+                .clipToBounds()
+                .pointerInput(currentIndex) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        val newScale = (scale * zoom).coerceIn(1f, 5f)
+                        scale = newScale
+                        if (newScale > 1f) {
+                            val maxOffsetX = (size.width * (newScale - 1f)) / 2f
+                            val maxOffsetY = (size.height * (newScale - 1f)) / 2f
+                            offsetX = (offsetX + pan.x).coerceIn(-maxOffsetX, maxOffsetX)
+                            offsetY = (offsetY + pan.y).coerceIn(-maxOffsetY, maxOffsetY)
+                        } else {
+                            offsetX = 0f
+                            offsetY = 0f
+                        }
+                    }
+                }
+                .pointerInput(currentIndex) {
+                    detectTapGestures(
+                        onDoubleTap = { tapOffset ->
+                            if (scale > 1.05f) {
+                                scale = 1f
+                                offsetX = 0f
+                                offsetY = 0f
+                            } else {
+                                scale = 2.5f
+                                val center = Offset(size.width / 2f, size.height / 2f)
+                                val diff = (center - tapOffset) * 1.5f
+                                val maxOffsetX = (size.width * 1.5f) / 2f
+                                val maxOffsetY = (size.height * 1.5f) / 2f
+                                offsetX = diff.x.coerceIn(-maxOffsetX, maxOffsetX)
+                                offsetY = diff.y.coerceIn(-maxOffsetY, maxOffsetY)
+                            }
+                        }
+                    )
+                },
             contentAlignment = Alignment.Center
         ) {
             var isLoading by remember(currentPhotoUrl) { mutableStateOf(true) }
@@ -105,7 +154,14 @@ fun FullScreenImageViewerOverlay(
                     isLoading = false
                     isError = true
                 },
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = scale
+                        scaleY = scale
+                        translationX = offsetX
+                        translationY = offsetY
+                    }
             )
 
             if (isError) {
@@ -123,6 +179,43 @@ fun FullScreenImageViewerOverlay(
                         text = "Photo not available locally",
                         color = Color.White.copy(alpha = 0.7f),
                         fontSize = 13.sp
+                    )
+                }
+            }
+        }
+
+        // Reset Zoom Button Pill at bottom
+        if (scale > 1.05f) {
+            Surface(
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.75f),
+                border = BorderStroke(1.dp, Color.White.copy(alpha = 0.35f)),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 20.dp)
+                    .clip(CircleShape)
+                    .clickable {
+                        scale = 1f
+                        offsetX = 0f
+                        offsetY = 0f
+                    }
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Reset Zoom",
+                        tint = Color.White,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = "Reset Zoom (${(scale * 100).toInt()}%)",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
             }

@@ -35,13 +35,6 @@ enum class AppTab(val title: String, val badge: String = "") {
     SYNC("Local Storage")
 }
 
-data class DrillPreset(
-    val id: String,
-    val name: String,
-    val description: String,
-    val groupTiers: List<String>
-)
-
 class WardrobeViewModel(application: Application) : AndroidViewModel(application) {
     private val repository = WardrobeRepository(application)
 
@@ -62,37 +55,6 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
 
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    // Drill-down Presets
-    val drillPresets = listOf(
-        DrillPreset(
-            id = "preset-bra-strap",
-            name = "Ergonomic & Strap Comfort",
-            description = "Deep dive by shoulder strap styling, bust ergonomics, and material feel.",
-            groupTiers = listOf("diao dai", "sit breast", "side breast shape")
-        ),
-        DrillPreset(
-            id = "preset-wash-care",
-            name = "Wash Care & Laundry Priority",
-            description = "Exclusive drill by wash backlog state, clothing category, and fabric material.",
-            groupTiers = listOf("wash stated", "clothesType", "material")
-        ),
-        DrillPreset(
-            id = "preset-sensory-heat",
-            name = "Sensory Heat & Moisture",
-            description = "Drill by midday heat sensitivity, moisture performance, and thickness.",
-            groupTiers = listOf("hotAtNoon", "wet", "thickClothes")
-        ),
-        DrillPreset(
-            id = "preset-declutter-audit",
-            name = "Declutter & Discard Audit",
-            description = "Audit garments flagged for possible decluttering or disposal by category.",
-            groupTiers = listOf("mayThrow", "clothesType", "beautiful")
-        )
-    )
-
-    private val _selectedPreset = MutableStateFlow(drillPresets[0])
-    val selectedPreset: StateFlow<DrillPreset> = _selectedPreset.asStateFlow()
 
     // Drilldown navigation path (survives screen rotation and tab switching)
     private val _drillPath = MutableStateFlow<List<com.example.ui.drilldown.DrilldownBreadcrumb>>(emptyList())
@@ -598,10 +560,6 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
         _searchQuery.value = query
     }
 
-    fun setPreset(preset: DrillPreset) {
-        _selectedPreset.value = preset
-    }
-
     fun selectGarmentForAdvice(garment: GarmentEntity?) {
         _selectedGarmentForAdvice.value = garment
         _aiAdviceText.value = null
@@ -879,56 +837,6 @@ class WardrobeViewModel(application: Application) : AndroidViewModel(application
             } finally {
                 _isExporting.value = false
             }
-        }
-    }
-
-    // Cloud Sync State (Matching Webapp App.tsx Cloud Connected / Sync Banner)
-    private val _isSyncing = MutableStateFlow(false)
-    val isSyncing: StateFlow<Boolean> = _isSyncing.asStateFlow()
-
-    private val _syncProgress = MutableStateFlow(0)
-    val syncProgress: StateFlow<Int> = _syncProgress.asStateFlow()
-
-    private val _syncMessage = MutableStateFlow("")
-    val syncMessage: StateFlow<String> = _syncMessage.asStateFlow()
-
-    fun pullFromCloud(onComplete: ((String) -> Unit)? = null) {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            _syncProgress.value = 15
-            _syncMessage.value = "Connecting to Google Cloud / Firestore..."
-            kotlinx.coroutines.delay(400)
-            _syncProgress.value = 55
-            _syncMessage.value = "Fetching remote clothes and wear journals..."
-            kotlinx.coroutines.delay(400)
-            _syncProgress.value = 85
-            _syncMessage.value = "Synchronizing local database cache..."
-            kotlinx.coroutines.delay(300)
-            _syncProgress.value = 100
-            _syncMessage.value = "Sync complete! Wardrobe is fully updated."
-            kotlinx.coroutines.delay(600)
-            _isSyncing.value = false
-            onComplete?.invoke("Cloud pull completed successfully.")
-        }
-    }
-
-    fun pushToCloud(onComplete: ((String) -> Unit)? = null) {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            _syncProgress.value = 20
-            _syncMessage.value = "Packaging ${clothes.value.size} garments & ${reports.value.size} wear logs..."
-            kotlinx.coroutines.delay(400)
-            _syncProgress.value = 65
-            _syncMessage.value = "Uploading snapshot to Google Cloud storage..."
-            kotlinx.coroutines.delay(400)
-            _syncProgress.value = 92
-            _syncMessage.value = "Finalizing Firestore synchronization..."
-            kotlinx.coroutines.delay(300)
-            _syncProgress.value = 100
-            _syncMessage.value = "Cloud snapshot saved successfully!"
-            kotlinx.coroutines.delay(600)
-            _isSyncing.value = false
-            onComplete?.invoke("Cloud push completed successfully.")
         }
     }
 

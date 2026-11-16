@@ -258,16 +258,6 @@ class ReportPresetService(private val context: Context) {
         if (!v4Json.isNullOrBlank()) {
             val parsed = parsePresetsJson(v4Json)
             if (parsed.isNotEmpty()) {
-                val noAcHot = parsed.find { it.id == "preset-without-aircond-hot" }
-                if (noAcHot != null && noAcHot.groupTiers.size < 6) {
-                    val canonicalList = loadPresetsFromAsset().ifEmpty { DEFAULT_DRILL_PRESETS }
-                    val canonicalNoAc = canonicalList.find { it.id == "preset-without-aircond-hot" }
-                    if (canonicalNoAc != null) {
-                        val fixed = parsed.map { if (it.id == "preset-without-aircond-hot") canonicalNoAc else it }
-                        savePresets(fixed)
-                        return fixed
-                    }
-                }
                 return parsed
             }
         }

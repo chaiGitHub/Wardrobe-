@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -92,6 +93,9 @@ import com.example.ui.theme.Slate700
 import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 import com.example.ui.dialogs.WashGuardDialog
+import com.example.util.ImageUtils
+import coil.compose.AsyncImage
+import androidx.compose.ui.layout.ContentScale
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -925,6 +929,60 @@ private fun ReportCard(
             }
 
             HorizontalDivider(color = Slate100)
+
+            // Outfit Photos Thumbnail Strip (if attached)
+            val context = LocalContext.current
+            val outfitPhotos = remember(report.pictures) {
+                val resolved = ImageUtils.resolveAllValidPhotos(report.pictures, context)
+                if (resolved.isNotEmpty()) resolved else ImageUtils.parsePhotoList(report.pictures)
+            }
+            if (outfitPhotos.isNotEmpty()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
+                ) {
+                    outfitPhotos.take(4).forEach { url ->
+                        val model = remember(url) {
+                            ImageUtils.resolveImageModel(url, context)
+                                ?: ImageUtils.resolvePhotoModel(context, url)
+                                ?: url
+                        }
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Slate100)
+                                .border(1.dp, Slate200, RoundedCornerShape(10.dp))
+                        ) {
+                            AsyncImage(
+                                model = model,
+                                contentDescription = "Outfit photo preview",
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    if (outfitPhotos.size > 4) {
+                        Surface(
+                            shape = RoundedCornerShape(10.dp),
+                            color = Color(0xFFF3E8FF),
+                            border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
+                            modifier = Modifier.size(56.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = "+${outfitPhotos.size - 4}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6B21A8)
+                                )
+                            }
+                        }
+                    }
+                }
+                HorizontalDivider(color = Slate100)
+            }
 
             // 2. CLOTHES(NEW) · CLOTHES ITEMS section (IMG_9719)
             Text(

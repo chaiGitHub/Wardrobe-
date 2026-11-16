@@ -69,8 +69,6 @@ import com.example.ui.theme.Slate800
 import com.example.ui.theme.Slate900
 
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.material.icons.filled.CloudDownload
-import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.LinearProgressIndicator
@@ -79,9 +77,6 @@ import androidx.compose.material3.LinearProgressIndicator
 fun AppHeader(
     onLogWearClick: (() -> Unit)? = null,
     onAddItemClick: (() -> Unit)? = null,
-    onPullFromCloudClick: (() -> Unit)? = null,
-    onPushToCloudClick: (() -> Unit)? = null,
-    isCloudConnected: Boolean = true,
     isSyncing: Boolean = false,
     syncProgress: Int = 0,
     syncMessage: String = "",

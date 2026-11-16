@@ -97,9 +97,6 @@ fun WardrobeMainApp(
     val isExporting by viewModel.isExporting.collectAsState()
     val isAiPaused by viewModel.isAiPaused.collectAsState()
 
-    var isSyncing by remember { mutableStateOf(false) }
-    var syncMessage by remember { mutableStateOf("") }
-
     val showAddGarmentDialog by viewModel.showAddGarmentDialog.collectAsState()
     val showAddReportDialog by viewModel.showAddReportDialog.collectAsState()
     val editingReport by viewModel.editingReport.collectAsState()
@@ -157,28 +154,6 @@ fun WardrobeMainApp(
                 onAddItemClick = {
                     viewModel.openAddGarment(true)
                 },
-                onPullFromCloudClick = {
-                    isSyncing = true
-                    syncMessage = "Pulling from cloud..."
-                    viewModel.pullFromCloud { msg ->
-                        isSyncing = false
-                        syncMessage = msg
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                onPushToCloudClick = {
-                    isSyncing = true
-                    syncMessage = "Pushing to cloud..."
-                    viewModel.pushToCloud { msg ->
-                        isSyncing = false
-                        syncMessage = msg
-                        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-                    }
-                },
-                isCloudConnected = true,
-                isSyncing = isSyncing,
-                syncProgress = 0,
-                syncMessage = syncMessage,
                 clothesCount = clothes.size,
                 reportsCount = reports.size,
                 activeTab = activeTab,
@@ -422,9 +397,10 @@ fun WardrobeMainApp(
     }
 
     selectedReportForDetail?.let { report ->
+        val liveReport = reports.find { it.id == report.id } ?: report
         SessionDetailModal(
             isOpen = true,
-            report = report,
+            report = liveReport,
             junctions = junctions,
             clothes = clothes,
             onClose = { viewModel.openReportDetail(null) },
@@ -437,7 +413,10 @@ fun WardrobeMainApp(
             onEditReport = { r ->
                 viewModel.openAddReport(r)
             },
-            onUpdateReport = { updated -> viewModel.updateReport(updated) },
+            onUpdateReport = { updated ->
+                viewModel.updateReport(updated)
+                viewModel.openReportDetail(updated)
+            },
             onDeleteJunction = { jId -> viewModel.deleteJunction(jId) },
             onSelectJunctionForAi = { junc -> viewModel.selectJunctionForAi(junc) }
         )

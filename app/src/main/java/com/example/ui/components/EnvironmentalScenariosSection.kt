@@ -357,15 +357,31 @@ fun EnvironmentalScenariosViewSection(
             onToggleExpand = { aircondExpanded = !aircondExpanded }
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val safeAircondHotExp = garment.aircondHotExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(garment.aircondHotFeeling.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when with aircond: hot explanation"]
+                        ?: fieldExplanations["when with aircond: hot feeling explain"]
+                        ?: fieldExplanations["aircondHotExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(garment.aircondHotFeeling.trim(), ignoreCase = true) }
+
+                val safeAircondLegExp = garment.aircondLegExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(garment.aircondLegFeeling.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when with aircond: leg explanation"]
+                        ?: fieldExplanations["when with aircond: leg feeling explain"]
+                        ?: fieldExplanations["aircondLegExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(garment.aircondLegFeeling.trim(), ignoreCase = true) }
+
                 ScenarioViewRow(
                     label = "hot feeling:",
                     value = garment.aircondHotFeeling.ifBlank { "—" },
-                    explanation = garment.aircondHotExplain.ifBlank { fieldExplanations["when with aircond: hot feeling"] ?: fieldExplanations["aircondHotFeeling"] }
+                    explanation = safeAircondHotExp
                 )
                 ScenarioViewRow(
                     label = "leg feeling:",
                     value = garment.aircondLegFeeling.ifBlank { "—" },
-                    explanation = garment.aircondLegExplain.ifBlank { fieldExplanations["when with aircond: leg feeling"] ?: fieldExplanations["aircondLegFeeling"] }
+                    explanation = safeAircondLegExp
                 )
             }
         }
@@ -384,15 +400,31 @@ fun EnvironmentalScenariosViewSection(
             onToggleExpand = { noAircondExpanded = !noAircondExpanded }
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val safeNoAircondHotExp = garment.noAircondHotExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(effectiveNoAircondHot.trim(), ignoreCase = true) && !it.equals(garment.hotAtNoon.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when without aircond: hot explanation"]
+                        ?: fieldExplanations["when without aircond: hot feeling explain"]
+                        ?: fieldExplanations["noAircondHotExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(effectiveNoAircondHot.trim(), ignoreCase = true) && !it.equals(garment.hotAtNoon.trim(), ignoreCase = true) }
+
+                val safeNoAircondLegExp = garment.noAircondLegExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(garment.noAircondLegFeeling.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when without aircond: leg explanation"]
+                        ?: fieldExplanations["when without aircond: leg feeling explain"]
+                        ?: fieldExplanations["noAircondLegExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(garment.noAircondLegFeeling.trim(), ignoreCase = true) }
+
                 ScenarioViewRow(
                     label = "hot feeling:",
                     value = effectiveNoAircondHot.ifBlank { "—" },
-                    explanation = garment.noAircondHotExplain.ifBlank { fieldExplanations["when without aircond: hot feeling"] ?: fieldExplanations["Hot at noon"] }
+                    explanation = safeNoAircondHotExp
                 )
                 ScenarioViewRow(
                     label = "leg feeling:",
                     value = garment.noAircondLegFeeling.ifBlank { "—" },
-                    explanation = garment.noAircondLegExplain.ifBlank { fieldExplanations["when without aircond: leg feeling"] ?: fieldExplanations["noAircondLegFeeling"] }
+                    explanation = safeNoAircondLegExp
                 )
             }
         }
@@ -410,15 +442,31 @@ fun EnvironmentalScenariosViewSection(
             onToggleExpand = { fanSleepExpanded = !fanSleepExpanded }
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                val safeFanSleepHotExp = garment.fanSleepHotExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(garment.fanSleepHotFeeling.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when sleep under fan: hot explanation"]
+                        ?: fieldExplanations["when sleep under fan: hot feeling explain"]
+                        ?: fieldExplanations["fanSleepHotExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(garment.fanSleepHotFeeling.trim(), ignoreCase = true) }
+
+                val safeFanSleepLegExp = garment.fanSleepLegExplain.trim()
+                    .takeIf { it.isNotBlank() && !it.equals(garment.fanSleepLegFeeling.trim(), ignoreCase = true) }
+                    ?: (fieldExplanations["when sleep under fan: leg explanation"]
+                        ?: fieldExplanations["when sleep under fan: leg feeling explain"]
+                        ?: fieldExplanations["fanSleepLegExplain"])
+                        ?.trim()
+                        ?.takeIf { it.isNotBlank() && !it.equals(garment.fanSleepLegFeeling.trim(), ignoreCase = true) }
+
                 ScenarioViewRow(
                     label = "hot feeling:",
                     value = garment.fanSleepHotFeeling.ifBlank { "—" },
-                    explanation = garment.fanSleepHotExplain.ifBlank { fieldExplanations["when sleep under fan: hot feeling"] ?: fieldExplanations["fanSleepHotFeeling"] }
+                    explanation = safeFanSleepHotExp
                 )
                 ScenarioViewRow(
                     label = "leg feeling:",
                     value = garment.fanSleepLegFeeling.ifBlank { "—" },
-                    explanation = garment.fanSleepLegExplain.ifBlank { fieldExplanations["when sleep under fan: leg feeling"] ?: fieldExplanations["fanSleepLegFeeling"] }
+                    explanation = safeFanSleepLegExp
                 )
             }
         }
@@ -663,9 +711,10 @@ private fun ScenarioFieldWithPrevious(
             )
         )
 
-        // Ergonomic explain field
+        // Ergonomic explain field (using explanation key so previous queries fetch explanations, not feelings)
+        val explainKey = if (fieldKey.contains("feeling")) fieldKey.replace("feeling", "explanation") else "${fieldKey} explanation"
         ErgonomicExplainField(
-            fieldKey = fieldKey,
+            fieldKey = explainKey,
             fieldLabel = label,
             value = explainValue,
             onValueChange = onExplainChange,

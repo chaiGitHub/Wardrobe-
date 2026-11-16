@@ -130,8 +130,43 @@ fun getHistoricalExplanations(
     )
     val map = mutableMapOf<String, AggregateInfo>()
 
+    val conceptKey = targetNorm
+        .replace("explanation", "")
+        .replace("explain", "")
+        .replace("feeling", "")
+
+    fun isFeelingDuplicate(text: String, g: GarmentEntity): Boolean {
+        val t = text.trim()
+        if (t.isBlank()) return true
+        if (t.equals(g.aircondHotFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.aircondLegFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.noAircondHotFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.noAircondLegFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.fanSleepHotFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.fanSleepLegFeeling.trim(), ignoreCase = true)) return true
+        if (t.equals(g.hotAtNoon.trim(), ignoreCase = true)) return true
+        return false
+    }
+
     clothes.forEach { g ->
-        var note = ""
+        val candidateNotes = mutableListOf<String>()
+
+        // Check dedicated entity explain fields FIRST
+        val dedicatedNote = when {
+            conceptKey.contains("aircond") && conceptKey.contains("hot") && !conceptKey.contains("without") && !conceptKey.contains("noaircond") -> g.aircondHotExplain.trim()
+            conceptKey.contains("aircond") && conceptKey.contains("leg") && !conceptKey.contains("without") && !conceptKey.contains("noaircond") -> g.aircondLegExplain.trim()
+            (conceptKey.contains("without") || conceptKey.contains("noaircond")) && conceptKey.contains("hot") -> g.noAircondHotExplain.trim()
+            (conceptKey.contains("without") || conceptKey.contains("noaircond")) && conceptKey.contains("leg") -> g.noAircondLegExplain.trim()
+            conceptKey.contains("fan") && conceptKey.contains("hot") -> g.fanSleepHotExplain.trim()
+            conceptKey.contains("fan") && conceptKey.contains("leg") -> g.fanSleepLegExplain.trim()
+            conceptKey == "beautiful" || conceptKey == "beatifulreason" || conceptKey == "beautifulreason" -> g.beautifulReason.trim()
+            conceptKey == "wet" || conceptKey == "wetreason" -> g.wetReason.trim()
+            else -> ""
+        }
+        if (dedicatedNote.isNotBlank() && dedicatedNote != "No data" && dedicatedNote != "N/A" && !isFeelingDuplicate(dedicatedNote, g)) {
+            candidateNotes.add(dedicatedNote)
+        }
+
         try {
             if (g.customFields.isNotBlank() && g.customFields != "{}") {
                 val obj = JSONObject(g.customFields)
@@ -141,47 +176,31 @@ fun getHistoricalExplanations(
                     while (subKeys.hasNext()) {
                         val k = subKeys.next()
                         val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
-                        if (normK == targetNorm || normK == "${targetNorm}explain") {
+                        val isExplainKey = normK.contains("explain") || normK.contains("explanation") || normK.contains("reason")
+                        val matchesConcept = (conceptKey.isNotBlank() && normK.contains(conceptKey)) || normK == "${targetNorm}explain" || normK == "${targetNorm}explanation"
+                        if (isExplainKey && matchesConcept) {
                             val candidate = sub.optString(k, "").trim()
-                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
-                                note = candidate
-                                break
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{") && !isFeelingDuplicate(candidate, g)) {
+                                if (!candidateNotes.contains(candidate)) candidateNotes.add(candidate)
                             }
                         }
                     }
                 }
-                if (note.isBlank()) {
-                    val objKeys = obj.keys()
-                    while (objKeys.hasNext()) {
-                        val k = objKeys.next()
-                        val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
-                        if (normK == "${targetNorm}explain" || normK == "${targetNorm}explanation" || normK == "explain$targetNorm" || (targetNorm.isNotEmpty() && normK == targetNorm)) {
-                            val candidate = obj.optString(k, "").trim()
-                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{")) {
-                                note = candidate
-                                break
-                            }
+                val objKeys = obj.keys()
+                while (objKeys.hasNext()) {
+                    val k = objKeys.next()
+                    val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
+                    if ((normK.endsWith("explain") || normK.endsWith("explanation")) && conceptKey.isNotBlank() && normK.contains(conceptKey)) {
+                        val candidate = obj.optString(k, "").trim()
+                        if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{") && !isFeelingDuplicate(candidate, g)) {
+                            if (!candidateNotes.contains(candidate)) candidateNotes.add(candidate)
                         }
                     }
                 }
             }
         } catch (_: Exception) {}
 
-        // Check dedicated entity explain fields if key matches
-        if (note.isBlank()) {
-            when (targetNorm) {
-                "whenwithaircondhotfeeling", "aircondhotfeeling" -> note = g.aircondHotExplain.trim()
-                "whenwithaircondlegfeeling", "aircondlegfeeling" -> note = g.aircondLegExplain.trim()
-                "whenwithoutaircondhotfeeling", "noaircondhotfeeling", "hotatnoon" -> note = g.noAircondHotExplain.trim()
-                "whenwithoutaircondlegfeeling", "noaircondlegfeeling" -> note = g.noAircondLegExplain.trim()
-                "whensleepunderfanhotfeeling", "fansleephotfeeling" -> note = g.fanSleepHotExplain.trim()
-                "whensleepunderfanlegfeeling", "fansleeplegfeeling" -> note = g.fanSleepLegExplain.trim()
-                "beautiful", "beatifulreason" -> note = g.beautifulReason.trim()
-                "wet", "wetreason" -> note = g.wetReason.trim()
-            }
-        }
-
-        if (note.isNotBlank() && note != "No data" && note != "N/A") {
+        candidateNotes.forEach { note ->
             val gName = "${g.name}${if (g.clothesType.isNotBlank()) " (${g.clothesType})" else ""}".ifBlank { "Garment" }
             val existing = map[note]
             val src = "👕 衣服: $gName"
@@ -204,6 +223,19 @@ fun getHistoricalExplanations(
         }
     }
 
+    fun isReportFeelingDuplicate(text: String, r: ReportEntity): Boolean {
+        val t = text.trim()
+        if (t.isBlank()) return true
+        if (t.equals(r.shoulderFeel.trim(), ignoreCase = true)) return true
+        if (t.equals(r.midBreast.trim(), ignoreCase = true)) return true
+        if (t.equals(r.nightMidBreast.trim(), ignoreCase = true)) return true
+        if (t.equals(r.sweat.trim(), ignoreCase = true)) return true
+        if (t.equals(r.nightSweat.trim(), ignoreCase = true)) return true
+        if (t.equals(r.legFeel.trim(), ignoreCase = true)) return true
+        if (t.equals(r.nightLegFeel.trim(), ignoreCase = true)) return true
+        return false
+    }
+
     reports.forEach { r ->
         var note = ""
         try {
@@ -215,9 +247,11 @@ fun getHistoricalExplanations(
                     while (subKeys.hasNext()) {
                         val k = subKeys.next()
                         val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
-                        if (normK == targetNorm || normK == "${targetNorm}explain") {
+                        val isExplainKey = normK.contains("explain") || normK.contains("explanation") || normK.contains("reason")
+                        val matchesConcept = (conceptKey.isNotBlank() && normK.contains(conceptKey)) || normK == "${targetNorm}explain" || normK == "${targetNorm}explanation"
+                        if (isExplainKey && matchesConcept) {
                             val candidate = sub.optString(k, "").trim()
-                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A") {
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{") && !isReportFeelingDuplicate(candidate, r)) {
                                 note = candidate
                                 break
                             }
@@ -229,9 +263,9 @@ fun getHistoricalExplanations(
                     while (objKeys.hasNext()) {
                         val k = objKeys.next()
                         val normK = k.lowercase(Locale.ROOT).replace(" ", "").replace("_", "").replace("-", "").replace(":", "")
-                        if (normK == "${targetNorm}explain" || normK == "${targetNorm}explanation" || normK == "explain$targetNorm" || (targetNorm.isNotEmpty() && normK == targetNorm)) {
+                        if ((normK.endsWith("explain") || normK.endsWith("explanation")) && conceptKey.isNotBlank() && normK.contains(conceptKey)) {
                             val candidate = obj.optString(k, "").trim()
-                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{")) {
+                            if (candidate.isNotBlank() && candidate != "No data" && candidate != "N/A" && !candidate.startsWith("{") && !isReportFeelingDuplicate(candidate, r)) {
                                 note = candidate
                                 break
                             }

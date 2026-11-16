@@ -306,10 +306,12 @@ fun AddReportDialog(
     var closetSearchQuery by remember { mutableStateOf("") }
 
     // Outfit of the day photos
-    val photoUrls = remember {
+    val photoUrls = remember(initialReport?.id, initialReport?.pictures) {
         val list = mutableStateListOf<String>()
         if (initialReport != null) {
-            list.addAll(ImageUtils.parsePhotoList(initialReport.pictures))
+            val resolved = ImageUtils.resolveAllValidPhotos(initialReport.pictures, context)
+            val initialList = if (resolved.isNotEmpty()) resolved else ImageUtils.parsePhotoList(initialReport.pictures)
+            list.addAll(initialList)
         }
         list
     }
@@ -320,7 +322,10 @@ fun AddReportDialog(
         contract = ActivityResultContracts.GetMultipleContents()
     ) { uris: List<Uri> ->
         uris.forEach { uri ->
-            photoUrls.add(uri.toString())
+            val permanentUri = ImageUtils.copyUriToInternalStorage(context, uri, "report")
+            if (!photoUrls.contains(permanentUri)) {
+                photoUrls.add(permanentUri)
+            }
         }
     }
 
@@ -369,6 +374,24 @@ fun AddReportDialog(
             "${baseKey.replace(" ", "").lowercase(Locale.ROOT)}_explain"
         )
 
+        val conceptNorm = targetNorm
+            .replace("explanation", "")
+            .replace("explain", "")
+            .replace("feeling", "")
+
+        fun isReportFeelingDup(text: String, r: ReportEntity): Boolean {
+            val t = text.trim()
+            if (t.isBlank()) return true
+            if (t.equals(r.shoulderFeel.trim(), ignoreCase = true)) return true
+            if (t.equals(r.midBreast.trim(), ignoreCase = true)) return true
+            if (t.equals(r.nightMidBreast.trim(), ignoreCase = true)) return true
+            if (t.equals(r.sweat.trim(), ignoreCase = true)) return true
+            if (t.equals(r.nightSweat.trim(), ignoreCase = true)) return true
+            if (t.equals(r.legFeel.trim(), ignoreCase = true)) return true
+            if (t.equals(r.nightLegFeel.trim(), ignoreCase = true)) return true
+            return false
+        }
+
         existingReports.forEach { r ->
             if (isExplainField) {
                 try {
@@ -379,9 +402,11 @@ fun AddReportDialog(
                         while (subKeys.hasNext()) {
                             val k = subKeys.next()
                             val normK = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
-                            if (normK == targetNorm || normK == "${targetNorm}explain" || normK == "explain$targetNorm") {
+                            val isExplainKey = normK.contains("explain") || normK.contains("explanation") || normK.contains("reason")
+                            val matchesConcept = (conceptNorm.isNotBlank() && normK.contains(conceptNorm)) || normK == "${targetNorm}explain" || normK == "${targetNorm}explanation"
+                            if (isExplainKey && matchesConcept) {
                                 val s = sub.optString(k, "").trim()
-                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{") && !isReportFeelingDup(s, r)) {
                                     countMap[s] = (countMap[s] ?: 0) + 1
                                     val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
                                     val src = if (gNames.isNotEmpty()) "👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})" else "📅 记录: ${r.name}"
@@ -395,9 +420,9 @@ fun AddReportDialog(
                         val k = objKeys.next()
                         if (k.endsWith("_explain", ignoreCase = true)) {
                             val normK = k.removeSuffix("_explain").lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
-                            if (normK == targetNorm) {
+                            if (normK == targetNorm || (conceptNorm.isNotBlank() && normK.contains(conceptNorm))) {
                                 val s = obj.optString(k, "").trim()
-                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{") && !isReportFeelingDup(s, r)) {
                                     countMap[s] = (countMap[s] ?: 0) + 1
                                     val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
                                     val src = if (gNames.isNotEmpty()) "👕 衣服: ${gNames.joinToString(", ")} (📅 ${r.name})" else "📅 记录: ${r.name}"
@@ -425,7 +450,6 @@ fun AddReportDialog(
                         } catch (_: Exception) { "" }
                     }
                 }.trim()
-
                 if (v.isNotBlank() && v != "No data" && v != "N/A") {
                     countMap[v] = (countMap[v] ?: 0) + 1
                     val gNames = reportGarmentsMap[r.id] ?: reportGarmentsMap[r.name.trim().lowercase(Locale.ROOT)] ?: emptySet()
@@ -440,7 +464,37 @@ fun AddReportDialog(
 
         // Also check garment explanations for explanation fields
         if (isExplainField) {
+            fun isGarmentFeelingDup(text: String, g: GarmentEntity): Boolean {
+                val t = text.trim()
+                if (t.isBlank()) return true
+                if (t.equals(g.aircondHotFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.aircondLegFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.noAircondHotFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.noAircondLegFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.fanSleepHotFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.fanSleepLegFeeling.trim(), ignoreCase = true)) return true
+                if (t.equals(g.hotAtNoon.trim(), ignoreCase = true)) return true
+                return false
+            }
+
             clothes.forEach { g ->
+                // Check dedicated entity explain fields FIRST
+                val dedicatedNote = when {
+                    conceptNorm.contains("aircond") && conceptNorm.contains("hot") && !conceptNorm.contains("without") && !conceptNorm.contains("noaircond") -> g.aircondHotExplain.trim()
+                    conceptNorm.contains("aircond") && conceptNorm.contains("leg") && !conceptNorm.contains("without") && !conceptNorm.contains("noaircond") -> g.aircondLegExplain.trim()
+                    (conceptNorm.contains("without") || conceptNorm.contains("noaircond")) && conceptNorm.contains("hot") -> g.noAircondHotExplain.trim()
+                    (conceptNorm.contains("without") || conceptNorm.contains("noaircond")) && conceptNorm.contains("leg") -> g.noAircondLegExplain.trim()
+                    conceptNorm.contains("fan") && conceptNorm.contains("hot") -> g.fanSleepHotExplain.trim()
+                    conceptNorm.contains("fan") && conceptNorm.contains("leg") -> g.fanSleepLegExplain.trim()
+                    conceptNorm == "beautiful" || conceptNorm == "beatifulreason" -> g.beautifulReason.trim()
+                    conceptNorm == "wet" || conceptNorm == "wetreason" -> g.wetReason.trim()
+                    else -> ""
+                }
+                if (dedicatedNote.isNotBlank() && dedicatedNote != "No data" && dedicatedNote != "N/A" && !isGarmentFeelingDup(dedicatedNote, g)) {
+                    countMap[dedicatedNote] = (countMap[dedicatedNote] ?: 0) + 1
+                    sourcesMap.getOrPut(dedicatedNote) { mutableSetOf() }.add("👕 衣服: ${g.name} (${g.clothesType})")
+                }
+
                 try {
                     val obj = org.json.JSONObject(g.customFields)
                     val sub = obj.optJSONObject("_fieldExplanations")
@@ -449,9 +503,11 @@ fun AddReportDialog(
                         while (subKeys.hasNext()) {
                             val k = subKeys.next()
                             val normK = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
-                            if (normK == targetNorm || normK == "${targetNorm}explain" || normK == "explain$targetNorm") {
+                            val isExplainKey = normK.contains("explain") || normK.contains("explanation") || normK.contains("reason")
+                            val matchesConcept = (conceptNorm.isNotBlank() && normK.contains(conceptNorm)) || normK == "${targetNorm}explain" || normK == "${targetNorm}explanation"
+                            if (isExplainKey && matchesConcept) {
                                 val s = sub.optString(k, "").trim()
-                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{")) {
+                                if (s.isNotBlank() && s != "No data" && s != "N/A" && !s.startsWith("{") && !isGarmentFeelingDup(s, g)) {
                                     countMap[s] = (countMap[s] ?: 0) + 1
                                     sourcesMap.getOrPut(s) { mutableSetOf() }.add("👕 衣服: ${g.name} (${g.clothesType})")
                                 }
@@ -1802,7 +1858,9 @@ fun AddReportDialog(
                                                 }
                                         ) {
                                             AsyncImage(
-                                                model = ImageUtils.resolveImagePath(url, context),
+                                                model = ImageUtils.resolveImageModel(url, context)
+                                                    ?: ImageUtils.resolvePhotoModel(context, url)
+                                                    ?: url,
                                                 contentDescription = "Outfit photo",
                                                 contentScale = ContentScale.Fit,
                                                 modifier = Modifier.fillMaxSize()
@@ -1868,7 +1926,12 @@ fun AddReportDialog(
                                 val cleanWearDate = com.example.util.CalendarCalculations.normalizeDate(wearDate).ifBlank { todayIso }
                                 val finalTitle = title.ifBlank { "$cleanWearDate wearing report" }
                                 val picsJson = JSONArray().apply {
-                                    photoUrls.forEach { put(it) }
+                                    photoUrls.forEach { p ->
+                                        val permanent = if (p.startsWith("content://")) {
+                                            ImageUtils.copyUriToInternalStorage(context, Uri.parse(p), "report")
+                                        } else p
+                                        put(permanent)
+                                    }
                                 }.toString()
 
                                 val customFieldsObj = try {

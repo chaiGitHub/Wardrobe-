@@ -67,6 +67,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
@@ -129,6 +130,12 @@ data class GarmentAiReportVersion(
     val timestamp: String,
     val content: String,
     val isPrimary: Boolean = false
+)
+
+data class CustomAttrItem(
+    val name: String,
+    val value: String,
+    val explanation: String = ""
 )
 
 fun formatCleanDate(raw: String): String {
@@ -229,16 +236,18 @@ fun GarmentDetailDialog(
         map
     }
 
-    fun getExplainFromMap(vararg keys: String): String {
+    fun getExplainFromMap(feelingValue: String, vararg keys: String): String {
+        val trimmedFeel = feelingValue.trim()
         for (k in keys) {
-            val v = editFieldExplanations[k]
-            if (!v.isNullOrBlank()) return v
+            val v = editFieldExplanations[k]?.trim().orEmpty()
+            if (v.isNotBlank() && !v.equals(trimmedFeel, ignoreCase = true)) return v
         }
         for (k in keys) {
             val norm = k.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
             for ((mk, mv) in editFieldExplanations) {
                 val normMk = mk.lowercase(Locale.ROOT).replace("[^a-z0-9]".toRegex(), "")
-                if (norm == normMk && mv.isNotBlank()) return mv
+                val trimmedMv = mv.trim()
+                if (norm == normMk && trimmedMv.isNotBlank() && !trimmedMv.equals(trimmedFeel, ignoreCase = true)) return trimmedMv
             }
         }
         return ""
@@ -247,29 +256,51 @@ fun GarmentDetailDialog(
     // 3 Environmental Scenarios
     var editAircondHotFeeling by remember(garment) { mutableStateOf(garment.aircondHotFeeling) }
     var editAircondHotExplain by remember(garment) {
-        mutableStateOf(garment.aircondHotExplain.ifBlank { getExplainFromMap("when with aircond: hot feeling", "when with aircond: hot explanation", "aircondHotExplain", "aircondHotFeeling") })
+        val initialExp = garment.aircondHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.aircondHotFeeling.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(garment.aircondHotFeeling, "when with aircond: hot explanation", "when with aircond: hot feeling explain", "aircondHotExplain")
+        })
     }
+
     var editAircondLegFeeling by remember(garment) { mutableStateOf(garment.aircondLegFeeling) }
     var editAircondLegExplain by remember(garment) {
-        mutableStateOf(garment.aircondLegExplain.ifBlank { getExplainFromMap("when with aircond: leg feeling", "when with aircond: leg explanation", "aircondLegExplain", "aircondLegFeeling") })
+        val initialExp = garment.aircondLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.aircondLegFeeling.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(garment.aircondLegFeeling, "when with aircond: leg explanation", "when with aircond: leg feeling explain", "aircondLegExplain")
+        })
     }
 
     var editNoAircondHotFeeling by remember(garment) { mutableStateOf(garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }) }
     var editNoAircondHotExplain by remember(garment) {
-        mutableStateOf(garment.noAircondHotExplain.ifBlank { getExplainFromMap("when without aircond: hot feeling", "when without aircond: hot explanation", "noAircondHotExplain", "noAircondHotFeeling", "Hot at noon") })
+        val effFeel = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }.trim()
+        val initialExp = garment.noAircondHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(effFeel, ignoreCase = true) && !it.equals(garment.hotAtNoon.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(effFeel, "when without aircond: hot explanation", "when without aircond: hot feeling explain", "noAircondHotExplain")
+        })
     }
+
     var editNoAircondLegFeeling by remember(garment) { mutableStateOf(garment.noAircondLegFeeling) }
     var editNoAircondLegExplain by remember(garment) {
-        mutableStateOf(garment.noAircondLegExplain.ifBlank { getExplainFromMap("when without aircond: leg feeling", "when without aircond: leg explanation", "noAircondLegExplain", "noAircondLegFeeling") })
+        val initialExp = garment.noAircondLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.noAircondLegFeeling.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(garment.noAircondLegFeeling, "when without aircond: leg explanation", "when without aircond: leg feeling explain", "noAircondLegExplain")
+        })
     }
 
     var editFanSleepHotFeeling by remember(garment) { mutableStateOf(garment.fanSleepHotFeeling) }
     var editFanSleepHotExplain by remember(garment) {
-        mutableStateOf(garment.fanSleepHotExplain.ifBlank { getExplainFromMap("when sleep under fan: hot feeling", "when sleep under fan: hot explanation", "fanSleepHotExplain", "fanSleepHotFeeling") })
+        val initialExp = garment.fanSleepHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.fanSleepHotFeeling.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(garment.fanSleepHotFeeling, "when sleep under fan: hot explanation", "when sleep under fan: hot feeling explain", "fanSleepHotExplain")
+        })
     }
+
     var editFanSleepLegFeeling by remember(garment) { mutableStateOf(garment.fanSleepLegFeeling) }
     var editFanSleepLegExplain by remember(garment) {
-        mutableStateOf(garment.fanSleepLegExplain.ifBlank { getExplainFromMap("when sleep under fan: leg feeling", "when sleep under fan: leg explanation", "fanSleepLegExplain", "fanSleepLegFeeling") })
+        val initialExp = garment.fanSleepLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.fanSleepLegFeeling.trim(), ignoreCase = true) } ?: ""
+        mutableStateOf(initialExp.ifBlank {
+            getExplainFromMap(garment.fanSleepLegFeeling, "when sleep under fan: leg explanation", "when sleep under fan: leg feeling explain", "fanSleepLegExplain")
+        })
     }
     var editSitBreast by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
     var editSitBreastGatherBra by remember(garment) { mutableStateOf(garment.sitBreastGatherBra.ifBlank { garment.sitBreast }) }
@@ -495,13 +526,49 @@ fun GarmentDetailDialog(
                 customFieldsObj.remove("${k}_explain")
             }
         }
-        // Save environmental scenario explanations
-        if (editAircondHotExplain.isNotBlank()) explainSubObj.put("when with aircond: hot feeling", editAircondHotExplain)
-        if (editAircondLegExplain.isNotBlank()) explainSubObj.put("when with aircond: leg feeling", editAircondLegExplain)
-        if (editNoAircondHotExplain.isNotBlank()) explainSubObj.put("when without aircond: hot feeling", editNoAircondHotExplain)
-        if (editNoAircondLegExplain.isNotBlank()) explainSubObj.put("when without aircond: leg feeling", editNoAircondLegExplain)
-        if (editFanSleepHotExplain.isNotBlank()) explainSubObj.put("when sleep under fan: hot feeling", editFanSleepHotExplain)
-        if (editFanSleepLegExplain.isNotBlank()) explainSubObj.put("when sleep under fan: leg feeling", editFanSleepLegExplain)
+        // Save environmental scenario explanations under proper explanation keys
+        if (editAircondHotExplain.isNotBlank()) {
+            explainSubObj.put("when with aircond: hot explanation", editAircondHotExplain)
+            explainSubObj.put("aircondHotExplain", editAircondHotExplain)
+        }
+        explainSubObj.remove("when with aircond: hot feeling")
+        explainSubObj.remove("aircondHotFeeling")
+
+        if (editAircondLegExplain.isNotBlank()) {
+            explainSubObj.put("when with aircond: leg explanation", editAircondLegExplain)
+            explainSubObj.put("aircondLegExplain", editAircondLegExplain)
+        }
+        explainSubObj.remove("when with aircond: leg feeling")
+        explainSubObj.remove("aircondLegFeeling")
+
+        if (editNoAircondHotExplain.isNotBlank()) {
+            explainSubObj.put("when without aircond: hot explanation", editNoAircondHotExplain)
+            explainSubObj.put("noAircondHotExplain", editNoAircondHotExplain)
+        }
+        explainSubObj.remove("when without aircond: hot feeling")
+        explainSubObj.remove("noAircondHotFeeling")
+        explainSubObj.remove("Hot at noon")
+
+        if (editNoAircondLegExplain.isNotBlank()) {
+            explainSubObj.put("when without aircond: leg explanation", editNoAircondLegExplain)
+            explainSubObj.put("noAircondLegExplain", editNoAircondLegExplain)
+        }
+        explainSubObj.remove("when without aircond: leg feeling")
+        explainSubObj.remove("noAircondLegFeeling")
+
+        if (editFanSleepHotExplain.isNotBlank()) {
+            explainSubObj.put("when sleep under fan: hot explanation", editFanSleepHotExplain)
+            explainSubObj.put("fanSleepHotExplain", editFanSleepHotExplain)
+        }
+        explainSubObj.remove("when sleep under fan: hot feeling")
+        explainSubObj.remove("fanSleepHotFeeling")
+
+        if (editFanSleepLegExplain.isNotBlank()) {
+            explainSubObj.put("when sleep under fan: leg explanation", editFanSleepLegExplain)
+            explainSubObj.put("fanSleepLegExplain", editFanSleepLegExplain)
+        }
+        explainSubObj.remove("when sleep under fan: leg feeling")
+        explainSubObj.remove("fanSleepLegFeeling")
 
         customFieldsObj.put("_fieldExplanations", explainSubObj)
 
@@ -624,17 +691,29 @@ fun GarmentDetailDialog(
         } catch (_: Exception) {}
 
         editAircondHotFeeling = garment.aircondHotFeeling
-        editAircondHotExplain = garment.aircondHotExplain.ifBlank { getExplainFromMap("when with aircond: hot feeling", "when with aircond: hot explanation", "aircondHotExplain", "aircondHotFeeling") }
+        val initHotExp = garment.aircondHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.aircondHotFeeling.trim(), ignoreCase = true) } ?: ""
+        editAircondHotExplain = initHotExp.ifBlank { getExplainFromMap(garment.aircondHotFeeling, "when with aircond: hot explanation", "when with aircond: hot feeling explain", "aircondHotExplain") }
+
         editAircondLegFeeling = garment.aircondLegFeeling
-        editAircondLegExplain = garment.aircondLegExplain.ifBlank { getExplainFromMap("when with aircond: leg feeling", "when with aircond: leg explanation", "aircondLegExplain", "aircondLegFeeling") }
+        val initLegExp = garment.aircondLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.aircondLegFeeling.trim(), ignoreCase = true) } ?: ""
+        editAircondLegExplain = initLegExp.ifBlank { getExplainFromMap(garment.aircondLegFeeling, "when with aircond: leg explanation", "when with aircond: leg feeling explain", "aircondLegExplain") }
+
         editNoAircondHotFeeling = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }
-        editNoAircondHotExplain = garment.noAircondHotExplain.ifBlank { getExplainFromMap("when without aircond: hot feeling", "when without aircond: hot explanation", "noAircondHotExplain", "noAircondHotFeeling", "Hot at noon") }
+        val effNoAirFeel = garment.noAircondHotFeeling.ifBlank { garment.hotAtNoon }.trim()
+        val initNoAirHotExp = garment.noAircondHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(effNoAirFeel, ignoreCase = true) && !it.equals(garment.hotAtNoon.trim(), ignoreCase = true) } ?: ""
+        editNoAircondHotExplain = initNoAirHotExp.ifBlank { getExplainFromMap(effNoAirFeel, "when without aircond: hot explanation", "when without aircond: hot feeling explain", "noAircondHotExplain") }
+
         editNoAircondLegFeeling = garment.noAircondLegFeeling
-        editNoAircondLegExplain = garment.noAircondLegExplain.ifBlank { getExplainFromMap("when without aircond: leg feeling", "when without aircond: leg explanation", "noAircondLegExplain", "noAircondLegFeeling") }
+        val initNoAirLegExp = garment.noAircondLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.noAircondLegFeeling.trim(), ignoreCase = true) } ?: ""
+        editNoAircondLegExplain = initNoAirLegExp.ifBlank { getExplainFromMap(garment.noAircondLegFeeling, "when without aircond: leg explanation", "when without aircond: leg feeling explain", "noAircondLegExplain") }
+
         editFanSleepHotFeeling = garment.fanSleepHotFeeling
-        editFanSleepHotExplain = garment.fanSleepHotExplain.ifBlank { getExplainFromMap("when sleep under fan: hot feeling", "when sleep under fan: hot explanation", "fanSleepHotExplain", "fanSleepHotFeeling") }
+        val initFanHotExp = garment.fanSleepHotExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.fanSleepHotFeeling.trim(), ignoreCase = true) } ?: ""
+        editFanSleepHotExplain = initFanHotExp.ifBlank { getExplainFromMap(garment.fanSleepHotFeeling, "when sleep under fan: hot explanation", "when sleep under fan: hot feeling explain", "fanSleepHotExplain") }
+
         editFanSleepLegFeeling = garment.fanSleepLegFeeling
-        editFanSleepLegExplain = garment.fanSleepLegExplain.ifBlank { getExplainFromMap("when sleep under fan: leg feeling", "when sleep under fan: leg explanation", "fanSleepLegExplain", "fanSleepLegFeeling") }
+        val initFanLegExp = garment.fanSleepLegExplain.trim().takeIf { it.isNotBlank() && !it.equals(garment.fanSleepLegFeeling.trim(), ignoreCase = true) } ?: ""
+        editFanSleepLegExplain = initFanLegExp.ifBlank { getExplainFromMap(garment.fanSleepLegFeeling, "when sleep under fan: leg explanation", "when sleep under fan: leg feeling explain", "fanSleepLegExplain") }
         isEditing = false
     }
 
@@ -2613,11 +2692,12 @@ fun GarmentDetailDialog(
                         }
 
                         // Custom Attributes Section (Filtered to hide internal metadata like _fieldExplanations)
-                        var customAttrsMap by remember(garment.customFields) {
-                            val map = linkedMapOf<String, String>()
+                        var customAttrsList by remember(garment.customFields) {
+                            val list = mutableListOf<CustomAttrItem>()
                             try {
                                 if (garment.customFields.isNotBlank() && garment.customFields != "{}") {
                                     val obj = JSONObject(garment.customFields)
+                                    val feObj = obj.optJSONObject("_fieldExplanations")
                                     val keys = obj.keys()
                                     while (keys.hasNext()) {
                                         val k = keys.next()
@@ -2630,16 +2710,20 @@ fun GarmentDetailDialog(
                                         val rawVal = obj.opt(k)?.toString() ?: ""
                                         val isComplexJson = rawVal.trim().startsWith("{") || rawVal.trim().startsWith("[") || obj.optJSONObject(k) != null || obj.optJSONArray(k) != null
                                         if (!isInternalKey && !isComplexJson && v.isNotBlank()) {
-                                            map[k] = v
+                                            val exp = obj.optString("${k}_explain", feObj?.optString(k, "") ?: "").trim()
+                                            list.add(CustomAttrItem(name = k, value = v, explanation = exp))
                                         }
                                     }
                                 }
                             } catch (_: Exception) {}
-                            mutableStateOf<Map<String, String>>(map)
+                            mutableStateOf<List<CustomAttrItem>>(list)
                         }
-                        var showAddAttrModal by remember { mutableStateOf(false) }
-                        var newAttrName by remember { mutableStateOf("") }
-                        var newAttrValue by remember { mutableStateOf("") }
+                        var showAttrModal by remember { mutableStateOf(false) }
+                        var editingAttrItem by remember { mutableStateOf<CustomAttrItem?>(null) }
+                        var attrToDelete by remember { mutableStateOf<CustomAttrItem?>(null) }
+                        var attrDialogName by remember { mutableStateOf("") }
+                        var attrDialogValue by remember { mutableStateOf("") }
+                        var attrDialogExplain by remember { mutableStateOf("") }
 
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             Row(
@@ -2654,13 +2738,18 @@ fun GarmentDetailDialog(
                                     fontWeight = FontWeight.Bold,
                                     color = Slate500
                                 )
-
                                 Surface(
                                     shape = RoundedCornerShape(10.dp),
                                     color = Color(0xFFF3E8FF),
                                     border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
                                     modifier = Modifier
-                                        .clickable { showAddAttrModal = true }
+                                        .clickable {
+                                            editingAttrItem = null
+                                            attrDialogName = ""
+                                            attrDialogValue = ""
+                                            attrDialogExplain = ""
+                                            showAttrModal = true
+                                        }
                                         .testTag("add_custom_attribute_button")
                                 ) {
                                     Row(
@@ -2684,7 +2773,7 @@ fun GarmentDetailDialog(
                                 }
                             }
 
-                            if (customAttrsMap.isEmpty()) {
+                            if (customAttrsList.isEmpty()) {
                                 Surface(
                                     shape = RoundedCornerShape(14.dp),
                                     color = Color(0xFFF8FAFC),
@@ -2692,7 +2781,7 @@ fun GarmentDetailDialog(
                                     modifier = Modifier.fillMaxWidth()
                                 ) {
                                     Text(
-                                        text = "No custom attributes added yet. Click '+ Add Attribute' in Edit Mode.",
+                                        text = "No custom attributes added yet. Click '+ Add Attribute' to add attributes.",
                                         fontSize = 11.sp,
                                         fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
                                         color = Slate400,
@@ -2700,58 +2789,119 @@ fun GarmentDetailDialog(
                                     )
                                 }
                             } else {
-                                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    customAttrsMap.forEach { (attrKey, attrVal) ->
-                                        if (attrKey.startsWith("_") || attrKey.contains("fieldExplanation", ignoreCase = true) || attrVal.trim().startsWith("{")) {
-                                            return@forEach
-                                        }
+                                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    customAttrsList.forEach { attrItem ->
                                         Surface(
                                             shape = RoundedCornerShape(12.dp),
                                             color = Color.White,
                                             border = BorderStroke(1.dp, Slate200),
-                                            modifier = Modifier.fillMaxWidth()
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    editingAttrItem = attrItem
+                                                    attrDialogName = attrItem.name
+                                                    attrDialogValue = attrItem.value
+                                                    attrDialogExplain = attrItem.explanation
+                                                    showAttrModal = true
+                                                }
                                         ) {
-                                            Row(
+                                            Column(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .padding(horizontal = 12.dp, vertical = 9.dp),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
+                                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                                verticalArrangement = Arrangement.spacedBy(6.dp)
                                             ) {
-                                                Column(modifier = Modifier.weight(1f)) {
+                                                // Header row: Attribute Name & Action Buttons (Edit + Delete)
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
                                                     Text(
-                                                        text = attrKey,
-                                                        fontSize = 10.sp,
+                                                        text = attrItem.name,
+                                                        fontSize = 11.sp,
                                                         fontFamily = FontFamily.Monospace,
                                                         fontWeight = FontWeight.Bold,
-                                                        color = Slate500
+                                                        color = Slate600
                                                     )
-                                                    Text(
-                                                        text = attrVal,
-                                                        fontSize = 13.sp,
-                                                        fontWeight = FontWeight.SemiBold,
-                                                        color = Slate900
-                                                    )
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                                                    ) {
+                                                        IconButton(
+                                                            onClick = {
+                                                                editingAttrItem = attrItem
+                                                                attrDialogName = attrItem.name
+                                                                attrDialogValue = attrItem.value
+                                                                attrDialogExplain = attrItem.explanation
+                                                                showAttrModal = true
+                                                            },
+                                                            modifier = Modifier.size(28.dp)
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Edit,
+                                                                contentDescription = "Edit Attribute",
+                                                                tint = BrandPurple,
+                                                                modifier = Modifier.size(15.dp)
+                                                            )
+                                                        }
+                                                        IconButton(
+                                                            onClick = {
+                                                                attrToDelete = attrItem
+                                                            },
+                                                            modifier = Modifier.size(28.dp)
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Delete,
+                                                                contentDescription = "Delete Attribute",
+                                                                tint = Slate400,
+                                                                modifier = Modifier.size(15.dp)
+                                                            )
+                                                        }
+                                                    }
                                                 }
-                                                IconButton(
-                                                    onClick = {
-                                                        val updated = customAttrsMap.toMutableMap().apply { remove(attrKey) }
-                                                        customAttrsMap = updated
-                                                        editFieldExplanations.remove(attrKey.removeSuffix("_explain"))
-                                                        val fullObj = try {
-                                                            if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
-                                                        } catch (_: Exception) { JSONObject() }
-                                                        fullObj.remove(attrKey)
-                                                        val json = fullObj.toString()
-                                                        onSaveGarment?.invoke(garment.copy(customFields = json))
-                                                    },
-                                                    modifier = Modifier.size(28.dp)
+
+                                                // Attribute Value
+                                                Text(
+                                                    text = attrItem.value,
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    color = Slate900
+                                                )
+
+                                                // Explanation box (Attribute Name, Value, Explanation)
+                                                Column(
+                                                    modifier = Modifier
+                                                        .fillMaxWidth()
+                                                        .background(Color(0xFFFAF5FF), RoundedCornerShape(8.dp))
+                                                        .border(BorderStroke(0.5.dp, Color(0xFFF3E8FF)), RoundedCornerShape(8.dp))
+                                                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(3.dp)
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Default.Delete,
-                                                        contentDescription = "Delete Attribute",
-                                                        tint = Slate400,
-                                                        modifier = Modifier.size(15.dp)
+                                                    Row(
+                                                        verticalAlignment = Alignment.CenterVertically,
+                                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                    ) {
+                                                        Icon(
+                                                            imageVector = Icons.Default.Lightbulb,
+                                                            contentDescription = null,
+                                                            tint = BrandPurple,
+                                                            modifier = Modifier.size(12.dp)
+                                                        )
+                                                        Text(
+                                                            text = "${attrItem.name} explain:",
+                                                            fontSize = 10.sp,
+                                                            fontFamily = FontFamily.Monospace,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = BrandPurple
+                                                        )
+                                                    }
+                                                    Text(
+                                                        text = if (attrItem.explanation.isNotBlank()) attrItem.explanation else "No explain added",
+                                                        fontSize = 12.sp,
+                                                        fontStyle = if (attrItem.explanation.isNotBlank()) androidx.compose.ui.text.font.FontStyle.Normal else androidx.compose.ui.text.font.FontStyle.Italic,
+                                                        color = if (attrItem.explanation.isNotBlank()) Color(0xFF6B21A8) else Slate400,
+                                                        lineHeight = 16.sp
                                                     )
                                                 }
                                             }
@@ -2761,26 +2911,49 @@ fun GarmentDetailDialog(
                             }
                         }
 
-                        if (showAddAttrModal) {
+                        if (showAttrModal) {
+                            val isEditingAttr = editingAttrItem != null
                             AlertDialog(
-                                onDismissRequest = { showAddAttrModal = false },
+                                onDismissRequest = {
+                                    showAttrModal = false
+                                    editingAttrItem = null
+                                },
                                 title = {
-                                    Text("Add Custom Attribute", fontSize = 15.sp, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        text = if (isEditingAttr) "Edit Custom Attribute" else "Add Custom Attribute",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
                                 },
                                 text = {
-                                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                         OutlinedTextField(
-                                            value = newAttrName,
-                                            onValueChange = { newAttrName = it },
+                                            value = attrDialogName,
+                                            onValueChange = { attrDialogName = it },
                                             label = { Text("Attribute Name (e.g., Lining, Neckline)", fontSize = 11.sp) },
+                                            placeholder = { Text("e.g. Purchase Store", fontSize = 12.sp, color = Slate400) },
                                             singleLine = true,
+                                            shape = RoundedCornerShape(12.dp),
                                             modifier = Modifier.fillMaxWidth()
                                         )
                                         OutlinedTextField(
-                                            value = newAttrValue,
-                                            onValueChange = { newAttrValue = it },
+                                            value = attrDialogValue,
+                                            onValueChange = { attrDialogValue = it },
                                             label = { Text("Value", fontSize = 11.sp) },
+                                            placeholder = { Text("e.g. All it", fontSize = 12.sp, color = Slate400) },
                                             singleLine = true,
+                                            shape = RoundedCornerShape(12.dp),
+                                            modifier = Modifier.fillMaxWidth()
+                                        )
+                                        OutlinedTextField(
+                                            value = attrDialogExplain,
+                                            onValueChange = { attrDialogExplain = it },
+                                            label = { Text("Explanation (Optional)", fontSize = 11.sp) },
+                                            placeholder = { Text("e.g. bought on sale at outlet mall", fontSize = 12.sp, color = Slate400) },
+                                            minLines = 2,
+                                            maxLines = 4,
+                                            shape = RoundedCornerShape(12.dp),
                                             modifier = Modifier.fillMaxWidth()
                                         )
                                     }
@@ -2788,34 +2961,120 @@ fun GarmentDetailDialog(
                                 confirmButton = {
                                     Button(
                                         onClick = {
-                                            val k = newAttrName.trim()
-                                            val v = newAttrValue.trim()
+                                            val k = attrDialogName.trim()
+                                            val v = attrDialogValue.trim()
+                                            val exp = attrDialogExplain.trim()
                                             if (k.isNotEmpty() && v.isNotEmpty()) {
-                                                val updated = customAttrsMap.toMutableMap().apply { put(k, v) }
-                                                customAttrsMap = updated
                                                 val fullObj = try {
                                                     if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
                                                 } catch (_: Exception) { JSONObject() }
+                                                val feObj = fullObj.optJSONObject("_fieldExplanations") ?: JSONObject()
+
+                                                val oldName = editingAttrItem?.name
+                                                if (oldName != null && oldName != k) {
+                                                    fullObj.remove(oldName)
+                                                    fullObj.remove("${oldName}_explain")
+                                                    feObj.remove(oldName)
+                                                    editFieldExplanations.remove(oldName)
+                                                }
+
                                                 fullObj.put(k, v)
+                                                if (exp.isNotEmpty()) {
+                                                    fullObj.put("${k}_explain", exp)
+                                                    feObj.put(k, exp)
+                                                    editFieldExplanations[k] = exp
+                                                } else {
+                                                    fullObj.remove("${k}_explain")
+                                                    feObj.remove(k)
+                                                    editFieldExplanations.remove(k)
+                                                }
+                                                fullObj.put("_fieldExplanations", feObj)
+
+                                                val updatedItem = CustomAttrItem(name = k, value = v, explanation = exp)
+                                                customAttrsList = customAttrsList.filter { it.name != oldName && it.name != k } + updatedItem
+
                                                 val json = fullObj.toString()
                                                 onSaveGarment?.invoke(garment.copy(customFields = json))
-                                                newAttrName = ""
-                                                newAttrValue = ""
-                                                showAddAttrModal = false
+                                                attrDialogName = ""
+                                                attrDialogValue = ""
+                                                attrDialogExplain = ""
+                                                editingAttrItem = null
+                                                showAttrModal = false
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = BrandPurple)
+                                        colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                                        shape = RoundedCornerShape(12.dp)
                                     ) {
-                                        Text("Save Attribute", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                        Text(
+                                            text = if (isEditingAttr) "Update Attribute" else "Save Attribute",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
                                     }
                                 },
                                 dismissButton = {
-                                    TextButton(onClick = { showAddAttrModal = false }) {
+                                    TextButton(onClick = {
+                                        showAttrModal = false
+                                        editingAttrItem = null
+                                    }) {
                                         Text("Cancel", color = Slate600)
                                     }
                                 },
                                 containerColor = Color.White,
                                 shape = RoundedCornerShape(20.dp)
+                            )
+                        }
+
+                        if (attrToDelete != null) {
+                            val target = attrToDelete!!
+                            AlertDialog(
+                                onDismissRequest = { attrToDelete = null },
+                                title = {
+                                    Text(
+                                        text = "Delete Custom Attribute?",
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Slate900
+                                    )
+                                },
+                                text = {
+                                    Text(
+                                        text = "Are you sure you want to delete \"${target.name}\"? This action cannot be undone.",
+                                        fontSize = 13.sp,
+                                        color = Slate600
+                                    )
+                                },
+                                confirmButton = {
+                                    Button(
+                                        onClick = {
+                                            val fullObj = try {
+                                                if (garment.customFields.isNotBlank() && garment.customFields != "{}") JSONObject(garment.customFields) else JSONObject()
+                                            } catch (_: Exception) { JSONObject() }
+                                            fullObj.remove(target.name)
+                                            fullObj.remove("${target.name}_explain")
+                                            fullObj.optJSONObject("_fieldExplanations")?.remove(target.name)
+                                            editFieldExplanations.remove(target.name)
+                                            val json = fullObj.toString()
+                                            customAttrsList = customAttrsList.filter { it.name != target.name }
+                                            onSaveGarment?.invoke(garment.copy(customFields = json))
+                                            attrToDelete = null
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = BrandRose),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text("Delete", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                },
+                                dismissButton = {
+                                    OutlinedButton(
+                                        onClick = { attrToDelete = null },
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text("Cancel", fontSize = 12.sp, color = Slate700)
+                                    }
+                                },
+                                shape = RoundedCornerShape(16.dp),
+                                containerColor = Color.White
                             )
                         }
 

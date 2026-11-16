@@ -83,7 +83,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import com.example.ui.components.buttonMarquee
-import com.example.ui.components.ScrollableButtonText
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -105,6 +104,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.data.model.*
+import com.example.ui.components.FullScreenImageViewerDialog
 import com.example.ui.dialogs.GoogleDriveBackupModal
 import com.example.ui.theme.BrandAmber
 import com.example.ui.theme.BrandBlue
@@ -264,6 +264,7 @@ fun SyncScreen(
     var photoFilterMode by remember { mutableStateOf("all") } // "all", "missing", "assigned"
     var photoSearchQuery by remember { mutableStateOf("") }
     var targetGarmentForPhoto by remember { mutableStateOf<GarmentEntity?>(null) }
+    var viewingGarmentPhotos by remember { mutableStateOf<List<String>?>(null) }
 
     val quickPhotoLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -1426,17 +1427,21 @@ fun SyncScreen(
                                     modifier = Modifier
                                         .weight(1f)
                                         .clip(RoundedCornerShape(14.dp))
-                                        .clickable {
-                                            targetGarmentForPhoto = garment
-                                            quickPhotoLauncher.launch("image/*")
-                                        }
                                 ) {
                                     Column(modifier = Modifier.fillMaxWidth()) {
                                         Box(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .height(175.dp)
-                                                .background(Color(0xFFF1F5F9)),
+                                                .background(Color(0xFFF1F5F9))
+                                                .clickable {
+                                                    if (hasValidPhoto) {
+                                                        viewingGarmentPhotos = photoList
+                                                    } else {
+                                                        targetGarmentForPhoto = garment
+                                                        quickPhotoLauncher.launch("image/*")
+                                                    }
+                                                },
                                             contentAlignment = Alignment.Center
                                         ) {
                                             if (resolvedPhotoModel != null) {
@@ -1499,24 +1504,46 @@ fun SyncScreen(
                                             }
                                         }
 
-                                        Column(
-                                            modifier = Modifier.padding(10.dp),
-                                            verticalArrangement = Arrangement.spacedBy(2.dp)
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Text(
-                                                text = garment.name,
-                                                fontSize = 12.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = Slate900,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                            Text(
-                                                text = garment.clothesType.ifBlank { "Tops" },
-                                                fontSize = 10.sp,
-                                                color = Slate500,
-                                                maxLines = 1
-                                            )
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = garment.name,
+                                                    fontSize = 12.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Slate900,
+                                                    maxLines = 1,
+                                                    overflow = TextOverflow.Ellipsis
+                                                )
+                                                Text(
+                                                    text = garment.clothesType.ifBlank { "Tops" },
+                                                    fontSize = 10.sp,
+                                                    color = Slate500,
+                                                    maxLines = 1
+                                                )
+                                            }
+
+                                            if (hasValidPhoto) {
+                                                IconButton(
+                                                    onClick = {
+                                                        targetGarmentForPhoto = garment
+                                                        quickPhotoLauncher.launch("image/*")
+                                                    },
+                                                    modifier = Modifier.size(28.dp)
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Upload,
+                                                        contentDescription = "Change photo",
+                                                        tint = Slate500,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1531,6 +1558,13 @@ fun SyncScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+    }
+
+    if (viewingGarmentPhotos != null) {
+        FullScreenImageViewerDialog(
+            photos = viewingGarmentPhotos ?: emptyList(),
+            onDismiss = { viewingGarmentPhotos = null }
+        )
     }
 
     // Reset Database to Seed Confirmation Modal

@@ -33,16 +33,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.Checkroom
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DarkMode
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Image
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocalOffer
@@ -162,13 +165,46 @@ fun SessionDetailModal(
         sessionJunctions.any { it.washStated.contains("need wash", ignoreCase = true) || it.washStated.isBlank() }
     }
 
-    // Outfit Photos state (resolved against internal storage photos if present)
     var viewingPhotoIndex by remember { mutableStateOf<Int?>(null) }
     var fullScreenGarmentPhotos by remember { mutableStateOf<List<String>?>(null) }
     val outfitPhotos = remember(report.id, report.pictures) {
-        val list = mutableStateListOf<String>()
-        list.addAll(ImageUtils.resolveAllValidPhotos(report.pictures, context))
-        list
+        val resolved = ImageUtils.resolveAllValidPhotos(report.pictures, context)
+        val list = if (resolved.isNotEmpty()) resolved else ImageUtils.parsePhotoList(report.pictures)
+        mutableStateListOf<String>().apply { addAll(list) }
+    }
+
+    val sessionPhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> ->
+        if (uris.isNotEmpty()) {
+            val newlySaved = uris.map { uri ->
+                ImageUtils.copyUriToInternalStorage(context, uri, "report_${report.id}")
+            }
+            outfitPhotos.addAll(newlySaved)
+            val updatedJson = org.json.JSONArray(outfitPhotos.toList()).toString()
+            onUpdateReport?.invoke(report.copy(pictures = updatedJson))
+        }
+    }
+
+    LaunchedEffect(report.id, report.pictures) {
+        val currentPics = ImageUtils.parsePhotoList(report.pictures)
+        var changed = false
+        val newPics = currentPics.map { p ->
+            if (p.startsWith("content://")) {
+                val copied = ImageUtils.copyUriToInternalStorage(context, Uri.parse(p), "report_${report.id}")
+                if (copied.startsWith("file://")) {
+                    changed = true
+                    copied
+                } else {
+                    p
+                }
+            } else {
+                p
+            }
+        }
+        if (changed && onUpdateReport != null) {
+            onUpdateReport(report.copy(pictures = org.json.JSONArray(newPics).toString()))
+        }
     }
 
     // Explanations for ergonomic and sensory fields
@@ -287,12 +323,13 @@ fun SessionDetailModal(
         } catch (_: Exception) {}
     }
 
-    // Custom Environmental Attributes (strictly filtering out internal schema & explain fields & AI reports)
-    val customAttributes = remember(report.id, report.customFields) {
-        val map = mutableStateMapOf<String, String>()
+    // Custom Environmental Attributes (with name, value, explanation)
+    var customAttrsList by remember(report.id, report.customFields) {
+        val list = mutableListOf<CustomAttrItem>()
         try {
             if (report.customFields.isNotBlank() && report.customFields != "{}") {
                 val obj = org.json.JSONObject(report.customFields)
+                val feObj = obj.optJSONObject("_fieldExplanations")
                 obj.keys().forEach { k ->
                     val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
                     val isReserved = norm in reservedKeys ||
@@ -307,42 +344,21 @@ fun SessionDetailModal(
                             (v.contains("\"model\"") && v.contains("\"gemini\"")) ||
                             v.startsWith("[\"#") || v.startsWith("[\"[[")
                     if (!isReserved && !isAiJson && v.isNotBlank()) {
-                        map[k] = v
+                        val exp = obj.optString("${k}_explain", feObj?.optString(k, "") ?: "").trim()
+                        list.add(CustomAttrItem(name = k, value = v, explanation = exp))
                     }
                 }
             }
         } catch (_: Exception) {}
-        map
+        mutableStateOf<List<CustomAttrItem>>(list)
     }
 
-    val persistCustomAttributes: () -> Unit = {
-        try {
-            val obj = if (report.customFields.isNotBlank() && report.customFields != "{}") {
-                org.json.JSONObject(report.customFields)
-            } else {
-                org.json.JSONObject()
-            }
-            val toRemove = mutableListOf<String>()
-            obj.keys().forEach { k ->
-                val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
-                // Remove previous dynamic attributes and any leaked schema keys
-                if (norm in reservedKeys || (!norm.endsWith("_explain") && !norm.startsWith("_"))) {
-                    toRemove.add(k)
-                }
-            }
-            toRemove.forEach { obj.remove(it) }
-            customAttributes.forEach { (k, v) ->
-                val norm = k.trim().lowercase(java.util.Locale.ROOT).replace(" ", "_").replace("-", "_")
-                if (norm !in reservedKeys && !norm.endsWith("_explain") && !norm.startsWith("_")) {
-                    obj.put(k, v)
-                }
-            }
-            onUpdateReport?.invoke(report.copy(customFields = obj.toString()))
-        } catch (_: Exception) {}
-    }
-    var showAddAttributeDialog by remember { mutableStateOf(false) }
-    var newAttrKey by remember { mutableStateOf("") }
-    var newAttrVal by remember { mutableStateOf("") }
+    var showAttrModal by remember { mutableStateOf(false) }
+    var editingAttrItem by remember { mutableStateOf<CustomAttrItem?>(null) }
+    var attrToDelete by remember { mutableStateOf<CustomAttrItem?>(null) }
+    var attrDialogName by remember { mutableStateOf("") }
+    var attrDialogValue by remember { mutableStateOf("") }
+    var attrDialogExplain by remember { mutableStateOf("") }
 
     // Collapsible Technical & Cloud Junction Data
     var isTechnicalExpanded by remember { mutableStateOf(false) }
@@ -696,37 +712,71 @@ fun SessionDetailModal(
                                 verticalArrangement = Arrangement.spacedBy(14.dp)
                             ) {
                                 Row(
+                                    modifier = Modifier.fillMaxWidth(),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(RoundedCornerShape(12.dp))
-                                            .background(Color(0xFFF3E8FF)),
-                                        contentAlignment = Alignment.Center
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Image,
-                                            contentDescription = null,
-                                            tint = Color(0xFF9333EA),
-                                            modifier = Modifier.size(20.dp)
-                                        )
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .clip(RoundedCornerShape(12.dp))
+                                                .background(Color(0xFFF3E8FF)),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Image,
+                                                contentDescription = null,
+                                                tint = Color(0xFF9333EA),
+                                                modifier = Modifier.size(20.dp)
+                                            )
+                                        }
+                                        Column {
+                                            Text(
+                                                text = "OUTFIT PHOTOS (${outfitPhotos.size})",
+                                                fontSize = 13.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                fontWeight = FontWeight.ExtraBold,
+                                                color = Slate900
+                                            )
+                                            Text(
+                                                text = "Visual log for this wearing session",
+                                                fontSize = 12.sp,
+                                                fontFamily = FontFamily.Monospace,
+                                                color = Slate500
+                                            )
+                                        }
                                     }
-                                    Column {
-                                        Text(
-                                            text = "OUTFIT PHOTOS (${outfitPhotos.size})",
-                                            fontSize = 13.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            fontWeight = FontWeight.ExtraBold,
-                                            color = Slate900
-                                        )
-                                        Text(
-                                            text = "Visual log for this wearing session",
-                                            fontSize = 12.sp,
-                                            fontFamily = FontFamily.Monospace,
-                                            color = Slate500
-                                        )
+
+                                    Surface(
+                                        shape = RoundedCornerShape(12.dp),
+                                        color = Color(0xFFF3E8FF),
+                                        border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
+                                        modifier = Modifier.clickable {
+                                            sessionPhotoPickerLauncher.launch("image/*")
+                                        }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add Photo",
+                                                tint = Color(0xFF9333EA),
+                                                modifier = Modifier.size(15.dp)
+                                            )
+                                            Text(
+                                                text = "Add Photo",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF9333EA)
+                                            )
+                                        }
                                     }
                                 }
 
@@ -735,23 +785,37 @@ fun SessionDetailModal(
                                         shape = RoundedCornerShape(16.dp),
                                         color = Color(0xFFF8FAFC),
                                         border = BorderStroke(1.dp, Slate200),
-                                        modifier = Modifier.fillMaxWidth()
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { sessionPhotoPickerLauncher.launch("image/*") }
                                     ) {
                                         Row(
                                             modifier = Modifier.padding(16.dp),
                                             verticalAlignment = Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
+                                            Row(
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                                                modifier = Modifier.weight(1f)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Image,
+                                                    contentDescription = null,
+                                                    tint = Slate400,
+                                                    modifier = Modifier.size(18.dp)
+                                                )
+                                                Text(
+                                                    text = "No outfit photos captured yet. Tap to attach photo.",
+                                                    fontSize = 13.sp,
+                                                    color = Slate500
+                                                )
+                                            }
                                             Icon(
-                                                imageVector = Icons.Default.Image,
-                                                contentDescription = null,
-                                                tint = Slate400,
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "Add",
+                                                tint = BrandPurple,
                                                 modifier = Modifier.size(18.dp)
-                                            )
-                                            Text(
-                                                text = "No outfit photos captured for this session yet. Tap \"Edit Report\" to add photos.",
-                                                fontSize = 13.sp,
-                                                color = Slate500
                                             )
                                         }
                                     }
@@ -761,6 +825,12 @@ fun SessionDetailModal(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         items(outfitPhotos) { url ->
+                                            val resolvedModel = remember(url) {
+                                                ImageUtils.resolveImageModel(url, context)
+                                                    ?: ImageUtils.resolvePhotoModel(context, url)
+                                                    ?: url
+                                            }
+
                                             Box(
                                                 modifier = Modifier
                                                     .size(110.dp)
@@ -772,11 +842,34 @@ fun SessionDetailModal(
                                                     }
                                             ) {
                                                 AsyncImage(
-                                                    model = ImageUtils.resolveImageModel(url, context),
+                                                    model = resolvedModel,
                                                     contentDescription = "Session photo",
                                                     contentScale = ContentScale.Fit,
                                                     modifier = Modifier.fillMaxSize()
                                                 )
+
+                                                // Delete photo button
+                                                Box(
+                                                    modifier = Modifier
+                                                        .align(Alignment.TopEnd)
+                                                        .padding(4.dp)
+                                                        .size(24.dp)
+                                                        .clip(CircleShape)
+                                                        .background(Color(0xFFE11D48))
+                                                        .clickable {
+                                                            outfitPhotos.remove(url)
+                                                            val updatedJson = org.json.JSONArray(outfitPhotos.toList()).toString()
+                                                            onUpdateReport?.invoke(report.copy(pictures = updatedJson))
+                                                        },
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Close,
+                                                        contentDescription = "Remove Photo",
+                                                        tint = Color.White,
+                                                        modifier = Modifier.size(14.dp)
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -1517,23 +1610,42 @@ fun SessionDetailModal(
 
                                     Spacer(modifier = Modifier.width(8.dp))
 
-                                    Button(
-                                        onClick = { showAddAttributeDialog = true },
-                                        shape = RoundedCornerShape(14.dp),
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9333EA)),
-                                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp)
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = Color(0xFFF3E8FF),
+                                        border = BorderStroke(1.dp, Color(0xFFD8B4FE)),
+                                        modifier = Modifier
+                                            .clickable {
+                                                editingAttrItem = null
+                                                attrDialogName = ""
+                                                attrDialogValue = ""
+                                                attrDialogExplain = ""
+                                                showAttrModal = true
+                                            }
+                                            .testTag("add_session_attribute_button")
                                     ) {
-                                        Text(
-                                            text = "Add\nAttribute",
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White,
-                                            lineHeight = 15.sp
-                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = null,
+                                                tint = BrandPurple,
+                                                modifier = Modifier.size(13.dp)
+                                            )
+                                            Text(
+                                                text = "Add Attribute",
+                                                fontSize = 11.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = BrandPurple
+                                            )
+                                        }
                                     }
                                 }
 
-                                if (customAttributes.isEmpty()) {
+                                if (customAttrsList.isEmpty()) {
                                     Surface(
                                         shape = RoundedCornerShape(16.dp),
                                         color = Color(0xFFF8FAFC),
@@ -1550,55 +1662,105 @@ fun SessionDetailModal(
                                     }
                                 } else {
                                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        customAttributes.forEach { (k, v) ->
-                                            val attrExplain = reportExplanations[k] ?: reportExplanations["${k}_explain"] ?: ""
+                                        customAttrsList.forEach { attrItem ->
                                             Surface(
-                                                shape = RoundedCornerShape(12.dp),
+                                                shape = RoundedCornerShape(14.dp),
                                                 color = Color(0xFFF8FAFC),
                                                 border = BorderStroke(1.dp, Slate200),
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
-                                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                Column(
+                                                    modifier = Modifier.padding(14.dp),
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth(),
                                                         horizontalArrangement = Arrangement.SpaceBetween,
                                                         verticalAlignment = Alignment.CenterVertically
                                                     ) {
-                                                        Column {
-                                                            Text(k.uppercase(), fontSize = 10.sp, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, color = Slate500)
-                                                            Text(v, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Slate900)
-                                                        }
-                                                        IconButton(
-                                                            onClick = {
-                                                                customAttributes.remove(k)
-                                                                persistCustomAttributes()
-                                                            },
-                                                            modifier = Modifier.size(28.dp)
-                                                        ) {
-                                                            Icon(Icons.Default.DeleteOutline, contentDescription = "Remove", tint = Slate400, modifier = Modifier.size(16.dp))
-                                                        }
-                                                    }
-                                                    if (attrExplain.isNotBlank()) {
-                                                        Surface(
-                                                            shape = RoundedCornerShape(8.dp),
-                                                            color = Color(0xFFFBF7FF),
-                                                            border = BorderStroke(1.dp, Color(0xFFE9D5FF)),
-                                                            modifier = Modifier.fillMaxWidth().padding(top = 2.dp)
-                                                        ) {
-                                                            Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                                                                Text(
-                                                                    text = "$k explain:",
-                                                                    fontSize = 10.sp,
-                                                                    fontWeight = FontWeight.Bold,
-                                                                    color = Color(0xFF6B21A8)
+                                                        Text(
+                                                            text = attrItem.name,
+                                                            fontSize = 13.sp,
+                                                            fontFamily = FontFamily.Monospace,
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Slate700
+                                                        )
+                                                        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                                                            IconButton(
+                                                                onClick = {
+                                                                    editingAttrItem = attrItem
+                                                                    attrDialogName = attrItem.name
+                                                                    attrDialogValue = attrItem.value
+                                                                    attrDialogExplain = attrItem.explanation
+                                                                    showAttrModal = true
+                                                                },
+                                                                modifier = Modifier.size(28.dp)
+                                                            ) {
+                                                                Icon(
+                                                                    imageVector = Icons.Default.Edit,
+                                                                    contentDescription = "Edit Attribute",
+                                                                    tint = BrandPurple,
+                                                                    modifier = Modifier.size(15.dp)
                                                                 )
-                                                                Text(
-                                                                    text = attrExplain,
-                                                                    fontSize = 12.sp,
-                                                                    color = Color(0xFF3B0764)
+                                                            }
+                                                            IconButton(
+                                                                onClick = {
+                                                                    attrToDelete = attrItem
+                                                                },
+                                                                modifier = Modifier.size(28.dp)
+                                                            ) {
+                                                                Icon(
+                                                                    imageVector = Icons.Default.Delete,
+                                                                    contentDescription = "Delete Attribute",
+                                                                    tint = Slate400,
+                                                                    modifier = Modifier.size(15.dp)
                                                                 )
                                                             }
                                                         }
+                                                    }
+
+                                                    // Attribute Value
+                                                    Text(
+                                                        text = attrItem.value,
+                                                        fontSize = 14.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Slate900
+                                                    )
+
+                                                    // Explanation box (Attribute Name, Value, Explanation)
+                                                    Column(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .background(Color(0xFFFAF5FF), RoundedCornerShape(8.dp))
+                                                            .border(BorderStroke(0.5.dp, Color(0xFFF3E8FF)), RoundedCornerShape(8.dp))
+                                                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                                                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                                                    ) {
+                                                        Row(
+                                                            verticalAlignment = Alignment.CenterVertically,
+                                                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                                                        ) {
+                                                            Icon(
+                                                                imageVector = Icons.Default.Lightbulb,
+                                                                contentDescription = null,
+                                                                tint = BrandPurple,
+                                                                modifier = Modifier.size(12.dp)
+                                                            )
+                                                            Text(
+                                                                text = "${attrItem.name} explain:",
+                                                                fontSize = 10.sp,
+                                                                fontFamily = FontFamily.Monospace,
+                                                                fontWeight = FontWeight.Bold,
+                                                                color = Color(0xFF7E22CE)
+                                                            )
+                                                        }
+                                                        Text(
+                                                            text = if (attrItem.explanation.isNotBlank()) attrItem.explanation else "No explain added",
+                                                            fontSize = 11.sp,
+                                                            fontStyle = if (attrItem.explanation.isBlank()) FontStyle.Italic else FontStyle.Normal,
+                                                            color = if (attrItem.explanation.isBlank()) Slate400 else Color(0xFF6B21A8),
+                                                            lineHeight = 15.sp
+                                                        )
                                                     }
                                                 }
                                             }
@@ -2036,48 +2198,175 @@ fun SessionDetailModal(
     }
 }
 
-    // Add Environmental Attribute Dialog
-    if (showAddAttributeDialog) {
+    // Add / Edit Environmental & Session Attribute Dialog (Name, Value, Explanation)
+    if (showAttrModal) {
+        val isEditingAttr = editingAttrItem != null
         AlertDialog(
-            onDismissRequest = { showAddAttributeDialog = false },
-            title = { Text("Add Session Attribute", fontWeight = FontWeight.Bold, fontSize = 16.sp) },
+            onDismissRequest = {
+                showAttrModal = false
+                editingAttrItem = null
+            },
+            title = {
+                Text(
+                    text = if (isEditingAttr) "Edit Session Attribute" else "Add Session Attribute",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Slate900
+                )
+            },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     OutlinedTextField(
-                        value = newAttrKey,
-                        onValueChange = { newAttrKey = it },
-                        label = { Text("Attribute Name (e.g. Weather, Temp)") },
-                        singleLine = true
+                        value = attrDialogName,
+                        onValueChange = { attrDialogName = it },
+                        label = { Text("Attribute Name (e.g. Weather, Temp)", fontSize = 11.sp) },
+                        placeholder = { Text("e.g. Weather", fontSize = 12.sp, color = Slate400) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     )
                     OutlinedTextField(
-                        value = newAttrVal,
-                        onValueChange = { newAttrVal = it },
-                        label = { Text("Value (e.g. 28°C Sunny, Office AC)") },
-                        singleLine = true
+                        value = attrDialogValue,
+                        onValueChange = { attrDialogValue = it },
+                        label = { Text("Value", fontSize = 11.sp) },
+                        placeholder = { Text("e.g. 28°C Sunny, Office AC", fontSize = 12.sp, color = Slate400) },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    OutlinedTextField(
+                        value = attrDialogExplain,
+                        onValueChange = { attrDialogExplain = it },
+                        label = { Text("Explanation (Optional)", fontSize = 11.sp) },
+                        placeholder = { Text("e.g. feels cool with breeze from window", fontSize = 12.sp, color = Slate400) },
+                        minLines = 2,
+                        maxLines = 4,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        if (newAttrKey.isNotBlank() && newAttrVal.isNotBlank()) {
-                            customAttributes[newAttrKey.trim()] = newAttrVal.trim()
-                            persistCustomAttributes()
-                            newAttrKey = ""
-                            newAttrVal = ""
-                            showAddAttributeDialog = false
+                        val k = attrDialogName.trim()
+                        val v = attrDialogValue.trim()
+                        val exp = attrDialogExplain.trim()
+                        if (k.isNotEmpty() && v.isNotEmpty()) {
+                            val fullObj = try {
+                                if (report.customFields.isNotBlank() && report.customFields != "{}") org.json.JSONObject(report.customFields) else org.json.JSONObject()
+                            } catch (_: Exception) { org.json.JSONObject() }
+                            val feObj = fullObj.optJSONObject("_fieldExplanations") ?: org.json.JSONObject()
+
+                            val oldName = editingAttrItem?.name
+                            if (oldName != null && oldName != k) {
+                                fullObj.remove(oldName)
+                                fullObj.remove("${oldName}_explain")
+                                feObj.remove(oldName)
+                            }
+
+                            fullObj.put(k, v)
+                            if (exp.isNotEmpty()) {
+                                fullObj.put("${k}_explain", exp)
+                                feObj.put(k, exp)
+                            } else {
+                                fullObj.remove("${k}_explain")
+                                feObj.remove(k)
+                            }
+                            fullObj.put("_fieldExplanations", feObj)
+
+                            val updatedItem = CustomAttrItem(name = k, value = v, explanation = exp)
+                            customAttrsList = customAttrsList.filter { it.name != oldName && it.name != k } + updatedItem
+
+                            val json = fullObj.toString()
+                            onUpdateReport?.invoke(report.copy(customFields = json))
+                            attrDialogName = ""
+                            attrDialogValue = ""
+                            attrDialogExplain = ""
+                            editingAttrItem = null
+                            showAttrModal = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9333EA))
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandPurple),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Add")
+                    Text(
+                        text = if (isEditingAttr) "Update Attribute" else "Save Attribute",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showAddAttributeDialog = false }) {
-                    Text("Cancel")
+                OutlinedButton(
+                    onClick = {
+                        showAttrModal = false
+                        editingAttrItem = null
+                    },
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text("Cancel", fontSize = 12.sp, color = Slate700)
                 }
-            }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = Color.White
+        )
+    }
+
+    // Delete Confirmation Dialog for Session Custom Attribute
+    if (attrToDelete != null) {
+        val target = attrToDelete!!
+        AlertDialog(
+            onDismissRequest = { attrToDelete = null },
+            title = {
+                Text(
+                    text = "Delete Session Attribute?",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Slate900
+                )
+            },
+            text = {
+                Text(
+                    text = "Are you sure you want to delete \"${target.name}\"? This action cannot be undone.",
+                    fontSize = 13.sp,
+                    color = Slate600
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val fullObj = try {
+                            if (report.customFields.isNotBlank() && report.customFields != "{}") org.json.JSONObject(report.customFields) else org.json.JSONObject()
+                        } catch (_: Exception) { org.json.JSONObject() }
+                        val feObj = fullObj.optJSONObject("_fieldExplanations") ?: org.json.JSONObject()
+
+                        fullObj.remove(target.name)
+                        fullObj.remove("${target.name}_explain")
+                        feObj.remove(target.name)
+                        fullObj.put("_fieldExplanations", feObj)
+
+                        customAttrsList = customAttrsList.filter { it.name != target.name }
+                        val json = fullObj.toString()
+                        onUpdateReport?.invoke(report.copy(customFields = json))
+                        attrToDelete = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandRose),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Delete", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { attrToDelete = null },
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text("Cancel", fontSize = 12.sp, color = Slate700)
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = Color.White
         )
     }
 
